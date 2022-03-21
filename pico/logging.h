@@ -3,6 +3,7 @@
 
 #include "log/LoggerManager.h"
 #include "log/PatternLayout.h"
+#include "log/SimpleLayout.h"
 #include "log/TTCCLayout.h"
 #include "singleton.h"
 

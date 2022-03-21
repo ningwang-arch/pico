@@ -1,6 +1,7 @@
 #include "LoggerManager.h"
 #include "LogAppender.h"
 #include "Logger.h"
+#include "PatternLayout.h"
 #include "SimpleLayout.h"
 
 namespace pico {
@@ -10,7 +11,7 @@ LoggerManager::LoggerManager()
     , m_root(new Logger("root")) {
     pico::StdoutAppender::Ptr stdoutAppender(new pico::StdoutAppender);
 
-    stdoutAppender->setLayout(pico::Layout::Ptr(new pico::SimpleLayout));
+    stdoutAppender->setLayout(pico::Layout::Ptr(new pico::PatternLayout));
 
     m_root->addAppender(stdoutAppender);
 }
