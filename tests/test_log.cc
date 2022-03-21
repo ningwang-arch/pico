@@ -32,7 +32,7 @@ void test_ttcc() {
 
 int main(int argc, char const* argv[]) {
     // test_simple();
-    test_ttcc();
-    // test_pattern();
+    // test_ttcc();
+    test_pattern();
     return 0;
 }
