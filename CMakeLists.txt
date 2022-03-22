@@ -24,6 +24,8 @@ pico/log/PatternConverter.cc
 pico/log/PatternLayout.cc
 pico/log/SimpleLayout.cc
 pico/log/TTCCLayout.cc
+pico/mutex.cc
+pico/thread.cc
 pico/util.cc
 )
 
@@ -41,3 +43,8 @@ add_executable(test_log tests/test_log.cc)
 add_dependencies(test_log pico)
 force_redefine_file_macro_for_sources(test_log)
 target_link_libraries(test_log ${LIBS})
+
+add_executable(test_thread tests/test_thread.cc)
+add_dependencies(test_thread pico)
+force_redefine_file_macro_for_sources(test_thread)
+target_link_libraries(test_thread ${LIBS})

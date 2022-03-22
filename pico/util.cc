@@ -3,8 +3,13 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 namespace pico {
+pid_t getThreadId() {
+    return static_cast<pid_t>(::syscall(SYS_gettid));
+}
 
 std::string getForamtedTime(const char* format) {
     std::stringstream ss;

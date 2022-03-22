@@ -20,7 +20,7 @@ public:
     bool isError() const { return m_error; }
 
 private:
-    std::string pattern_ = "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n";
+    std::string pattern_ = "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%T%m%n";
     std::vector<PatternConverter::Ptr> converters_;
     bool m_error = false;
 };
