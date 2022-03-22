@@ -21,6 +21,7 @@ std::string PatternLayout::format(LogEvent::Ptr event) {
 }
 
 void PatternLayout::setPattern(const std::string& pattern) {
+    std::cout << pattern << std::endl;
     pattern_ = pattern;
     init();
 }
@@ -97,6 +98,7 @@ void PatternLayout::init() {
     {                                                                                  \
 #        str, [](const std::string& fmt) { return PatternConverter::Ptr(new C(fmt)); } \
     }
+            // %d %p [%c] - %m%n
             XX(m, MessagePatternConverter),
             XX(p, LevelPatternConverter),
             XX(c, NamePatternConverter),

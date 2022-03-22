@@ -2,6 +2,7 @@
 
 #include "Logger.h"
 #include <sstream>
+#include <stdarg.h>
 
 namespace pico {
 LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level, const char* file,
@@ -27,6 +28,20 @@ std::string LogEvent::toString() const {
 
 std::shared_ptr<Logger> LogEvent::getLogger() const {
     return m_logger;
+}
+
+std::string LogEvent::format(const char* fmt, ...) {
+    va_list al;
+    va_start(al, fmt);
+    std::string s = format(fmt, al);
+    va_end(al);
+    return s;
+}
+
+std::string LogEvent::format(const char* fmt, va_list al) {
+    char buf[1024];
+    vsnprintf(buf, sizeof(buf), fmt, al);
+    return buf;
 }
 
 }   // namespace pico

@@ -14,9 +14,27 @@ LoggerManager::LoggerManager()
     stdoutAppender->setLayout(pico::Layout::Ptr(new pico::PatternLayout));
 
     m_root->addAppender(stdoutAppender);
+
+    m_loggers[m_root->getName()] = m_root;
 }
 
-Logger::Ptr LoggerManager::getLogger() {
+void LoggerManager::addLogger(std::string& name, Logger::Ptr logger) {
+    MutexType::Lock lock(m_mutex);
+    m_loggers[name] = logger;
+}
+
+Logger::Ptr LoggerManager::getLogger(const std::string& name) {
+    MutexType::Lock lock(m_mutex);
+    auto it = m_loggers.find(name);
+    if (it != m_loggers.end()) return it->second;
+
+    Logger::Ptr logger(new Logger(name));
+    logger = m_root;
+    m_loggers[name] = logger;
+    return logger;
+}
+
+Logger::Ptr LoggerManager::getRootLogger() {
     MutexType::Lock lock(m_mutex);
     return m_root;
 }

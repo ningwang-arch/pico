@@ -42,13 +42,25 @@ void Logger::setLayout(std::shared_ptr<Layout> layout) {
     }
 }
 
-
 void Logger::log(LogLevel::Level level, LogEvent::Ptr event) {
     if (level >= m_level) {
         auto self = shared_from_this();
         MutexType::Lock lock(m_mutex);
         if (!m_appenders.empty())
             for (auto& i : m_appenders) { i->log(self, event); }
+        else
+            std::cout << event->toString() << std::endl;
+    }
+}
+
+void Logger::log(LogLevel::Level level, std::string& message) {
+    if (level >= m_level) {
+        auto self = shared_from_this();
+        MutexType::Lock lock(m_mutex);
+        auto event = LogEvent::Ptr(
+            new LogEvent(self, level, __FILE__, __LINE__, 0, 0, time(0), "t1", message));
+        if (!m_appenders.empty())
+            for (auto& i : m_appenders) i->log(self, event);
         else
             std::cout << event->toString() << std::endl;
     }

@@ -11,6 +11,8 @@ public:
     typedef std::shared_ptr<Layout> Ptr;
     Layout(){};
     virtual ~Layout() {}
+    virtual void setPattern(const std::string& pattern) {}
+    virtual std::string getPattern() const { return nullptr; }
     virtual std::string format(LogEvent::Ptr event) = 0;
 };
 }   // namespace pico

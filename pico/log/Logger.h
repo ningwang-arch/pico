@@ -25,6 +25,7 @@ public:
     Logger(const std::string& name = "root");
 
     void log(LogLevel::Level level, LogEvent::Ptr event);
+    void log(LogLevel::Level level, std::string& message);
 
 
     void debug(const std::string& message);

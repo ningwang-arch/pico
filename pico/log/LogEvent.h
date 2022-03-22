@@ -29,6 +29,9 @@ public:
 
     std::string toString() const;
 
+    static std::string format(const char* fmt, ...);
+    static std::string format(const char* fmt, va_list al);
+
 private:
     std::shared_ptr<Logger> m_logger;
     LogLevel::Level m_level;

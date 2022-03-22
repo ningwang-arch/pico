@@ -13,8 +13,8 @@ public:
     virtual ~PatternLayout() {}
     virtual std::string format(LogEvent::Ptr event);
 
-    void setPattern(const std::string& pattern);
-    std::string getPattern() const { return pattern_; }
+    void setPattern(const std::string& pattern) override;
+    std::string getPattern() const override { return pattern_; }
 
     void init();
     bool isError() const { return m_error; }
