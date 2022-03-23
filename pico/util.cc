@@ -11,6 +11,10 @@ pid_t getThreadId() {
     return static_cast<pid_t>(::syscall(SYS_gettid));
 }
 
+uint32_t getFiberId() {
+    return pico::Fiber::GetFiberId();
+}
+
 std::string getForamtedTime(const char* format) {
     std::stringstream ss;
     time_t t = time(NULL);

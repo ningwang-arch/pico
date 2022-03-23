@@ -4,8 +4,12 @@
 #include <pthread.h>
 #include <string>
 
+#include "fiber.h"
+
 namespace pico {
 pid_t getThreadId();
+
+uint32_t getFiberId();
 
 std::string getForamtedTime(const char* format);
 

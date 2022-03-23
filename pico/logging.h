@@ -21,7 +21,7 @@ const static pico::Logger::Ptr g_logger = LoggerMgr::getInstance()->getRootLogge
                                                        __FILE__,                \
                                                        __LINE__,                \
                                                        pico::getThreadId(),     \
-                                                       0,                       \
+                                                       pico::getFiberId(),      \
                                                        time(0),                 \
                                                        pico::Thread::GetName(), \
                                                        message)))
@@ -32,12 +32,6 @@ const static pico::Logger::Ptr g_logger = LoggerMgr::getInstance()->getRootLogge
 #define LOG_ERROR(message) LOG(g_logger, pico::LogLevel::ERROR, message)
 #define LOG_FATAL(message) LOG(g_logger, pico::LogLevel::FATAL, message)
 
-// #define LOG_DEBUG_DEF(message) LOG_DEBUG(g_logger, message)
-// #define LOG_INFO_DEF(message) LOG_INFO(g_logger, message)
-// #define LOG_WARN_DEF(message) LOG_WARN(g_logger, message)
-// #define LOG_ERROR_DEF(message) LOG_ERROR(g_logger, message)
-// #define LOG_FATAL_DEF(message) LOG_FATAL(g_logger, message)
-
 #define LOG_FMT(logger, level, fmt, ...)                                \
     logger->log(                                                        \
         level,                                                          \
@@ -46,7 +40,7 @@ const static pico::Logger::Ptr g_logger = LoggerMgr::getInstance()->getRootLogge
                                                __FILE__,                \
                                                __LINE__,                \
                                                pico::getThreadId(),     \
-                                               0,                       \
+                                               pico::getFiberId(),      \
                                                time(0),                 \
                                                pico::Thread::GetName(), \
                                                pico::LogEvent::format(fmt, ##__VA_ARGS__))))
