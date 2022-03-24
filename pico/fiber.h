@@ -6,8 +6,11 @@
 #include <ucontext.h>
 
 namespace pico {
+class Scheduler;
 class Fiber : public std::enable_shared_from_this<Fiber>
 {
+    friend class Scheduler;
+
 public:
     typedef std::shared_ptr<Fiber> Ptr;
     typedef std::function<void()> FiberFunc;

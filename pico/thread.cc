@@ -29,7 +29,7 @@ Thread::Thread(const ThreadFunc& func, const std::string& name)
 
     int rt = pthread_create(&m_pthreadId, nullptr, &Thread::run, this);
     if (rt) {
-        LOG_FMT_FATAL("pthread_create error: %s, name= %s", strerror(rt), m_name);
+        LOG_FATAL("pthread_create error: %s, name= %s", strerror(rt), m_name);
         throw std::logic_error("pthread_create error");
     }
 
@@ -66,7 +66,7 @@ void Thread::join() {
     if (m_pthreadId) {
         int rt = pthread_join(m_pthreadId, nullptr);
         if (rt) {
-            LOG_FMT_FATAL("pthread_join error: %s, name= %s", strerror(rt), m_name);
+            LOG_FATAL("pthread_join error: %s, name= %s", strerror(rt), m_name);
             throw std::logic_error("pthread_join error");
         }
 

@@ -26,6 +26,7 @@ set(LIB_SRC
     pico/log/SimpleLayout.cc
     pico/log/TTCCLayout.cc
     pico/mutex.cc
+    pico/scheduler.cc
     pico/thread.cc
     pico/util.cc)
 
@@ -52,3 +53,8 @@ add_executable(test_fiber tests/test_fiber.cc)
 add_dependencies(test_fiber pico)
 force_redefine_file_macro_for_sources(test_fiber)
 target_link_libraries(test_fiber ${LIBS})
+
+add_executable(test_scheduler tests/test_scheduler.cc)
+add_dependencies(test_scheduler pico)
+force_redefine_file_macro_for_sources(test_scheduler)
+target_link_libraries(test_scheduler ${LIBS})

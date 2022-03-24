@@ -40,7 +40,7 @@ int main(int argc, char const* argv[]) {
 
     LOG_INFO("main end");
 
-    LOG_FMT_INFO("count: %d", count);
+    LOG_INFO("count: %d", count);
 
     return 0;
 }

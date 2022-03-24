@@ -1,5 +1,6 @@
 #include "fiber.h"
 #include "logging.h"
+#include "scheduler.h"
 #include <assert.h>
 
 namespace pico {
@@ -58,12 +59,12 @@ Fiber::Fiber(FiberFunc func, size_t stacksize, bool use_caller)
     m_ctx.uc_stack.ss_size = m_stacksize;
     m_ctx.uc_link = nullptr;
 
-    if (!use_caller) { makecontext(&m_ctx, (void (*)())Fiber::MainFunc, 0); }
+    if (!use_caller) { makecontext(&m_ctx, &Fiber::MainFunc, 0); }
     else {
-        makecontext(&m_ctx, (void (*)())Fiber::CallerMainFunc, 0);
+        makecontext(&m_ctx, &Fiber::CallerMainFunc, 0);
     }
 
-    LOG_FMT_INFO("Fiber::Fiber(%p, %zu, %d) id=%lu", func, stacksize, use_caller, m_id);
+    LOG_INFO("Fiber::Fiber(%p, %zu, %d) id=%lu", func, stacksize, use_caller, m_id);
 }
 
 Fiber::~Fiber() {
@@ -79,12 +80,12 @@ Fiber::~Fiber() {
         Fiber* cur = g_fiber;
         if (cur == this) { SetThis(nullptr); }
     }
-    LOG_FMT_INFO("Fiber::~Fiber() id=%lu", m_id);
+    LOG_INFO("Fiber::~Fiber() id=%lu", m_id);
 }
 
 void Fiber::reset(FiberFunc func) {
     assert(m_stack);
-    assert(m_state == INIT || m_state == EXIT || m_state == SUSPEND);
+    assert(m_state == INIT || m_state == EXIT);
     m_func = func;
 
     if (getcontext(&m_ctx) == -1) {
@@ -96,7 +97,7 @@ void Fiber::reset(FiberFunc func) {
     m_ctx.uc_stack.ss_size = m_stacksize;
     m_ctx.uc_link = nullptr;
 
-    makecontext(&m_ctx, (void (*)())Fiber::MainFunc, 0);
+    makecontext(&m_ctx, &Fiber::MainFunc, 0);
 
     m_state = INIT;
 }
@@ -120,10 +121,9 @@ void Fiber::back() {
 
 void Fiber::swapIn() {
     SetThis(this);
-
     assert(m_state != RUNNING);
     m_state = RUNNING;
-    if (swapcontext(&g_thread_fiber->m_ctx, &m_ctx) == -1) {
+    if (swapcontext(&Scheduler::GetMainFiber()->m_ctx, &m_ctx) == -1) {
         LOG_FATAL("swapcontext failed");
         assert(false);
     }
@@ -131,7 +131,7 @@ void Fiber::swapIn() {
 
 void Fiber::swapOut() {
     SetThis(g_thread_fiber.get());
-    if (swapcontext(&m_ctx, &g_thread_fiber->m_ctx) == -1) {
+    if (swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx) == -1) {
         LOG_FATAL("swapcontext failed");
         assert(false);
     }
@@ -147,9 +147,7 @@ Fiber::Ptr Fiber::GetThis() {
     Fiber::Ptr main_fiber(new Fiber);
     assert(g_fiber == main_fiber.get());
     g_thread_fiber = main_fiber;
-    auto ptr = g_fiber->shared_from_this();
-    return ptr;
-    // return g_fiber->shared_from_this();
+    return g_fiber->shared_from_this();
 }
 
 void Fiber::yieldToReady() {
@@ -178,14 +176,16 @@ void Fiber::MainFunc() {
         cur->m_state = EXIT;
     }
     catch (std::exception& e) {
-        LOG_FMT_ERROR("Fiber::MainFunc() exception: %s", e.what());
+        LOG_ERROR("Fiber::MainFunc() exception: %s", e.what());
     }
     catch (...) {
-        LOG_FMT_ERROR("Fiber::MainFunc() unknown exception");
+        LOG_ERROR("Fiber::MainFunc() unknown exception");
     }
     auto raw = cur.get();
     cur.reset();
     raw->swapOut();
+
+    LOG_FATAL("Fiber::MainFunc() should not be here fiber_id=%lu", raw->getId());
 
     assert(false);
 }
@@ -199,10 +199,10 @@ void Fiber::CallerMainFunc() {
         cur->m_state = EXIT;
     }
     catch (std::exception& e) {
-        LOG_FMT_ERROR("Fiber::CallerMainFunction() exception: %s", e.what());
+        LOG_ERROR("Fiber::CallerMainFunction() exception: %s", e.what());
     }
     catch (...) {
-        LOG_FMT_ERROR("Fiber::CallerMainFunction() unknown exception");
+        LOG_ERROR("Fiber::CallerMainFunction() unknown exception");
     }
     auto raw = cur.get();
     cur.reset();

@@ -5,11 +5,11 @@ int count = 0;
 pico::Mutex mutex;
 
 void func_1() {
-    LOG_FMT_INFO("name: %s, this.name=%s, id: %d, this.id=%d",
-                 pico::Thread::GetName().c_str(),
-                 pico::Thread::GetThis()->getName().c_str(),
-                 pico::getThreadId(),
-                 pico::Thread::GetThis()->getId());
+    LOG_INFO("name: %s, this.name=%s, id: %d, this.id=%d",
+             pico::Thread::GetName().c_str(),
+             pico::Thread::GetThis()->getName().c_str(),
+             pico::getThreadId(),
+             pico::Thread::GetThis()->getId());
     for (int i = 0; i < 100000; i++) {
         pico::Mutex::Lock lock(mutex);
         count++;
@@ -33,7 +33,7 @@ int main(int argc, char const* argv[]) {
 
     LOG_INFO("test_thread end");
 
-    LOG_FMT_INFO("count: %d", count);
+    LOG_INFO("count: %d", count);
 
     return 0;
 }

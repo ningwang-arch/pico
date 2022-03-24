@@ -8,7 +8,7 @@ void test_simple() {
     pico::Layout::Ptr layout(new pico::SimpleLayout);
     g_logger->setLayout(layout);
     LOG_DEBUG("debug");
-    LOG_FMT_DEBUG("msg is %s", "debug");
+    LOG_DEBUG("msg is %s", "debug");
     // g_logger->debug("debug");
     // g_logger->info("info");
     // g_logger->warn("warn");
@@ -23,7 +23,7 @@ void test() {
     // g_logger->error("error");
     // g_logger->fatal("fatal");
     LOG_DEBUG("debug");
-    LOG_FMT_INFO("msg is %s", "info");
+    LOG_INFO("msg is %s", "info");
     // LOG_DEBUG(g_logger, "debug");
 }
 
@@ -34,12 +34,12 @@ void test_custom_pattern() {
     pl->setPattern("%d %p [%c] - %m%n");
     g_logger->setLayout(pl);
     LOG_DEBUG("debug");
-    LOG_FMT_FATAL("msg is %s", "fatal");
+    LOG_FATAL("msg is %s", "fatal");
 }
 
 void test_ttcc() {
     LOG_DEBUG("debug");
-    LOG_FMT_DEBUG("msg is %s", "debug");
+    LOG_DEBUG("msg is %s", "debug");
     // g_logger->debug("debug");
     // g_logger->info("info");
     // g_logger->warn("warn");
