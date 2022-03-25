@@ -79,7 +79,7 @@ public:
 
 
 private:
-    uint64_t m_id;
+    uint64_t m_id = 0;
     ucontext_t m_ctx;
     FiberFunc m_func;
     State m_state = INIT;

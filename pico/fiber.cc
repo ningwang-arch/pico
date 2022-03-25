@@ -23,13 +23,14 @@ public:
 using StackAllocator = MallocStackAllocator;
 
 uint64_t Fiber::GetFiberId() {
-    if (g_fiber) { return g_fiber->getId(); }
+    if (g_fiber != nullptr) { return g_fiber->getId(); }
     return 0;
 }
 
 Fiber::Fiber() {
     m_state = RUNNING;
     SetThis(this);
+
     if (getcontext(&m_ctx) == -1) {
         LOG_FATAL("getcontext failed");
         assert(false);

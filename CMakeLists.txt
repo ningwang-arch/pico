@@ -16,6 +16,7 @@ include_directories(.)
 
 set(LIB_SRC
     pico/fiber.cc
+    pico/iomanager.cc
     pico/log/LogAppender.cc
     pico/log/LogEvent.cc
     pico/log/Logger.cc
@@ -58,3 +59,8 @@ add_executable(test_scheduler tests/test_scheduler.cc)
 add_dependencies(test_scheduler pico)
 force_redefine_file_macro_for_sources(test_scheduler)
 target_link_libraries(test_scheduler ${LIBS})
+
+add_executable(test_iomanager tests/test_iomanager.cc)
+add_dependencies(test_iomanager pico)
+force_redefine_file_macro_for_sources(test_iomanager)
+target_link_libraries(test_iomanager ${LIBS})
