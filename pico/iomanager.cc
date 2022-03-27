@@ -1,4 +1,5 @@
 #include "iomanager.h"
+#include <algorithm>
 #include <assert.h>
 #include <fcntl.h>
 #include <string.h>
@@ -243,8 +244,13 @@ void IOManager::tickle() {
     if (rt != 1) { LOG_ERROR("write error:%d", rt); }
 }
 
+bool IOManager::stopping(uint64_t ms) {
+    ms = getNextTimer();
+    return ms == ~0ull && m_penddingEvent == 0 && Scheduler::stopping();
+}
+
 bool IOManager::stopping() {
-    return m_penddingEvent == 0 && Scheduler::stopping();
+    return stopping(0);
 }
 
 
@@ -256,20 +262,31 @@ void IOManager::idle() {
     std::shared_ptr<epoll_event> events_ptr(events, [](epoll_event* ptr) { delete[] ptr; });
 
     while (true) {
-        if (stopping()) {
+        uint64_t timeout = 0;
+        if (stopping(timeout)) {
+            timeout = getNextTimer();
             LOG_INFO("IOManager idle exit, name = %s", getName().c_str());
             break;
         }
         int rt = 0;
         do {
             static const int MAX_TIMEOUT = 3000;
-            rt = epoll_wait(m_epoll_fd, events, MAX_EVENTS, MAX_TIMEOUT);
+            if (timeout != ~0ull) { timeout = (int)timeout > MAX_TIMEOUT ? MAX_TIMEOUT : timeout; }
+            else {
+                timeout = MAX_TIMEOUT;
+            }
+            rt = epoll_wait(m_epoll_fd, events, MAX_EVENTS, (int)timeout);
             if (rt < 0 && errno == EINTR) { continue; }
             else {
                 break;
             }
         } while (true);
-
+        std::vector<Callback> cbs;
+        listExperiedCb(cbs);
+        if (!cbs.empty()) {
+            schedule(cbs.begin(), cbs.end());
+            cbs.clear();
+        }
         for (int i = 0; i < rt; ++i) {
             epoll_event& ev = events[i];
             if (ev.data.fd == m_tickle_fd[0]) {
@@ -318,6 +335,10 @@ void IOManager::idle() {
 
         raw_ptr->swapOut();
     }   // while
+}
+
+void IOManager::onTimerInsertAtFront() {
+    tickle();
 }
 
 }   // namespace pico

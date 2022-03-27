@@ -1,4 +1,5 @@
 #include "scheduler.h"
+#include "hook.h"
 #include "logging.h"
 #include "util.h"
 #include <assert.h>
@@ -100,6 +101,7 @@ void Scheduler::setThis() {
 
 void Scheduler::run() {
     LOG_INFO("Scheduler::run() started");
+    set_hook_enable(true);
     setThis();
     if (pico::getThreadId() != m_main_thread_id) { t_fiber = Fiber::GetThis().get(); }
 

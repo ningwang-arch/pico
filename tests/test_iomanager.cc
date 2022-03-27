@@ -4,6 +4,7 @@
 
 #include "pico/iomanager.h"
 #include "pico/logging.h"
+#include <chrono>
 #include <fcntl.h>
 #include <string.h>
 
@@ -49,7 +50,21 @@ void test() {
     iom.schedule(&func);
 }
 
+pico::Timer::Ptr s_timer;
+void test_timer() {
+    pico::IOManager iom(2, false, "iom");
+    s_timer = iom.addTimer(
+        1000,
+        []() {
+            static int i = 0;
+            LOG_INFO("timer callback %d", i);
+            if (++i == 3) { s_timer->cancel(); }
+        },
+        true);
+}
+
 int main(int argc, char const* argv[]) {
-    test();
+    // test();
+    test_timer();
     return 0;
 }

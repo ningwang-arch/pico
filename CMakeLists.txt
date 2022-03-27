@@ -3,6 +3,8 @@ project(pico)
 
 include(cmake/utils.cmake)
 
+include_directories(.)
+
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_CXX_FLAGS
@@ -12,10 +14,11 @@ set(CMAKE_C_FLAGS
     "$ENV{CXXFLAGS} -rdynamic -O3 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
 )
 
-include_directories(.)
 
 set(LIB_SRC
+    pico/fdmanager.cc
     pico/fiber.cc
+    pico/hook.cc
     pico/iomanager.cc
     pico/log/LogAppender.cc
     pico/log/LogEvent.cc
@@ -29,13 +32,17 @@ set(LIB_SRC
     pico/mutex.cc
     pico/scheduler.cc
     pico/thread.cc
+    pico/timer.cc
     pico/util.cc)
 
 add_library(pico SHARED ${LIB_SRC})
 
 force_redefine_file_macro_for_sources(pico)
 
-set(LIBS pico)
+set(LIBS
+    pico
+    dl
+    )
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
@@ -64,3 +71,8 @@ add_executable(test_iomanager tests/test_iomanager.cc)
 add_dependencies(test_iomanager pico)
 force_redefine_file_macro_for_sources(test_iomanager)
 target_link_libraries(test_iomanager ${LIBS})
+
+add_executable(test_hook tests/test_hook.cc)
+add_dependencies(test_hook pico)
+force_redefine_file_macro_for_sources(test_hook)
+target_link_libraries(test_hook ${LIBS})

@@ -6,10 +6,11 @@
 #include <string>
 
 #include "scheduler.h"
+#include "timer.h"
 
 namespace pico {
 
-class IOManager : public Scheduler
+class IOManager : public Scheduler, public TimerManager
 {
 public:
     typedef std::shared_ptr<IOManager> Ptr;
@@ -52,7 +53,7 @@ public:
     IOManager(int threads = 1, bool use_caller = true, const std::string& name = "IOManager");
     ~IOManager();
 
-    int addEvent(int fd, Event event, Callback callback);
+    int addEvent(int fd, Event event, Callback callback = nullptr);
     bool delEvent(int fd, Event event);
     bool cancelEvent(int fd, Event event);
     bool cancelAllEvent(int fd);
@@ -62,8 +63,9 @@ public:
 protected:
     void tickle() override;
     bool stopping() override;
+    bool stopping(uint64_t ms);
     void idle() override;
-
+    void onTimerInsertAtFront() override;
     void contextResize(size_t size);
 
 
