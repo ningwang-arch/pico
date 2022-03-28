@@ -50,7 +50,7 @@ private:
     };
 
 public:
-    IOManager(int threads = 1, bool use_caller = true, const std::string& name = "IOManager");
+    IOManager(int threads = 1, bool use_caller = true, const std::string& name = "");
     ~IOManager();
 
     int addEvent(int fd, Event event, Callback callback = nullptr);

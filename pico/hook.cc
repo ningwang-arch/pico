@@ -78,25 +78,24 @@ static ssize_t do_io(int fd, OriginFun origin_fun, const char* hook_fun, uint32_
     }
 
     uint64_t to = ctx->getTimeout(timeout_so);
-    std::shared_ptr<timer_info> tinof(new timer_info());
+    std::shared_ptr<timer_info> tinfo(new timer_info);
 
 retry:
     ssize_t ret = origin_fun(fd, std::forward<Args>(args)...);
     while (ret == -1 && errno == EINTR) { ret = origin_fun(fd, std::forward<Args>(args)...); }
-    if (ret == -1 && ret == EAGAIN) {
+    if (ret == -1 && errno == EAGAIN) {
         pico::IOManager* iom = pico::IOManager::getThis();
         pico::Timer::Ptr timer;
-        std::weak_ptr<timer_info> wp(tinof);
+        std::weak_ptr<timer_info> wp(tinfo);
 
         if (to != (uint64_t)-1) {
             timer = iom->addCondTimer(
                 to,
                 [fd, wp, iom, event]() {
-                    std::shared_ptr<timer_info> tinof = wp.lock();
-                    if (tinof == nullptr) { return; }
-                    if (tinof->cancelled) { return; }
+                    std::shared_ptr<timer_info> t = wp.lock();
+                    if (t == nullptr || t->cancelled) { return; }
 
-                    tinof->cancelled = ETIMEDOUT;
+                    t->cancelled = ETIMEDOUT;
                     iom->cancelEvent(fd, (pico::IOManager::Event)(event));
                 },
                 wp);
@@ -112,8 +111,8 @@ retry:
         else {
             pico::Fiber::yieldToSuspend();
             if (timer) { timer->cancel(); }
-            if (tinof->cancelled) {
-                errno = tinof->cancelled;
+            if (tinfo->cancelled) {
+                errno = tinfo->cancelled;
                 return -1;
             }
 
@@ -158,7 +157,7 @@ int connect_with_timeout(int sockfd, const struct sockaddr* addr, socklen_t addr
 
     if (!ctx->isSocket()) { return connect_f(sockfd, addr, addrlen); }
 
-    if (!ctx->isUserNonBlock()) { return connect_f(sockfd, addr, addrlen); }
+    if (ctx->isUserNonBlock()) { return connect_f(sockfd, addr, addrlen); }
 
     int n = connect_f(sockfd, addr, addrlen);
     if (n == 0) { return 0; }
@@ -206,7 +205,7 @@ int connect_with_timeout(int sockfd, const struct sockaddr* addr, socklen_t addr
         errno = error;
         return -1;
     }
-    return 0;
+    return n;
 }
 
 int connect(int sockfd, const struct sockaddr* addr, socklen_t addrlen) {
@@ -392,18 +391,6 @@ int setsockopt(int sockfd, int level, int optname, const void* optval, socklen_t
 }
 
 int getsockopt(int sockfd, int level, int optname, void* optval, socklen_t* optlen) {
-    if (!pico::is_hook_enable()) { return getsockopt_f(sockfd, level, optname, optval, optlen); }
-
-    if (level == SOL_SOCKET) {
-        if (optname == SO_RCVTIMEO || optname == SO_SNDTIMEO) {
-            pico::FdCtx::Ptr ctx = pico::FdMgr::getInstance()->getFdCtx(sockfd);
-            if (ctx) {
-                timeval* tv = (timeval*)optval;
-                tv->tv_sec = ctx->getTimeout(optname) / 1000;
-                tv->tv_usec = (ctx->getTimeout(optname) % 1000) * 1000;
-            }
-        }
-    }
     return getsockopt_f(sockfd, level, optname, optval, optlen);
 }
 

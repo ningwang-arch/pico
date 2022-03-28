@@ -21,7 +21,6 @@ FdCtx::~FdCtx() {}
 
 bool FdCtx::init() {
     if (m_isInit) { return true; }
-    if (m_fd < 0) { return false; }
     m_recvTimeout = -1;
     m_sendTimeout = -1;
 
@@ -37,10 +36,7 @@ bool FdCtx::init() {
 
     if (m_isSocket) {
         int flags = fcntl_f(m_fd, F_GETFL, 0);
-        if (!(flags & O_NONBLOCK)) {
-            flags |= O_NONBLOCK;
-            fcntl_f(m_fd, F_SETFL, flags);
-        }
+        if (!(flags & O_NONBLOCK)) { fcntl_f(m_fd, F_SETFL, flags | O_NONBLOCK); }
         m_isSysNonBlock = true;
     }
     else {
@@ -70,18 +66,20 @@ FdManager::FdManager() {
 }
 
 FdCtx::Ptr FdManager::getFdCtx(int fd, bool autoCreate) {
-    if (fd < 0) { return FdCtx::Ptr(); }
+    if (fd < 0) { return nullptr; }
     MutexType::ReadLock rlock(m_mutex);
-    if ((int)m_fdCtxs.size() < fd) {
+    if ((int)m_fdCtxs.size() <= fd) {
         if (!autoCreate) { return nullptr; }
     }
     else {
-        if (m_fdCtxs[fd] && !autoCreate) { return m_fdCtxs[fd]; }
+        if (m_fdCtxs[fd] || !autoCreate) { return m_fdCtxs[fd]; }
     }
     rlock.unlock();
     MutexType::WriteLock wlock(m_mutex);
-    if ((int)m_fdCtxs.size() < fd) { m_fdCtxs.resize(fd * 1.5); }
-    m_fdCtxs[fd] = std::make_shared<FdCtx>(fd);
+    FdCtx::Ptr fdCtx(new FdCtx(fd));
+    if ((int)m_fdCtxs.size() <= fd) { m_fdCtxs.resize(fd * 1.5); }
+    m_fdCtxs[fd] = fdCtx;
+    wlock.unlock();
     return nullptr;
 }
 

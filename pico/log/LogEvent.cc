@@ -39,8 +39,19 @@ std::string LogEvent::format(const char* fmt, ...) {
 }
 
 std::string LogEvent::format(const char* fmt, va_list al) {
-    char buf[1024];
-    vsnprintf(buf, sizeof(buf), fmt, al);
+    char buf[BUFSIZ];
+    va_list argscopy;
+    va_copy(argscopy, al);
+    size_t len = vsnprintf(buf, sizeof(buf), fmt, al);
+    len++;
+    if (len > BUFSIZ) {
+        char* p = new char[len + 128];
+        vsnprintf(p, len, fmt, argscopy);
+        va_end(argscopy);
+        std::string s(p, len);
+        delete[] p;
+        return s;
+    }
     return buf;
 }
 
