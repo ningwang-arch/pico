@@ -16,6 +16,7 @@ set(CMAKE_C_FLAGS
 
 
 set(LIB_SRC
+    pico/address.cc
     pico/fdmanager.cc
     pico/fiber.cc
     pico/hook.cc
@@ -76,3 +77,8 @@ add_executable(test_hook tests/test_hook.cc)
 add_dependencies(test_hook pico)
 force_redefine_file_macro_for_sources(test_hook)
 target_link_libraries(test_hook ${LIBS})
+
+add_executable(test_address tests/test_address.cc)
+add_dependencies(test_address pico)
+force_redefine_file_macro_for_sources(test_address)
+target_link_libraries(test_address ${LIBS})
