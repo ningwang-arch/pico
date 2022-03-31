@@ -45,33 +45,6 @@ void test() {
     LOG_INFO("%s", resp.c_str());
 }
 
-void test_addr() {
-    pico::IPAddress::Ptr addr = pico::Address::LookupAnyIPAddress("www.baidu.com");
-    addr->setPort(80);
-    LOG_INFO("%s", addr->to_string().c_str());
-
-
-    int sockfd = socket(addr->getFamily(), SOCK_STREAM, 0);
-
-    connect(sockfd, addr->getAddr(), addr->getAddrLen());
-
-    const char buf[] = "GET / HTTP/1.1\r\n\r\n";
-    send(sockfd, buf, sizeof(buf), 0);
-
-    char buf2[BUFSIZ];
-    std::string resp;
-    while (true) {
-        int rt = recv(sockfd, buf2, sizeof(buf2), 0);
-        // std::cout << rt << std::endl;
-        if (rt <= 0) {
-            LOG_INFO("recv failed");
-            break;
-        }
-        resp.append(buf2, rt);
-        memset(buf2, 0, sizeof(buf2));
-    }
-}
-
 int main(int argc, char const* argv[]) {
     pico::IOManager iom(1, true, "iom");
     iom.schedule(test);

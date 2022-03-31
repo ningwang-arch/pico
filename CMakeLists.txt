@@ -31,8 +31,9 @@ set(LIB_SRC
     pico/log/SimpleLayout.cc
     pico/log/TTCCLayout.cc
     pico/mutex.cc
-    pico/socket.cc
     pico/scheduler.cc
+    pico/socket.cc
+    pico/tcp_server.cc
     pico/thread.cc
     pico/timer.cc
     pico/util.cc)
@@ -88,3 +89,8 @@ add_executable(test_socket tests/test_socket.cc)
 add_dependencies(test_socket pico)
 force_redefine_file_macro_for_sources(test_socket)
 target_link_libraries(test_socket ${LIBS})
+
+add_executable(test_tcp_server tests/test_tcp_server.cc)
+add_dependencies(test_tcp_server pico)
+force_redefine_file_macro_for_sources(test_tcp_server)
+target_link_libraries(test_tcp_server ${LIBS})

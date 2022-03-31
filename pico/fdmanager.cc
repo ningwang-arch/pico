@@ -80,7 +80,7 @@ FdCtx::Ptr FdManager::getFdCtx(int fd, bool autoCreate) {
     if ((int)m_fdCtxs.size() <= fd) { m_fdCtxs.resize(fd * 1.5); }
     m_fdCtxs[fd] = fdCtx;
     wlock.unlock();
-    return nullptr;
+    return fdCtx;
 }
 
 void FdManager::delFdCtx(int fd) {

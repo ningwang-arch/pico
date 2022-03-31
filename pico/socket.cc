@@ -201,9 +201,10 @@ Socket::Ptr Socket::accept() {
         LOG_ERROR("socket is not created");
         return nullptr;
     }
-    int sock = ::accept(m_sockfd, NULL, NULL);
+
+    int sock = ::accept(m_sockfd, nullptr, nullptr);
     if (sock == -1) {
-        LOG_ERROR("accept failed");
+        LOG_ERROR("accept failed, errno = %d, %s", errno, strerror(errno));
         return nullptr;
     }
     Socket::Ptr sock_ptr(new Socket(m_family, m_type, m_protocol));

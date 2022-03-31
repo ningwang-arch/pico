@@ -223,11 +223,8 @@ int socket(int domain, int type, int protocol) {
 }
 
 int accept(int sockfd, struct sockaddr* addr, socklen_t* addrlen) {
-    if (!pico::is_hook_enable()) { return accept_f(sockfd, addr, addrlen); }
-
-    int fd = accept_f(sockfd, addr, addrlen);
-    if (fd == -1) { return fd; }
-    pico::FdMgr::getInstance()->getFdCtx(fd, true);
+    int fd = do_io(sockfd, accept_f, "accept", pico::IOManager::READ, SO_RCVTIMEO, addr, addrlen);
+    if (fd >= 0) { pico::FdMgr::getInstance()->getFdCtx(fd); }
     return fd;
 }
 
