@@ -236,6 +236,10 @@ const sockaddr* IPv4Address::getAddr() const {
     return reinterpret_cast<const sockaddr*>(&m_addr);
 }
 
+sockaddr* IPv4Address::getAddr() {
+    return reinterpret_cast<sockaddr*>(&m_addr);
+}
+
 IPv6Address::IPv6Address() {
     memset(&m_addr, 0, sizeof(m_addr));
     m_addr.sin6_family = AF_INET6;
@@ -341,6 +345,11 @@ int IPv6Address::getAddrLen() const {
 const sockaddr* IPv6Address::getAddr() const {
     return reinterpret_cast<const sockaddr*>(&m_addr);
 }
+
+sockaddr* IPv6Address::getAddr() {
+    return reinterpret_cast<sockaddr*>(&m_addr);
+}
+
 static const size_t MAX_PATH_LEN = sizeof(((sockaddr_un*)0)->sun_path) - 1;
 
 UnixAddress::UnixAddress() {
@@ -408,6 +417,10 @@ int UnknownAddress::getAddrLen() const {
 
 const sockaddr* UnknownAddress::getAddr() const {
     return reinterpret_cast<const sockaddr*>(&m_addr);
+}
+
+sockaddr* UnknownAddress::getAddr() {
+    return reinterpret_cast<sockaddr*>(&m_addr);
 }
 
 }   // namespace pico

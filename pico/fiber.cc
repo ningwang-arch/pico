@@ -131,7 +131,7 @@ void Fiber::swapIn() {
 }
 
 void Fiber::swapOut() {
-    SetThis(g_thread_fiber.get());
+    SetThis(Scheduler::GetMainFiber());
     if (swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx) == -1) {
         LOG_FATAL("swapcontext failed");
         assert(false);

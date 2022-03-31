@@ -12,8 +12,8 @@ FdCtx::FdCtx(int fd)
     , m_isSysNonBlock(false)
     , m_isClosed(false)
     , m_isUserNonBlock(false)
-    , m_recvTimeout(-1)
-    , m_sendTimeout(-1) {
+    , m_recvTimeout(UINT64_C(-1))
+    , m_sendTimeout(UINT64_C(-1)) {
     init();
 }
 

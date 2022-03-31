@@ -22,7 +22,7 @@ public:
 
     static Address::Ptr Create(const sockaddr* addr, socklen_t addrlen);
 
-    virtual ~Address() = default;
+    virtual ~Address(){};
     virtual std::string to_string() const = 0;
     bool operator==(const Address& other);
 
@@ -34,21 +34,22 @@ public:
 
     // returns the address in network byte order
     virtual const sockaddr* getAddr() const = 0;
+    virtual sockaddr* getAddr() = 0;
 
-    static Address::Ptr LookupAny(const std::string& host, int family = AF_UNSPEC,
+    static Address::Ptr LookupAny(const std::string& host, int family = AF_INET,
                                   int socktype = SOCK_STREAM, int protocol = 0);
     static bool Lookup(const std::string& host, std::vector<Address::Ptr>& addrs,
                        int family = AF_UNSPEC, int socktype = SOCK_STREAM, int protocol = 0);
     static std::shared_ptr<IPAddress> LookupAnyIPAddress(const std::string& host,
-                                                         int family = AF_UNSPEC,
+                                                         int family = AF_INET,
                                                          int socktype = SOCK_STREAM,
                                                          int protocol = 0);
     static bool getInterfaceAddresses(std::multimap<std::string, Address::Ptr>& addrs,
-                                      int family = AF_UNSPEC, int socktype = SOCK_STREAM,
+                                      int family = AF_INET, int socktype = SOCK_STREAM,
                                       int protocol = 0);
 
     static bool getInterfaceAddresses(std::vector<Address::Ptr>& addrs, const std::string& ifname,
-                                      int family = AF_UNSPEC, int socktype = SOCK_STREAM,
+                                      int family = AF_INET, int socktype = SOCK_STREAM,
                                       int protocol = 0);
 };
 
@@ -91,6 +92,7 @@ public:
 
     virtual int getAddrLen() const override;
     virtual const sockaddr* getAddr() const override;
+    virtual sockaddr* getAddr() override;
 
 private:
     struct sockaddr_in m_addr;
@@ -118,6 +120,7 @@ public:
 
     virtual int getAddrLen() const override;
     virtual const sockaddr* getAddr() const override;
+    virtual sockaddr* getAddr() override;
 
 private:
     struct sockaddr_in6 m_addr;
@@ -161,6 +164,7 @@ public:
 
     virtual int getAddrLen() const override;
     virtual const sockaddr* getAddr() const override;
+    virtual sockaddr* getAddr() override;
 
 private:
     struct sockaddr m_addr;

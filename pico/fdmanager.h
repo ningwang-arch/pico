@@ -39,8 +39,8 @@ private:
     bool m_isClosed : 1;
     bool m_isUserNonBlock : 1;
 
-    uint64_t m_recvTimeout;
-    uint64_t m_sendTimeout;
+    uint64_t m_recvTimeout = -1;
+    uint64_t m_sendTimeout = -1;
 };
 
 class FdManager

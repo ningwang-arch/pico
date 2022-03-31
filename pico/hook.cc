@@ -3,6 +3,7 @@
 #include "iomanager.h"
 #include "logging.h"
 #include <dlfcn.h>
+#include <iostream>
 #include <stdarg.h>
 
 namespace pico {
@@ -88,7 +89,7 @@ retry:
         pico::Timer::Ptr timer;
         std::weak_ptr<timer_info> wp(tinfo);
 
-        if (to != (uint64_t)-1) {
+        if (to != UINT64_C(-1)) {
             timer = iom->addCondTimer(
                 to,
                 [fd, wp, iom, event]() {
