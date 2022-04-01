@@ -90,6 +90,8 @@ public:
         return getopt(level, optname, &optval, sizeof(T));
     }
 
+    bool isConnected() const { return m_is_connected; }
+
     bool connect(const Address::Ptr& addr, uint64_t timeout = -1);
     bool reconnect(uint64_t timeout = -1);
 

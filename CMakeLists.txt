@@ -20,6 +20,7 @@ set(LIB_SRC
     pico/fdmanager.cc
     pico/fiber.cc
     pico/hook.cc
+    pico/http/http.cc
     pico/iomanager.cc
     pico/log/LogAppender.cc
     pico/log/LogEvent.cc
@@ -94,3 +95,8 @@ add_executable(test_tcp_server tests/test_tcp_server.cc)
 add_dependencies(test_tcp_server pico)
 force_redefine_file_macro_for_sources(test_tcp_server)
 target_link_libraries(test_tcp_server ${LIBS})
+
+add_executable(test_http tests/test_http.cc)
+add_dependencies(test_http pico)
+force_redefine_file_macro_for_sources(test_http)
+target_link_libraries(test_http ${LIBS})
