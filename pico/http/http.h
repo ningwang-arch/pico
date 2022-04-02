@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <ostream>
 #include <string.h>
 #include <string>
 #include <unistd.h>
@@ -77,6 +78,7 @@ enum class HttpStatus
 #define XX(num, name, string) name = num,
     HTTP_STATUS_MAP(XX)
 #undef XX
+        INVALID_STATUS = -1
 };
 
 
@@ -133,8 +135,9 @@ enum class HttpMethod
         INVALID_METHOD = -1
 };
 
-HttpMethod http_method_from_string(const char* method);
+HttpMethod http_method_from_string(const std::string& method);
 const char* http_method_to_string(HttpMethod method);
+
 const char* http_status_to_string(HttpStatus status);
 
 struct CaseInsensitiveLess
@@ -163,6 +166,7 @@ public:
     HttpMethod get_method() const { return m_method; }
     std::string get_path() const { return m_path; }
     std::string get_query() const { return m_query; }
+    std::string get_fragment() const { return m_fragment; }
     std::string get_body() const { return m_body; }
     std::string get_header(const std::string& key, const std::string& def = "");
     std::string get_param(const std::string& key, const std::string& def = "");
@@ -173,6 +177,7 @@ public:
     void set_method(HttpMethod method) { m_method = method; }
     void set_path(const std::string& path) { m_path = path; }
     void set_query(const std::string& query) { m_query = query; }
+    void set_fragment(const std::string& fragment) { m_fragment = fragment; }
     void set_body(const std::string& body) { m_body = body; }
     void set_header(const std::string& key, const std::string& value);
     void set_param(const std::string& key, const std::string& value);
@@ -266,5 +271,8 @@ private:
 };
 
 }   // namespace pico
+
+std::ostream& operator<<(std::ostream& os, const pico::HttpRequest& req);
+std::ostream& operator<<(std::ostream& os, const pico::HttpResponse& res);
 
 #endif

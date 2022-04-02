@@ -3,15 +3,16 @@
 #include <sstream>
 
 #include "../util.h"
+#include <iostream>
 
 namespace pico {
-HttpMethod HttpMethodFromString(const std::string& str) {
+HttpMethod http_method_from_string(const std::string& method) {
 #define XX(num, name, string) \
-    if (strcmp(#string, str.c_str()) == 0) { return HttpMethod::name; }
+    if (strcmp(#string, method.c_str()) == 0) { return HttpMethod::name; }
     HTTP_METHOD_MAP(XX);
 #undef XX
     return HttpMethod::INVALID_METHOD;
-}
+}   // namespace pico
 
 const char* http_method_to_string(HttpMethod method) {
 #define XX(num, name, string) \
@@ -20,6 +21,7 @@ const char* http_method_to_string(HttpMethod method) {
 #undef XX
     return "INVALID_METHOD";
 }
+
 
 const char* http_status_to_string(HttpStatus status) {
     switch (status) {
@@ -237,3 +239,13 @@ std::string HttpResponse::to_string() const {
 }
 
 }   // namespace pico
+
+std::ostream& operator<<(std::ostream& os, const pico::HttpRequest& req) {
+    os << req.to_string();
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const pico::HttpResponse& res) {
+    os << res.to_string();
+    return os;
+}

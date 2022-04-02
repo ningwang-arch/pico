@@ -20,7 +20,10 @@ set(LIB_SRC
     pico/fdmanager.cc
     pico/fiber.cc
     pico/hook.cc
+    pico/http/http_parser.cc
     pico/http/http.cc
+    pico/http/http11_parser.cc
+    pico/http/httpclient_parser.cc
     pico/iomanager.cc
     pico/log/LogAppender.cc
     pico/log/LogEvent.cc
@@ -100,3 +103,8 @@ add_executable(test_http tests/test_http.cc)
 add_dependencies(test_http pico)
 force_redefine_file_macro_for_sources(test_http)
 target_link_libraries(test_http ${LIBS})
+
+add_executable(test_http_parser tests/test_http_parser.cc)
+add_dependencies(test_http_parser pico)
+force_redefine_file_macro_for_sources(test_http_parser)
+target_link_libraries(test_http_parser ${LIBS})
