@@ -6,7 +6,7 @@
 void test_req() {
     pico::HttpRequestParser::Ptr parser =
         pico::HttpRequestParser::Ptr(new pico::HttpRequestParser());
-    char req[] =
+    std::string req =
         "POST / HTTP/1.1\r\n"
         "Host: www.baidu.com\r\n"
         "Connection: keep-alive\r\n"
@@ -22,29 +22,34 @@ void test_req() {
         "Content-Length: 4\r\n"
         "\r\n"
         "test";
+    std::string req_str = req;
     LOG_INFO("parse begin");
-    int ret = parser->parse(req, strlen(req));
+    int ret = parser->parse(&req[0], req.size());
     if (ret < 0) { printf("parse error\n"); }
     pico::HttpRequest::Ptr request = parser->getRequest();
     LOG_INFO("%s", request->to_string().c_str());
+    req.resize(req.size() - ret);
+    LOG_INFO("body: %s", req.c_str());
 }
 
 void test_resp() {
     pico::HttpResponseParser::Ptr parser =
         pico::HttpResponseParser::Ptr(new pico::HttpResponseParser());
-    char resp[] = "HTTP/1.1 200 OK\r\n"
-                  "Server: BWS/1.1\r\n"
-                  "Date: Mon, 27 Jul 2011 06:50:50 GMT\r\n"
-                  "Content-Type: text/html; charset=utf-8\r\n"
-                  "Content-Length: 4\r\n"
-                  "Connection: keep-alive\r\n"
-                  "\r\n"
-                  "test";
+    std::string resp = "HTTP/1.1 200 OK\r\n"
+                       "Server: BWS/1.1\r\n"
+                       "Date: Mon, 27 Jul 2011 06:50:50 GMT\r\n"
+                       "Content-Type: text/html; charset=utf-8\r\n"
+                       "Content-Length: 4\r\n"
+                       "Connection: keep-alive\r\n"
+                       "\r\n"
+                       "test";
     LOG_INFO("parse begin");
-    int ret = parser->parse(resp, strlen(resp), false);
+    int ret = parser->parse(&resp[0], resp.size(), false);
     if (ret < 0) { printf("parse error\n"); }
     pico::HttpResponse::Ptr response = parser->getResponse();
     LOG_INFO("%s", response->to_string().c_str());
+    resp.resize(resp.size() - ret);
+    LOG_INFO("body: %s", resp.c_str());
 }
 
 int main(int argc, char const* argv[]) {

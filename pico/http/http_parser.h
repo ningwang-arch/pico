@@ -26,6 +26,8 @@ public:
 
     virtual void reset();
 
+    uint64_t getContentLength();
+
 
 public:
     static uint64_t getHttpRequestBufferSize();
@@ -51,6 +53,8 @@ public:
     virtual httpclient_parser getParser() { return m_parser; }
 
     virtual void reset();
+
+    uint64_t getContentLength();
 
 public:
     static uint64_t getHttpResponseBufferSize();

@@ -159,7 +159,7 @@ public:
     typedef std::shared_ptr<HttpRequest> Ptr;
     typedef std::map<std::string, std::string, CaseInsensitiveLess> MapType;
 
-    HttpRequest(std::string version = "HTTP/1.1", bool is_close = false);
+    HttpRequest(std::string version = "HTTP/1.1", bool is_close = true);
 
     // getter
     std::string get_version() const { return m_version; }

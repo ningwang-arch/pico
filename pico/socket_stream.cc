@@ -24,7 +24,7 @@ int SocketStream::readFixSize(void* buf, size_t length) {
     int64_t left = length;
     size_t offset = 0;
     while (left > 0) {
-        uint64_t len = read(buf + offset, left);
+        uint64_t len = read((char*)buf + offset, left);
         if (len <= 0) { return -1; }
         left -= len;
         offset += len;
@@ -37,7 +37,7 @@ int SocketStream::writeFixSize(const void* buf, size_t length) {
     int64_t left = length;
     size_t offset = 0;
     while (left > 0) {
-        uint64_t len = write(buf + offset, left);
+        uint64_t len = write((char*)buf + offset, left);
         if (len <= 0) { return -1; }
         left -= len;
         offset += len;

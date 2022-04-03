@@ -1,5 +1,6 @@
 #include "http_parser.h"
 #include "../logging.h"
+#include <boost/lexical_cast.hpp>
 #include <iostream>
 
 
@@ -113,6 +114,11 @@ void HttpRequestParser::reset() {
     http_parser_init(&m_parser);
 }
 
+uint64_t HttpRequestParser::getContentLength() {
+    std::string ret = m_request->get_header("Content-Length", "0");
+    return boost::lexical_cast<uint64_t>(ret);
+}
+
 /*
     typedef void (*element_cb)(void* data, const char* at, size_t length);
     typedef void (*field_cb)(void* data, const char* field, size_t flen, const char* value,
@@ -188,6 +194,11 @@ int HttpResponseParser::hasError() {
 
 void HttpResponseParser::reset() {
     httpclient_parser_init(&m_parser);
+}
+
+uint64_t HttpResponseParser::getContentLength() {
+    std::string ret = m_response->get_header("Content-Length", "0");
+    return boost::lexical_cast<uint64_t>(ret);
 }
 
 }   // namespace pico
