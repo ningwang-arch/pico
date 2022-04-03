@@ -52,6 +52,7 @@ HttpRequest::Ptr HttpConnection::recvRequest() {
         }
         parser->getRequest()->set_body(body);
     }
+    parser->getRequest()->init();
     return parser->getRequest();
 }
 

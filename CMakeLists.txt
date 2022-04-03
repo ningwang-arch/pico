@@ -22,9 +22,11 @@ set(LIB_SRC
     pico/hook.cc
     pico/http/http_connection.cc
     pico/http/http_parser.cc
+    pico/http/http_server.cc
     pico/http/http.cc
     pico/http/http11_parser.cc
     pico/http/httpclient_parser.cc
+    pico/http/request_handler.cc
     pico/iomanager.cc
     pico/log/LogAppender.cc
     pico/log/LogEvent.cc
@@ -117,3 +119,8 @@ add_executable(test_http_connection tests/test_http_connection.cc)
 add_dependencies(test_http_connection pico)
 force_redefine_file_macro_for_sources(test_http_connection)
 target_link_libraries(test_http_connection ${LIBS})
+
+add_executable(test_http_server tests/test_http_server.cc)
+add_dependencies(test_http_server pico)
+force_redefine_file_macro_for_sources(test_http_server)
+target_link_libraries(test_http_server ${LIBS})

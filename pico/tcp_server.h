@@ -37,9 +37,9 @@ public:
     virtual std::string to_string();
 
 protected:
-    void startAccept(Socket::Ptr& sock);
+    virtual void startAccept(Socket::Ptr& sock);
 
-    void handleClient(Socket::Ptr& sock);
+    virtual void handleClient(Socket::Ptr& sock);
 
 
 private:

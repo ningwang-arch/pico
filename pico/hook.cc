@@ -224,7 +224,7 @@ int socket(int domain, int type, int protocol) {
 
 int accept(int sockfd, struct sockaddr* addr, socklen_t* addrlen) {
     int fd = do_io(sockfd, accept_f, "accept", pico::IOManager::READ, SO_RCVTIMEO, addr, addrlen);
-    if (fd >= 0) { pico::FdMgr::getInstance()->getFdCtx(fd); }
+    if (fd >= 0) { pico::FdMgr::getInstance()->getFdCtx(fd, true); }
     return fd;
 }
 
