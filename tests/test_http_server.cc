@@ -1,5 +1,4 @@
-#include "pico/http/http_server.h"
-#include "pico/logging.h"
+#include "pico/pico.h"
 
 void test() {
     pico::HttpServer::Ptr server(new pico::HttpServer(true));
