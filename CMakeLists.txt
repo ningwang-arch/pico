@@ -8,7 +8,7 @@ include_directories(.)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_CXX_FLAGS
-    "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
+    "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++17 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
 )
 set(CMAKE_C_FLAGS
     "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
@@ -22,7 +22,7 @@ set(LIB_SRC
     pico/hook.cc
     pico/http/http_connection.cc
     pico/http/http_parser.cc
-    pico/http/http_server.cc
+    pico/http/http_server.hpp
     pico/http/http.cc
     pico/http/http11_parser.cc
     pico/http/httpclient_parser.cc
@@ -114,7 +114,6 @@ add_dependencies(test_http_parser pico)
 force_redefine_file_macro_for_sources(test_http_parser)
 target_link_libraries(test_http_parser ${LIBS})
 
-# /home/eclipse/code/vscode/pico/tests/test_http_connection.cc
 add_executable(test_http_connection tests/test_http_connection.cc)
 add_dependencies(test_http_connection pico)
 force_redefine_file_macro_for_sources(test_http_connection)

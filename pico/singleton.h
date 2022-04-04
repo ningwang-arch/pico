@@ -1,6 +1,7 @@
 #ifndef __PICO_SINGLETON_H__
 #define __PICO_SINGLETON_H__
 
+#include <memory>
 namespace pico {
 
 template<class T, class X = void, int N = 0>

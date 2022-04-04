@@ -1,8 +1,23 @@
+#include "pico/http/middlewares/cors.h"
+#include "pico/http/middlewares/utf-8.h"
 #include "pico/pico.h"
 
 void test() {
-    pico::HttpServer::Ptr server(new pico::HttpServer(true));
+    // pico::HttpServer<pico::UTF8>::Ptr server(new pico::HttpServer<pico::UTF8>(true));
+    // pico::HttpServer<>::Ptr server(new pico::HttpServer<>(true));
+    pico::HttpServer<pico::CORSHandler>::Ptr server(new pico::HttpServer<pico::CORSHandler>(true));
     server->setName("pico");
+
+    // server->getContext<pico::CORSHandler>();
+    // server->getContext<pico::UTF8>();
+
+    auto cors = server->get_middleware<pico::CORSHandler>();
+    cors.global()
+        .headers("X-Custom-Header", "Upgrade-Insecure-Requests")
+        .prefix("/")
+        .origin("example.com")
+        .prefix("/add")
+        .ignore();
 
     pico::Address::Ptr addr = pico::Address::LookupAnyIPAddress("0.0.0.0:8080");
     if (!addr) {
