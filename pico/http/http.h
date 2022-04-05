@@ -207,6 +207,8 @@ public:
     void initBodyParam();
     void initCookies();
 
+    void* middleware_ctx;
+
 private:
     bool m_is_close;
     HttpMethod m_method;

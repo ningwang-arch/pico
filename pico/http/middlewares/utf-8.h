@@ -8,9 +8,8 @@ namespace pico {
 
 struct UTF8
 {
-    static struct context
-    {
-    } ctx;
+    struct context
+    {};
 
     // typedef Singleton<context> Context;
 

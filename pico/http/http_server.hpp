@@ -5,6 +5,7 @@
 #include "../tcp_server.h"
 #include "http.h"
 #include "http_connection.h"
+#include "middleware_context.h"
 #include "pico/util.h"
 #include "request_handler.h"
 #include <functional>
@@ -58,12 +59,13 @@ public:
 
     void setRequestHandler(RequestHandler::Ptr& handler) { m_request_handler = handler; }
 
+    using context_t = context<Middlewares...>;
     template<typename T>
-    typename T::context getContext() {
+    typename T::context& get_context(const HttpRequest::Ptr& req) {
         static_assert(contains<T, Middlewares...>::value,
                       "App doesn't have the specified middleware type.");
-
-        return T::ctx;
+        auto& ctx = *reinterpret_cast<context_t*>(req->middleware_ctx);
+        return ctx.template get<T>();
     }
 
     template<typename T>
@@ -89,15 +91,19 @@ protected:
             HttpResponse::Ptr resp(
                 new HttpResponse(req->get_version(), req->is_close() || !m_is_KeepAlive));
             resp->set_header("Server", getName());
+            context<Middlewares...> ctx_ = context<Middlewares...>();
+            req->middleware_ctx = static_cast<void*>(&ctx_);
             middleware_call_helper<middleware_call_criteria_only_global,
                                    0,
-                                   decltype(*m_middlewares)>(*m_middlewares, req, resp);
+                                   decltype(ctx_),
+                                   decltype(*m_middlewares)>(*m_middlewares, req, resp, ctx_);
 
             m_request_handler->handle(req, resp);
 
             after_handlers_call_helper<middleware_call_criteria_only_global,
                                        (static_cast<int>(sizeof...(Middlewares)) - 1),
-                                       decltype(*m_middlewares)>(*m_middlewares, req, resp);
+                                       decltype(ctx_),
+                                       decltype(*m_middlewares)>(*m_middlewares, ctx_, req, resp);
 
             conn->sendResponse(resp);
             if (!m_is_KeepAlive || req->is_close()) { break; }
@@ -106,72 +112,95 @@ protected:
     }
 
 private:
-    template<typename MW>
-    void before_handler_call(MW& mw, HttpRequest::Ptr& req, HttpResponse::Ptr& resp) {
-        mw.before_handle(req, resp, mw.ctx);
+    template<typename MW, typename Context, typename ParentContext>
+    void before_handler_call(MW& mw, HttpRequest::Ptr& req, HttpResponse::Ptr& res, Context& ctx,
+                             ParentContext& /*parent_ctx*/) {
+        mw.before_handle(req, res, ctx.template get<MW>());
     }
 
-    template<typename MW>
-    void after_handler_call(MW& mw, HttpRequest::Ptr& req, HttpResponse::Ptr& resp) {
-        mw.after_handle(req, resp, mw.ctx);
+    template<typename MW, typename Context, typename ParentContext>
+    void after_handler_call(MW& mw, HttpRequest::Ptr& req, HttpResponse::Ptr& res, Context& ctx,
+                            ParentContext& /*parent_ctx*/) {
+        mw.after_handle(req, res, ctx.template get<MW>());
     }
 
-    template<template<typename QueryMW> class CallCriteria, int N, typename Container>
+
+    template<template<typename QueryMW>
+             class CallCriteria,   // Checks if QueryMW should be called in this context
+             int N, typename Context, typename Container>
     typename std::enable_if<
         (N < std::tuple_size<typename std::remove_reference<Container>::type>::value), bool>::type
-    middleware_call_helper(Container& middlewares, HttpRequest::Ptr& req, HttpResponse::Ptr& res) {
+    middleware_call_helper(Container& middlewares, HttpRequest::Ptr& req, HttpResponse::Ptr& res,
+                           Context& ctx) {
 
         using CurrentMW =
             typename std::tuple_element<N, typename std::remove_reference<Container>::type>::type;
 
         if (!CallCriteria<CurrentMW>::value) {
-
-            return middleware_call_helper<CallCriteria, N + 1, Container>(middlewares, req, res);
+            return middleware_call_helper<CallCriteria, N + 1, Context, Container>(
+                middlewares, req, res, ctx);
         }
 
-        before_handler_call<CurrentMW>(std::get<N>(middlewares), req, res);
+        using parent_context_t = typename Context::template partial<N - 1>;
+        before_handler_call<CurrentMW, Context, parent_context_t>(
+            std::get<N>(middlewares), req, res, ctx, static_cast<parent_context_t&>(ctx));
 
-        if (middleware_call_helper<CallCriteria, N + 1, Container>(middlewares, req, res)) {
-            after_handler_call<CurrentMW>(std::get<N>(middlewares), req, res);
+        if (middleware_call_helper<CallCriteria, N + 1, Context, Container>(
+                middlewares, req, res, ctx)) {
+            after_handler_call<CurrentMW, Context, parent_context_t>(
+                std::get<N>(middlewares), req, res, ctx, static_cast<parent_context_t&>(ctx));
             return true;
         }
 
         return false;
     }
 
-    template<template<typename QueryMW> class CallCriteria, int N, typename Container>
+    template<template<typename QueryMW> class CallCriteria, int N, typename Context,
+             typename Container>
     typename std::enable_if<
         (N >= std::tuple_size<typename std::remove_reference<Container>::type>::value), bool>::type
-    middleware_call_helper(Container& middlewares, HttpRequest::Ptr& req, HttpResponse::Ptr& res) {
+    middleware_call_helper(Container& /*middlewares*/, HttpRequest::Ptr& /*req*/,
+                           HttpResponse::Ptr& /*res*/, Context& /*ctx*/) {
         return false;
     }
 
-    template<template<typename QueryMW> class CallCriteria, int N, typename Container>
+    template<template<typename QueryMW> class CallCriteria, int N, typename Context,
+             typename Container>
     typename std::enable_if<(N < 0)>::type after_handlers_call_helper(Container& /*middlewares*/,
+                                                                      Context& /*context*/,
                                                                       HttpRequest::Ptr& /*req*/,
                                                                       HttpResponse::Ptr& /*res*/) {}
 
-    template<template<typename QueryMW> class CallCriteria, int N, typename Container>
+    template<template<typename QueryMW> class CallCriteria, int N, typename Context,
+             typename Container>
     typename std::enable_if<(N == 0)>::type after_handlers_call_helper(Container& middlewares,
+                                                                       Context& ctx,
                                                                        HttpRequest::Ptr& req,
                                                                        HttpResponse::Ptr& res) {
+        using parent_context_t = typename Context::template partial<N - 1>;
         using CurrentMW =
             typename std::tuple_element<N, typename std::remove_reference<Container>::type>::type;
         if (CallCriteria<CurrentMW>::value) {
-            after_handler_call<CurrentMW>(std::get<N>(middlewares), req, res);
+            after_handler_call<CurrentMW, Context, parent_context_t>(
+                std::get<N>(middlewares), req, res, ctx, static_cast<parent_context_t&>(ctx));
         }
     }
 
-    template<template<typename QueryMW> class CallCriteria, int N, typename Container>
+    template<template<typename QueryMW> class CallCriteria, int N, typename Context,
+             typename Container>
     typename std::enable_if<(N > 0)>::type after_handlers_call_helper(Container& middlewares,
+                                                                      Context& ctx,
                                                                       HttpRequest::Ptr& req,
                                                                       HttpResponse::Ptr& res) {
+        using parent_context_t = typename Context::template partial<N - 1>;
         using CurrentMW =
             typename std::tuple_element<N, typename std::remove_reference<Container>::type>::type;
         if (CallCriteria<CurrentMW>::value) {
-            after_handler_call<CurrentMW>(std::get<N>(middlewares), req, res);
+            after_handler_call<CurrentMW, Context, parent_context_t>(
+                std::get<N>(middlewares), req, res, ctx, static_cast<parent_context_t&>(ctx));
         }
-        after_handlers_call_helper<CallCriteria, N - 1, Container>(middlewares, req, res);
+        after_handlers_call_helper<CallCriteria, N - 1, Context, Container>(
+            middlewares, ctx, req, res);
     }
 
 private:

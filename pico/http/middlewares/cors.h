@@ -110,9 +110,8 @@ private:
 
 struct CORSHandler
 {
-    static struct context
-    {
-    } ctx;
+    struct context
+    {};
 
     void before_handle(HttpRequest::Ptr& /*req*/, HttpResponse::Ptr& /*res*/, context& /*ctx*/) {}
 
