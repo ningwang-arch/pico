@@ -207,7 +207,7 @@ public:
     void initBodyParam();
     void initCookies();
 
-    void* middleware_ctx;
+    void* middleware_ctx = nullptr;
 
 private:
     bool m_is_close;

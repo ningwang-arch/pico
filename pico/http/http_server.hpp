@@ -53,6 +53,10 @@ public:
         if (m_middlewares == nullptr) m_middlewares = new std::tuple<Middlewares...>();
     };
 
+    ~HttpServer() {
+        if (m_middlewares != nullptr) delete m_middlewares;
+    }
+
     RequestHandler::Ptr getRequestHandler() const { return m_request_handler; }
 
     void setName(const std::string& name) override { TcpServer::setName(name); }
@@ -76,7 +80,6 @@ public:
 
 protected:
     void handleClient(Socket::Ptr& sock) override {
-        LOG_INFO("handleClient, request from: %s", sock->getPeerAddress()->to_string().c_str());
         HttpConnection::Ptr conn(new HttpConnection(sock));
         do {
             auto req = conn->recvRequest();

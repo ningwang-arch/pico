@@ -55,7 +55,7 @@ std::string StringUtil::Formatv(const char* fmt, va_list ap) {
     auto len = vasprintf(&buf, fmt, ap);
     if (len == -1) { return ""; }
     std::string ret(buf, len);
-    free(buf);
+    if (buf) { free(buf); }
     return ret;
 }
 

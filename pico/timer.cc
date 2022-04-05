@@ -112,6 +112,7 @@ void TimerManager::listExperiedCb(std::vector<Callback>& cbs) {
         if (m_timers.empty()) { return; }
     }
     MutexType::WriteLock wlock(m_mutex);
+    if (m_timers.empty()) { return; }
     bool rollover = detectClockRollover(time_now);
     if (!rollover && ((*m_timers.begin())->m_next > time_now)) return;
 
@@ -135,7 +136,7 @@ void TimerManager::listExperiedCb(std::vector<Callback>& cbs) {
 
 
 bool TimerManager::detectClockRollover(uint64_t time_now) {
-    if (time_now < m_previous && m_previous - time_now > 1000000) { return true; }
+    if (time_now < m_previous && m_previous - time_now > 10000) { return true; }
     m_previous = time_now;
     return false;
 }

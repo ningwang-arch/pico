@@ -190,7 +190,7 @@ public:
     void before_handle(request& req, response& res, context& ctx) {
         auto createCookie = [&] {
             auto cookie = makeNewSession(req, ctx);
-            cookie_to_add.emplace(COOKIE_KEY, cookie);
+            res->set_cookie(COOKIE_KEY, cookie);
             return cookie;
         };
 
@@ -209,14 +209,7 @@ public:
         ctx.session = sessions.get(sessionCookie);
     }
 
-    void after_handle(request& req, response& res, context& ctx) {
-        if (cookie_to_add.empty()) { return; }
-
-        for (auto& cookie : cookie_to_add) { res->set_cookie(cookie.first, cookie.second); }
-        cookie_to_add.clear();
-    }
-
-    std::unordered_map<std::string, std::string> cookie_to_add{};
+    void after_handle(request& req, response& res, context& ctx) {}
 };
 const std::string Session::COOKIE_KEY = "SESS_ID";
 const std::string Session::RND_ALPHABET =

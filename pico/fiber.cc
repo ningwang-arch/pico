@@ -17,7 +17,15 @@ class MallocStackAllocator
 public:
     static void* allocate(size_t size) { return malloc(size); }
 
-    static void deallocate(void* ptr, size_t size) { return free(ptr); }
+    static void deallocate(void* ptr, size_t size) {
+        if (ptr) {
+            free(ptr);
+            ptr = nullptr;
+        }
+        else {
+            LOG_ERROR("ptr is null");
+        }
+    }
 };
 
 using StackAllocator = MallocStackAllocator;
