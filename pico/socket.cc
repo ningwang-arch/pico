@@ -362,7 +362,8 @@ int Socket::shutdown(int how) {
 
 std::string Socket::to_string() const {
     std::stringstream ss;
-    ss << "family: " << m_family << ", type: " << m_type << ", protocol: " << m_protocol;
+    ss << "[family: " << m_family << ", type: " << m_type << ", protocol: " << m_protocol
+       << "], addr: " << m_local_addr->to_string();
     return ss.str();
 }
 

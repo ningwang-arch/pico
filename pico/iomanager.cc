@@ -255,7 +255,6 @@ bool IOManager::stopping() {
 
 
 void IOManager::idle() {
-    LOG_INFO("IOManager idle");
 
     const uint64_t MAX_EVENTS = 256;
     epoll_event* events = new epoll_event[MAX_EVENTS];

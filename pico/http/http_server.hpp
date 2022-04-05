@@ -76,7 +76,7 @@ public:
 
 protected:
     void handleClient(Socket::Ptr& sock) override {
-        LOG_INFO("handleClient");
+        LOG_INFO("handleClient, request from: %s", sock->getPeerAddress()->to_string().c_str());
         HttpConnection::Ptr conn(new HttpConnection(sock));
         do {
             auto req = conn->recvRequest();
@@ -93,6 +93,7 @@ protected:
             resp->set_header("Server", getName());
             context<Middlewares...> ctx_ = context<Middlewares...>();
             req->middleware_ctx = static_cast<void*>(&ctx_);
+            // before handler call
             middleware_call_helper<middleware_call_criteria_only_global,
                                    0,
                                    decltype(ctx_),
@@ -100,6 +101,7 @@ protected:
 
             m_request_handler->handle(req, resp);
 
+            // after handler call
             after_handlers_call_helper<middleware_call_criteria_only_global,
                                        (static_cast<int>(sizeof...(Middlewares)) - 1),
                                        decltype(ctx_),

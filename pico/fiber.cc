@@ -37,8 +37,6 @@ Fiber::Fiber() {
     }
 
     ++g_fiber_count;
-
-    LOG_INFO("Fiber::Fiber() main");
 }
 
 Fiber::Fiber(FiberFunc func, size_t stacksize, bool use_caller)
@@ -64,8 +62,6 @@ Fiber::Fiber(FiberFunc func, size_t stacksize, bool use_caller)
     else {
         makecontext(&m_ctx, &Fiber::CallerMainFunc, 0);
     }
-
-    LOG_INFO("Fiber::Fiber(%p, %zu, %d) id=%lu", func, stacksize, use_caller, m_id);
 }
 
 Fiber::~Fiber() {
@@ -81,7 +77,6 @@ Fiber::~Fiber() {
         Fiber* cur = g_fiber;
         if (cur == this) { SetThis(nullptr); }
     }
-    LOG_INFO("Fiber::~Fiber() id=%lu", m_id);
 }
 
 void Fiber::reset(FiberFunc func) {

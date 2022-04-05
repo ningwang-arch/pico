@@ -73,6 +73,9 @@ void TcpServer::handleClient(Socket::Ptr& sock) {
 bool TcpServer::start() {
     if (!m_is_stop) { return true; }
     m_is_stop = false;
+    for (auto& sock : m_sockets) {
+        LOG_INFO("server is listening on %s", sock->to_string().c_str());
+    }
     for (auto&& sock : m_sockets) {
         m_acceptor->schedule(std::bind(&TcpServer::startAccept, shared_from_this(), sock));
     }

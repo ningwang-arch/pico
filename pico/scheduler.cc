@@ -100,7 +100,6 @@ void Scheduler::setThis() {
 }
 
 void Scheduler::run() {
-    LOG_INFO("Scheduler::run() started");
     set_hook_enable(true);
     setThis();
     if (pico::getThreadId() != m_main_thread_id) { t_fiber = Fiber::GetThis().get(); }
