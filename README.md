@@ -1,4 +1,4 @@
-<div align='center' ><font size='70'>Pico</font></div>
+<h1 align="center">Pico</h1>
 
 ## Description
 
@@ -83,7 +83,7 @@ int main(int argc, const char* argv[]){
 #include "pico/pico.h"
 
 void run(){
-    pico::HttpServer<pico::Session>::Ptr server(new pico::HttpServer<oico::Session>(true));
+    pico::HttpServer<pico::Session>::Ptr server(new pico::HttpServer<pico::Session>(true));
 
     pico::Address::Ptr addr = pico::Address::LookupAnyIPAddress("0.0.0.0:8080");
     if (!addr) {
@@ -125,8 +125,8 @@ int main(int argc, char const* argv[]){
 }
 ```
 
-There are three middlewares in pico: UTF8, CORS, Session.
-If you want to use middleware which is created by yourself, your middleware must have constructure like this:
+There are three middlewares in pico: UTF8, CORS, Session.<br>
+If you want to use middleware which is created by yourself, your middleware must have structure like this:
 
 ```c++
 struct MyMiddleware{
