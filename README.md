@@ -117,10 +117,6 @@ int main(int argc, char const* argv[]){
     pico::IOManager iom(2);
     iom.scheduler(run);
 
-    // // also, you can run server just as following:
-    // run();
-    // // this method is running server without any I/O manager, and it is not recommended.
-    // // it is only for testing purpose.
     return 0;
 }
 ```
