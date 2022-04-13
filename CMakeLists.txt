@@ -14,6 +14,7 @@ set(CMAKE_C_FLAGS
     "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
 )
 
+option(BUILD_TEST "ON for complile test" OFF)
 
 set(LIB_SRC
     pico/address.cc
@@ -59,6 +60,8 @@ set(LIBS
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
+if(BUILD_TEST)
 
 add_executable(test_log tests/test_log.cc)
 add_dependencies(test_log pico)
@@ -124,3 +127,5 @@ add_executable(test_http_server tests/test_http_server.cc)
 add_dependencies(test_http_server pico)
 force_redefine_file_macro_for_sources(test_http_server)
 target_link_libraries(test_http_server ${LIBS})
+
+endif()
