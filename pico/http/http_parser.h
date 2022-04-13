@@ -22,7 +22,7 @@ public:
     virtual int hasError();
 
     virtual HttpRequest::Ptr getRequest() { return m_request; }
-    virtual http_parser getParser() { return m_parser; }
+    virtual http_parser& getParser() { return m_parser; }
 
     virtual void reset();
 
@@ -50,7 +50,7 @@ public:
     virtual int hasError();
 
     virtual HttpResponse::Ptr getResponse() { return m_response; }
-    virtual httpclient_parser getParser() { return m_parser; }
+    virtual httpclient_parser& getParser() { return m_parser; }
 
     virtual void reset();
 

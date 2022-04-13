@@ -67,10 +67,11 @@ int HttpConnection::sendRequest(HttpRequest::Ptr req) {
 }
 
 HttpResponse::Ptr HttpConnection::recvResponse() {
-    HttpResponseParser::Ptr parser(new HttpResponseParser());
-    uint64_t buff_size = HttpResponseParser::getHttpResponseBufferSize();
-    std::shared_ptr<char> buff(new char[buff_size], std::default_delete<char[]>());
-    char* data = buff.get();
+    HttpResponseParser::Ptr parser(new HttpResponseParser);
+    uint64_t buff_size = HttpRequestParser::getHttpRequestBufferSize();
+    // uint64_t buff_size = 100;
+    std::shared_ptr<char> buffer(new char[buff_size + 1], [](char* ptr) { delete[] ptr; });
+    char* data = buffer.get();
     int offset = 0;
     do {
         int len = read(data + offset, buff_size - offset);
@@ -79,16 +80,20 @@ HttpResponse::Ptr HttpConnection::recvResponse() {
             return nullptr;
         }
         len += offset;
-        size_t nparsed = parser->parse(data, len, false);
-        offset = len - nparsed;
+        data[len] = '\0';
+        size_t nparse = parser->parse(data, len, false);
         if (parser->hasError()) {
-            LOG_ERROR("parse http response error");
+            close();
+            return nullptr;
+        }
+        offset = len - nparse;
+        if (offset == (int)buff_size) {
             close();
             return nullptr;
         }
         if (parser->isFinished()) { break; }
     } while (true);
-    auto client_parser = parser->getParser();
+    auto& client_parser = parser->getParser();
     std::string body;
     if (client_parser.chunked) {
         int len = offset;
@@ -96,29 +101,27 @@ HttpResponse::Ptr HttpConnection::recvResponse() {
             bool begin = true;
             do {
                 if (!begin || len == 0) {
-                    int ret = read(data + len, buff_size - len);
-                    if (ret <= 0) {
+                    int rt = read(data + len, buff_size - len);
+                    if (rt <= 0) {
                         close();
                         return nullptr;
                     }
-                    len += ret;
+                    len += rt;
                 }
                 data[len] = '\0';
-                size_t nparsed = parser->parse(data, len, true);
+                size_t nparse = parser->parse(data, len, true);
                 if (parser->hasError()) {
-                    LOG_ERROR("parse http response error");
                     close();
                     return nullptr;
                 }
-                if (parser->isFinished()) { break; }
-                len -= nparsed;
+                len -= nparse;
                 if (len == (int)buff_size) {
-                    LOG_ERROR("parse http response error");
                     close();
                     return nullptr;
                 }
                 begin = false;
-            } while (true);
+            } while (!parser->isFinished());
+            // len -= 2;
             if (client_parser.content_len + 2 <= len) {
                 body.append(data, client_parser.content_len);
                 memmove(data,
@@ -128,15 +131,15 @@ HttpResponse::Ptr HttpConnection::recvResponse() {
             }
             else {
                 body.append(data, len);
-                int left = client_parser.content_len + 2 - len;
+                int left = client_parser.content_len - len + 2;
                 while (left > 0) {
-                    int ret = read(data, left > (int)buff_size ? buff_size : left);
-                    if (ret <= 0) {
+                    int rt = read(data, left > (int)buff_size ? (int)buff_size : left);
+                    if (rt <= 0) {
                         close();
                         return nullptr;
                     }
-                    body.append(data, ret);
-                    left -= ret;
+                    body.append(data, rt);
+                    left -= rt;
                 }
                 body.resize(body.size() - 2);
                 len = 0;
@@ -144,17 +147,18 @@ HttpResponse::Ptr HttpConnection::recvResponse() {
         } while (!client_parser.chunks_done);
     }
     else {
-        int length = parser->getContentLength();
+        int64_t length = parser->getContentLength();
         if (length > 0) {
             body.resize(length);
+
             int len = 0;
-            if (length < offset) {
-                memcpy(&body[0], data, length);
-                len = length;
-            }
-            else {
+            if (length >= offset) {
                 memcpy(&body[0], data, offset);
                 len = offset;
+            }
+            else {
+                memcpy(&body[0], data, length);
+                len = length;
             }
             length -= offset;
             if (length > 0) {
@@ -165,7 +169,7 @@ HttpResponse::Ptr HttpConnection::recvResponse() {
             }
         }
     }
-    parser->getResponse()->set_body(body);
+    if (!body.empty()) { parser->getResponse()->set_body(body); }
     return parser->getResponse();
 }
 
