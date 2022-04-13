@@ -45,7 +45,7 @@ HttpRequest::Ptr HttpConnection::recvRequest() {
         }
         length -= offset;
         if (length > 0) {
-            if (readFixSize(&body[len], length) <= 0) {
+            if (readFixSize(&body[len], length) < 0) {
                 close();
                 return nullptr;
             }
@@ -162,7 +162,7 @@ HttpResponse::Ptr HttpConnection::recvResponse() {
             }
             length -= offset;
             if (length > 0) {
-                if (readFixSize(&body[len], length) <= 0) {
+                if (readFixSize(&body[len], length) < 0) {
                     close();
                     return nullptr;
                 }
