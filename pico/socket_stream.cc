@@ -20,27 +20,25 @@ int SocketStream::write(const void* buf, size_t len) {
 }
 
 int SocketStream::readFixSize(void* buf, size_t length) {
-    if (!isConnected()) { return -1; }
-    int64_t left = length;
     size_t offset = 0;
+    int64_t left = length;
     while (left > 0) {
-        uint64_t len = read((char*)buf + offset, left);
-        if (len <= 0) { return -1; }
-        left -= len;
+        int64_t len = read((char*)buf + offset, left);
+        if (len <= 0) { return len; }
         offset += len;
+        left -= len;
     }
     return length;
 }
 
 int SocketStream::writeFixSize(const void* buf, size_t length) {
-    if (!isConnected()) { return -1; }
-    int64_t left = length;
     size_t offset = 0;
+    int64_t left = length;
     while (left > 0) {
-        uint64_t len = write((char*)buf + offset, left);
-        if (len <= 0) { return -1; }
-        left -= len;
+        int64_t len = write((const char*)buf + offset, left);
+        if (len <= 0) { return len; }
         offset += len;
+        left -= len;
     }
     return length;
 }
