@@ -21,6 +21,10 @@ public:
         std::string path;
         HttpMethod method;
         Handler handler;
+
+        bool operator==(const Route& other) const {
+            return path == other.path && method == other.method;
+        }
     };
 
     RequestHandler();
@@ -28,6 +32,9 @@ public:
 
     void addRoute(const std::string& path, const HttpMethod& method, Handler handler);
     void addGlobalRoute(const std::string& path, const HttpMethod& method, Handler handler);
+
+    void addRoute(const Route& route);
+    void addGlobalRoute(const Route& route);
 
     void delRoute(const std::string& path, const HttpMethod& method);
     void delGlobalRoute(const std::string& path, const HttpMethod& method);

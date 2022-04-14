@@ -30,6 +30,14 @@ void RequestHandler::addGlobalRoute(const std::string& path, const HttpMethod& m
     Route route = {path, method, handler};
 }
 
+void RequestHandler::addRoute(const Route& route) {
+    addRoute(route.path, route.method, route.handler);
+}
+
+void RequestHandler::addGlobalRoute(const Route& route) {
+    addGlobalRoute(route.path, route.method, route.handler);
+}
+
 void RequestHandler::delRoute(const std::string& path, const HttpMethod& method) {
     for (auto it = m_routes.begin(); it != m_routes.end(); ++it) {
         if (it->path == path && it->method == method) {
