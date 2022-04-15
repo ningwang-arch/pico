@@ -168,29 +168,27 @@ int connect_with_timeout(int sockfd, const struct sockaddr* addr, socklen_t addr
 
     pico::IOManager* iom = pico::IOManager::getThis();
     pico::Timer::Ptr timer;
-    std::shared_ptr<timer_info> info = std::make_shared<timer_info>();
-    std::weak_ptr<timer_info> info_w = info;
+    std::shared_ptr<timer_info> tinfo(new timer_info);
+    std::weak_ptr<timer_info> winfo(tinfo);
 
     if (timeout != (uint64_t)-1) {
         timer = iom->addCondTimer(
             timeout,
-            [sockfd, info_w, iom]() {
-                std::shared_ptr<timer_info> info = info_w.lock();
-                if (!info) { return; }
-                if (info->cancelled) { return; }
-                info->cancelled = ETIMEDOUT;
+            [winfo, sockfd, iom]() {
+                auto t = winfo.lock();
+                if (!t || t->cancelled) { return; }
+                t->cancelled = ETIMEDOUT;
                 iom->cancelEvent(sockfd, pico::IOManager::WRITE);
             },
-            info_w);
+            winfo);
     }
 
     int rt = iom->addEvent(sockfd, pico::IOManager::WRITE);
-
-    if (!rt) {
+    if (rt == 0) {
         pico::Fiber::yieldToSuspend();
         if (timer) { timer->cancel(); }
-        if (info->cancelled) {
-            errno = info->cancelled;
+        if (tinfo->cancelled) {
+            errno = tinfo->cancelled;
             return -1;
         }
     }
@@ -200,13 +198,13 @@ int connect_with_timeout(int sockfd, const struct sockaddr* addr, socklen_t addr
     }
 
     int error = 0;
-    socklen_t len = sizeof(error);
-    if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len) < 0) { return -1; }
-    if (error) {
+    socklen_t len = sizeof(int);
+    if (-1 == getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len)) { return -1; }
+    if (!error) { return 0; }
+    else {
         errno = error;
         return -1;
     }
-    return n;
 }
 
 int connect(int sockfd, const struct sockaddr* addr, socklen_t addrlen) {
