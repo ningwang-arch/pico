@@ -118,9 +118,9 @@ public:
     static constexpr unsigned SESSION_DURATION_DAYS = 14;
     static constexpr unsigned SID_LENGTH = 128;
 
-    static const std::string COOKIE_KEY;
-    static const std::string RND_ALPHABET;
-    static const char* COOKIE_DATE_FORMAT;
+    const std::string COOKIE_KEY = "SESS_ID";
+    const std::string RND_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijlmnpqrstuvwxyz";
+    const char* COOKIE_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %z";
 
 public:
     static tools::Sessions& sessions;
@@ -211,10 +211,7 @@ public:
 
     void after_handle(request& req, response& res, context& ctx) {}
 };
-const std::string Session::COOKIE_KEY = "SESS_ID";
-const std::string Session::RND_ALPHABET =
-    "0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijlmnpqrstuvwxyz";
-const char* Session::COOKIE_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %z";
+
 
 tools::Sessions& Session::sessions = tools::Sessions::instance();
 
