@@ -15,10 +15,7 @@ Logger::Logger(const std::string& name)
 void Logger::addAppender(std::shared_ptr<LogAppender> appender) {
 
     MutexType::Lock lock(m_mutex);
-    if (!appender->getLayout()) {
-        MutexType::Lock lock(appender->m_mutex);
-        appender->setLayout(m_layout);
-    }
+    if (!appender->getLayout()) { appender->setLayout(m_layout); }
 
     m_appenders.push_back(appender);
 }
