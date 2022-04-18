@@ -28,6 +28,7 @@ void RequestHandler::addGlobalRoute(const std::string& path, const HttpMethod& m
         }
     }
     Route route = {path, method, handler};
+    m_glob_routes.push_back(route);
 }
 
 void RequestHandler::addRoute(const Route& route) {

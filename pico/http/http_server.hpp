@@ -94,6 +94,22 @@ protected:
             HttpResponse::Ptr resp(
                 new HttpResponse(req->get_version(), req->is_close() || !m_is_KeepAlive));
             resp->set_header("Server", getName());
+            if (req->get_method() == HttpMethod::OPTIONS) {
+                resp->set_header(
+                    "Access-Control-Allow-Origin",
+                    req->get_header("Origin").empty() ? "*" : req->get_header("Origin"));
+                resp->set_header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+                resp->set_header("Access-Control-Allow-Headers",
+                                 "Content-Type,Authorization,Accept,X-Requested-With,X-File-Name,X-"
+                                 "File-Size,X-File-Type,X-File-Ext");
+                resp->set_header("Access-Control-Max-Age", "1728000");
+                resp->set_header("Access-Control-Allow-Credentials", "true");
+                resp->set_header("Access-Control-Expose-Headers", "Content-Disposition");
+                resp->set_header("Content-Type", "text/plain");
+                resp->set_body("");
+                conn->sendResponse(resp);
+                break;
+            }
             context<Middlewares...> ctx_ = context<Middlewares...>();
             req->middleware_ctx = static_cast<void*>(&ctx_);
             // before handler call
