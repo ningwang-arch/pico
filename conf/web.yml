@@ -1,0 +1,5 @@
+root:
+  int: 10
+  servlet:
+    - { name: xxx, pattern: / , class: xxx}
+    - { name: xx, pattern: /a , class: xx}

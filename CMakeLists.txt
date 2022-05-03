@@ -14,10 +14,12 @@ set(CMAKE_C_FLAGS
     "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
 )
 
-option(BUILD_TEST "ON for complile test" OFF)
+option(BUILD_TEST "ON for complile test" ON)
 
 set(LIB_SRC
     pico/address.cc
+    pico/class_factory.cc
+    pico/config.cc
     pico/fdmanager.cc
     pico/fiber.cc
     pico/hook.cc
@@ -56,6 +58,7 @@ set(LIBS
     pico
     dl
     jsoncpp
+    yaml-cpp
     )
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -127,5 +130,15 @@ add_executable(test_http_server tests/test_http_server.cc)
 add_dependencies(test_http_server pico)
 force_redefine_file_macro_for_sources(test_http_server)
 target_link_libraries(test_http_server ${LIBS})
+
+add_executable(test_config tests/test_config.cc)
+add_dependencies(test_config pico)
+force_redefine_file_macro_for_sources(test_config)
+target_link_libraries(test_config ${LIBS})
+
+add_executable(test_register tests/test_register.cc)
+add_dependencies(test_register pico)
+force_redefine_file_macro_for_sources(test_register)
+target_link_libraries(test_register ${LIBS})
 
 endif()
