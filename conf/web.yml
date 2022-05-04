@@ -1,5 +1,10 @@
 root:
-  int: 10
+  server:
+    address: 127.0.0.1
+    port: 8080
   servlet:
-    - { name: xxx, pattern: / , class: xxx}
-    - { name: xx, pattern: /a , class: xx}
+    - { name: hello, path: / , class: HelloServlet}
+    - { name: set, path: /set, class: SessionSetServlet}
+    - { name: get, path: /get, class: SessionGetServlet}
+  session:
+    timeout: 1800

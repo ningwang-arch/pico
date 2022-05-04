@@ -25,11 +25,12 @@ set(LIB_SRC
     pico/hook.cc
     pico/http/http_connection.cc
     pico/http/http_parser.cc
-    pico/http/http_server.hpp
+    pico/http/http_server.cc
     pico/http/http.cc
     pico/http/http11_parser.cc
     pico/http/httpclient_parser.cc
     pico/http/request_handler.cc
+    pico/http/servlet.cc
     pico/iomanager.cc
     pico/log/LogAppender.cc
     pico/log/LogEvent.cc
@@ -42,6 +43,7 @@ set(LIB_SRC
     pico/log/TTCCLayout.cc
     pico/mutex.cc
     pico/scheduler.cc
+    pico/session.cc
     pico/socket_stream.cc
     pico/socket.cc
     pico/tcp_server.cc
