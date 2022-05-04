@@ -41,8 +41,12 @@ public:
     }
 };
 
-static ConfigVar<std::vector<Route>>::Ptr g_servlets =
-    Config::Lookup<std::vector<Route>>("root.servlet", std::vector<Route>(), "servlets");
+#ifndef CONF_ROOT
+#    define CONF_ROOT "root."
+#endif
+
+static ConfigVar<std::vector<Route>>::Ptr g_servlets = Config::Lookup<std::vector<Route>>(
+    CONF_ROOT + std::string("servlet"), std::vector<Route>(), "servlets");
 
 HttpServer::HttpServer(bool keepalive, IOManager* worker, IOManager* acceptor)
     : TcpServer(worker, acceptor)

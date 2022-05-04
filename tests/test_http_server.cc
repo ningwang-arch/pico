@@ -4,6 +4,9 @@
 #include "pico/pico.h"
 #include "pico/session.h"
 
+#ifndef CONF_ROOT
+#    define CONF_ROOT "root."
+#endif
 namespace pico {
 class HelloServlet : public Servlet
 {
@@ -53,10 +56,10 @@ REGISTER_CLASS(SessionGetServlet);
 
 }   // namespace pico
 
-pico::ConfigVar<std::string>::Ptr server_address =
-    pico::Config::Lookup<std::string>("root.server.address", "127.0.0.1", "Server address");
+pico::ConfigVar<std::string>::Ptr server_address = pico::Config::Lookup<std::string>(
+    CONF_ROOT + std::string("server.address"), "127.0.0.1", "Server address");
 pico::ConfigVar<int>::Ptr server_port =
-    pico::Config::Lookup<int>("root.server.port", 8080, "Server port");
+    pico::Config::Lookup<int>(CONF_ROOT + std::string("server.port"), 8080, "Server port");
 
 void test() {
     pico::Config::LoadFromFile("web.yml");

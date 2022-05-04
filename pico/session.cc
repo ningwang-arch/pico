@@ -3,10 +3,14 @@
 #include "config.h"
 
 
+#ifndef CONF_ROOT
+#    define CONF_ROOT "root."
+#endif
+
 namespace pico {
 
 ConfigVar<uint64_t>::Ptr session_timeout =
-    Config::Lookup<uint64_t>("root.session.timeout", 3600, "session_timeout");
+    Config::Lookup<uint64_t>(CONF_ROOT + std::string("session.timeout"), 3600, "session_timeout");
 
 namespace tools {
 
