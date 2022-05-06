@@ -57,4 +57,12 @@ void Config::LoadFromFile(const std::string& filename) {
     LoadFromYaml(root);
 }
 
+void Config::LoadFromConfDir(const std::string& conf_dir) {
+    std::vector<std::string> files;
+    std::string abs_path = getAbsolutePath(conf_dir);
+    listDir(abs_path, files, ".yml");
+
+    for (auto& i : files) { LoadFromFile(i); }
+}
+
 }   // namespace pico

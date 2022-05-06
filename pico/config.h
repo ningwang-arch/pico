@@ -332,6 +332,8 @@ public:
 
     static void LoadFromFile(const std::string& filename);
 
+    static void LoadFromConfDir(const std::string& conf_dir);
+
     static ConfigVarBase::Ptr LookupBase(const std::string& name);
 
     static void Visit(std::function<void(ConfigVarBase::Ptr)> cb) {

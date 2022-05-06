@@ -1,8 +1,11 @@
 #ifndef __PICO_UTIL_H__
 #define __PICO_UTIL_H__
 
+#include <dirent.h>
 #include <pthread.h>
+#include <string.h>
 #include <string>
+#include <vector>
 
 #include "fiber.h"
 
@@ -32,6 +35,10 @@ public:
     static std::string TrimRight(const std::string& str, const std::string& delimit = " \t\r\n");
 };
 
+
+std::string getAbsolutePath(const std::string& path);
+
+void listDir(const std::string& path, std::vector<std::string>& files, std::string suffix = "");
 
 }   // namespace pico
 

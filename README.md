@@ -9,7 +9,6 @@ Pico is a C++ framework for creating web applications. It is designed to be easy
 - Easy Routing
 - Uses Morden C++11
 - Http/1.1 support
-- Middleware support for extensions
 
 ### Still to do
 
@@ -19,6 +18,7 @@ Pico is a C++ framework for creating web applications. It is designed to be easy
 ### Dependencies
 
 - [jsoncpp](https://github.com/open-source-parsers/jsoncpp)
+- [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 
 ### Note
 
@@ -46,8 +46,24 @@ Some examples are available in the tests/ directory.
 ```c++
 #include "pico/pico.h"
 
+using request = pico::HttpRequest::Ptr;
+using response = pico::HttpResponse::Ptr;
+
+class HelloWorld : public pico::Servlet {
+public:
+    void doGet(const request& req, const response& res)  override{
+        res->set_status(pico::HttpStatus::OK);
+        res->set_header("Content-Type", "text/plain");
+        res->set_body("Hello World");
+    }
+};
+
+REGISTER_CLASS(HelloWorld);
+
 void run(){
-    pico::HttpServer<>::Ptr server(new pico::HttpServer<>(true));
+    pico::Config::LoadFromFile("web.yml");
+
+    pico::HttpServer::Ptr server(new pico::HttpServer(true));
 
     pico::Address::Ptr addr = pico::Address::LookupAnyIPAddress("0.0.0.0:8080");
     if (!addr) {
@@ -55,16 +71,6 @@ void run(){
         return;
     }
     server->bind(addr);
-
-    auto handler = server->getRequestHandler();
-
-    handler->addRoute("/",
-                      pico::HttpMethod::GET,
-                      [](const pico::HttpRequest::Ptr& req, pico::HttpResponse::Ptr& res) {
-                          res->set_status(pico::HttpStatus::OK);
-                          res->set_header("Content-Type", "text/plain");
-                          res->set_body("Hello World");
-                      });
 
     server->start();
 }
@@ -77,70 +83,55 @@ int main(int argc, const char* argv[]){
 
 ```
 
-#### Middleware
+#### Request Handle
+
+Same as servlet, you must inherit from pico::Servlet, and then override the handle method you want to handle the request.
+Just like servlet, you can use the pico::HttpRequest::Ptr and pico::HttpResponse::Ptr objects to handle the request.
+A simple example is shown below.
+After implementing the handle method, you can use the `REGISTER_CLASS` to register the servlet.
 
 ```c++
-#include "pico/pico.h"
-
-void run(){
-    pico::HttpServer<pico::Session>::Ptr server(new pico::HttpServer<pico::Session>(true));
-
-    pico::Address::Ptr addr = pico::Address::LookupAnyIPAddress("0.0.0.0:8080");
-    if (!addr) {
-        LOG_INFO("Could not find any IP address");
-        return;
-    }
-
-    server->bind(addr);
-    auto handler = server->getRequestHandler();
-
-    handler->addRoute("/save",
-                      pico::HttpMethod::GET,
-                      [](const pico::HttpRequest::Ptr& req, pico::HttpResponse::Ptr& res){
-                          auto session = server->get_context<pico::Session>(req).session;
-                          session->set("name", "pico");
-                      });
-    handler->addRoute("/get",
-                      pico::HttpMethod::GET,
-                      [](const pico::HttpRequest::Ptr& req, pico::HttpResponse::Ptr& res){
-                          auto session = server->get_context<pico::Session>(req).session;
-                          if(session->has("name")){
-                              auto name = session->get("name");
-                              res->set_status(pico::HttpStatus::OK);
-                              res->set_body(session->get("name").asCString());
-                          }
-                      });
-    server->start();
-}
-
-int main(int argc, char const* argv[]){
-    pico::IOManager iom(2);
-    iom.scheduler(run);
-
-    return 0;
-}
-```
-
-There are three middlewares in pico: UTF8, CORS, Session.<br>
-If you want to use middleware which is created by yourself, your middleware must have structure like this:
-
-```c++
-struct MyMiddleware{
-    struct context{
-        // ...
-    };
-
-    void before_handle(const pico::HttpRequest::Ptr& req, pico::HttpResponse::Ptr& res, context& ctx){
-        // ...
-    }
-
-    void after_handle(const pico::HttpRequest::Ptr& req, pico::HttpResponse::Ptr& res,context& ctx){
-        // ...
+using request = pico::HttpRequest::Ptr;
+using response = pico::HttpResponse::Ptr;
+class MyServlet : public pico::Servlet {
+public:
+    void doGet(const request& req, const response& res)  override{
+        res->set_status(pico::HttpStatus::OK);
+        res->set_header("Content-Type", "text/plain");
+        res->set_body("Hello World");
     }
 };
+REGISTER_CLASS(MyServlet);
 ```
 
-Then just add your middleware to the server template list.
+If you want to use the servlet, you can add configuration in the web.yml file under the servlet section.
+
+```yml
+servlet:
+  - class: MyServlet
+    path: /hello
+    name: hello
+```
+
+#### Config File
+
+The config file is located in the conf/ directory.
+
+```yaml
+root:
+  server:
+    address: 127.0.0.1
+    port: 8080
+  servlet:
+    - { name: hello, path: /, class: HelloServlet }
+    - { name: set, path: /set, class: SessionSetServlet }
+    - { name: get, path: /get, class: SessionGetServlet }
+  session:
+    timeout: 1800
+```
+
+The default conf dir is `conf/`, if you want to change it, you can use `#define CONF_DIR "your conf location"` in your main.cpp.
+If you conf root is not `root`, you can use `#define CONF_ROOT "your root"` in your main.cpp.
 
 #### Logging
 
