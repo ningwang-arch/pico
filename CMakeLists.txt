@@ -59,6 +59,7 @@ force_redefine_file_macro_for_sources(pico)
 set(LIBS
     pico
     dl
+    pthread
     jsoncpp
     yaml-cpp
     )

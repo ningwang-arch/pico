@@ -18,10 +18,6 @@
 #include "logging.h"
 #include "mutex.h"
 
-#ifndef CONF_DIR
-#    define CONF_DIR "conf/"
-#endif
-
 namespace pico {
 
 class ConfigVarBase

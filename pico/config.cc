@@ -2,6 +2,10 @@
 #include <fstream>
 
 namespace pico {
+#ifndef CONF_DIR
+#    define CONF_DIR "conf/"
+#endif
+
 
 ConfigVarBase::Ptr Config::LookupBase(const std::string& name) {
     RWMutexType::ReadLock lock(getMutex());
