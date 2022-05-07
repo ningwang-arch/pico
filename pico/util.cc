@@ -431,7 +431,7 @@ std::string getAbsolutePath(const std::string& path) {
     return abs_path;
 }
 
-void listDir(const std::string& path, std::vector<std::string>& files, std::string suffix = "") {
+void listDir(const std::string& path, std::vector<std::string>& files, std::string& suffix) {
     if (access(path.c_str(), 0) != 0) { return; }
     DIR* dir = opendir(path.c_str());
     if (dir == nullptr) { return; }
