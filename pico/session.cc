@@ -1,11 +1,8 @@
 #include "session.h"
 
 #include "config.h"
+#include "macro.h"
 
-
-#ifndef CONF_ROOT
-#    define CONF_ROOT "root."
-#endif
 
 namespace pico {
 

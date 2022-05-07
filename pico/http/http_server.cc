@@ -2,6 +2,7 @@
 
 #include "../class_factory.h"
 #include "pico/config.h"
+#include "pico/macro.h"
 
 namespace pico {
 
@@ -41,9 +42,6 @@ public:
     }
 };
 
-#ifndef CONF_ROOT
-#    define CONF_ROOT "root."
-#endif
 
 static ConfigVar<std::vector<Route>>::Ptr g_servlets = Config::Lookup<std::vector<Route>>(
     CONF_ROOT + std::string("servlet"), std::vector<Route>(), "servlets");
