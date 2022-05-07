@@ -21,7 +21,6 @@ std::string PatternLayout::format(LogEvent::Ptr event) {
 }
 
 void PatternLayout::setPattern(const std::string& pattern) {
-    std::cout << pattern << std::endl;
     pattern_ = pattern;
     init();
 }
