@@ -6,7 +6,7 @@ include(cmake/utils.cmake)
 include_directories(.)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS
     "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
 )
