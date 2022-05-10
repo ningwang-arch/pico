@@ -1,0 +1,40 @@
+root:
+  servers:
+    - addresses: ['127.0.0.1:8080', '127.0.0.1:11223']
+      type: http
+      ssl: false
+      name: server
+      servlets:
+        - hello
+        - set
+        - get
+    # - addresses: ['127.0.0.1:12233']
+    #   type: http
+    #   ssl: false
+    #   name: server_2
+    #   servlets:
+    #     - test
+    #     - hello
+    - addresses: ['127.0.0.1:12233']
+      type: http
+      ssl: true
+      name: server_1
+      servlets:
+        - hello
+      certificates:
+        file: conf/cert.pem
+        key: conf/key.pem
+        
+
+  servlets:
+    - name: hello
+      class: HelloServlet
+      path: /
+    - name: set
+      class: SessionSetServlet
+      path: /set
+    - { name: get, path: /get, class: SessionGetServlet}
+  
+  session:
+    timeout: 1800
+

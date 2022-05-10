@@ -17,18 +17,18 @@ TcpServer::~TcpServer() {
     m_sockets.clear();
 }
 
-bool TcpServer::bind(Address::Ptr& addr) {
+bool TcpServer::bind(Address::Ptr& addr, bool ssl) {
     std::vector<Address::Ptr> addrs;
     std::vector<Address::Ptr> fails;
     addrs.push_back(addr);
-    bind(addrs, fails);
+    bind(addrs, fails, ssl);
     return fails.empty();
 }
 
 
-bool TcpServer::bind(std::vector<Address::Ptr>& addrs, std::vector<Address::Ptr>& fails) {
+bool TcpServer::bind(std::vector<Address::Ptr>& addrs, std::vector<Address::Ptr>& fails, bool ssl) {
     for (auto&& addr : addrs) {
-        Socket::Ptr sock = Socket::CreateTcp(addr);
+        Socket::Ptr sock = ssl ? SSLSocket::CreateTcp(addr) : Socket::CreateTcp(addr);
         if (!sock->bind(addr)) {
             LOG_ERROR("addr[%s] bind error, errno=%d, %s",
                       addr->to_string().c_str(),
@@ -101,6 +101,18 @@ std::string TcpServer::to_string() {
     std::stringstream ss;
     ss << "TcpServer[" << m_name << "]";
     return ss.str();
+}
+
+bool TcpServer::loadCertificate(const std::string& cert_file, const std::string& key_file) {
+    for (auto&& sock : m_sockets) {
+        auto ssl_sock = std::dynamic_pointer_cast<SSLSocket>(sock);
+        if (!ssl_sock) { continue; }
+        if (!ssl_sock->loadCertificate(cert_file, key_file)) {
+            LOG_ERROR("loadCertificate failed");
+            return false;
+        }
+    }
+    return true;
 }
 
 }   // namespace pico

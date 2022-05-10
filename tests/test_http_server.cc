@@ -1,8 +1,10 @@
 
+#include "pico/application.h"
 #include "pico/class_factory.h"
 #include "pico/config.h"
 #include "pico/pico.h"
 #include "pico/session.h"
+#include <fstream>
 
 #ifndef CONF_ROOT
 #    define CONF_ROOT "root."
@@ -56,26 +58,13 @@ REGISTER_CLASS(SessionGetServlet);
 
 }   // namespace pico
 
-pico::ConfigVar<std::string>::Ptr server_address = pico::Config::Lookup<std::string>(
-    CONF_ROOT + std::string("server.address"), "127.0.0.1", "Server address");
-pico::ConfigVar<int>::Ptr server_port =
-    pico::Config::Lookup<int>(CONF_ROOT + std::string("server.port"), 8080, "Server port");
+// /home/eclipse/code/vscode/pico/conf
+// /home/eclipse/code/vscode/pico/conf/tmp.yml
 
-void test() {
-    pico::Config::LoadFromFile("web.yml");
+int main(int argc, char* argv[]) {
+    pico::Application app;
+    if (app.init(argc, argv)) { app.run(); }
 
-    pico::HttpServer::Ptr server(new pico::HttpServer(true));
 
-    pico::Address::Ptr addr = pico::Address::LookupAnyIPAddress(
-        server_address->getValue() + ":" + std::to_string(server_port->getValue()));
-
-    server->bind(addr);
-
-    server->start();
-}
-
-int main(int argc, char const* argv[]) {
-    pico::IOManager iom(2);
-    iom.schedule(test);
     return 0;
 }

@@ -439,15 +439,19 @@ void listDir(const std::string& path, std::vector<std::string>& files, const std
     while ((dp = readdir(dir)) != nullptr) {
         if (dp->d_type == DT_DIR) {
             if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, "..")) { continue; }
-            listDir(path + "/" + dp->d_name, files, suffix);
+            listDir(path + dp->d_name, files, suffix);
         }
         else if (dp->d_type == DT_REG) {
             std::string filename(dp->d_name);
-            if (suffix.empty()) { files.push_back(path + "/" + filename); }
+            if (suffix.empty()) {
+                // files.push_back(path + filename);
+                files.push_back(filename);
+            }
             else {
                 if (filename.size() < suffix.size()) { continue; }
                 if (filename.substr(filename.length() - suffix.size()) == suffix) {
-                    files.push_back(path + "/" + filename);
+                    // files.push_back(path + filename);
+                    files.push_back(filename);
                 }
             }
         }

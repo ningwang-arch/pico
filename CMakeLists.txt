@@ -18,8 +18,10 @@ option(BUILD_TEST "ON for complile test" ON)
 
 set(LIB_SRC
     pico/address.cc
+    pico/application.cc
     pico/class_factory.cc
     pico/config.cc
+    pico/daemon.cc
     pico/fdmanager.cc
     pico/fiber.cc
     pico/hook.cc
@@ -62,6 +64,8 @@ set(LIBS
     pthread
     jsoncpp
     yaml-cpp
+    ssl
+    boost_program_options
     )
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

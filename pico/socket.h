@@ -11,6 +11,7 @@
 #include <memory>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <openssl/ssl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -92,32 +93,32 @@ public:
 
     bool isConnected() const { return m_is_connected; }
 
-    bool connect(const Address::Ptr& addr, uint64_t timeout = -1);
-    bool reconnect(uint64_t timeout = -1);
+    virtual bool connect(const Address::Ptr& addr, uint64_t timeout = -1);
+    virtual bool reconnect(uint64_t timeout = -1);
 
-    bool bind(const Address::Ptr& addr);
+    virtual bool bind(const Address::Ptr& addr);
 
-    bool listen(int backlog = 5);
+    virtual bool listen(int backlog = 5);
 
-    Socket::Ptr accept();
+    virtual Socket::Ptr accept();
 
-    int send(const void* buf, size_t len, int flags = 0);
-    int send(const iovec* iov, int iovcnt, int flags = 0);
+    virtual int send(const void* buf, size_t len, int flags = 0);
+    virtual int send(const iovec* iov, int iovcnt, int flags = 0);
 
-    int recv(void* buf, size_t len, int flags = 0);
-    int recv(iovec* iov, int iovcnt, int flags = 0);
+    virtual int recv(void* buf, size_t len, int flags = 0);
+    virtual int recv(iovec* iov, int iovcnt, int flags = 0);
 
-    int sendto(const void* buf, size_t len, const Address::Ptr& addr, int flags = 0);
-    int sendto(const iovec* iov, int iovcnt, const Address::Ptr& addr, int flags = 0);
+    virtual int sendto(const void* buf, size_t len, const Address::Ptr& addr, int flags = 0);
+    virtual int sendto(const iovec* iov, int iovcnt, const Address::Ptr& addr, int flags = 0);
 
-    int recvfrom(void* buf, size_t len, Address::Ptr& addr, int flags = 0);
-    int recvfrom(iovec* iov, int iovcnt, Address::Ptr& addr, int flags = 0);
+    virtual int recvfrom(void* buf, size_t len, Address::Ptr& addr, int flags = 0);
+    virtual int recvfrom(iovec* iov, int iovcnt, Address::Ptr& addr, int flags = 0);
 
-    bool close();
+    virtual bool close();
 
-    int shutdown(int how);
+    virtual int shutdown(int how);
 
-    std::string to_string() const;
+    virtual std::string to_string() const;
     int getSocket() const { return m_sockfd; };
     bool cancelRead();
     bool cancelWrite();
@@ -126,12 +127,12 @@ public:
     Address::Ptr getLocalAddress();
     Address::Ptr getPeerAddress();
 
-    // protected:
-    bool init(int sock);
+protected:
+    virtual bool init(int sock);
     void newSock();
     void initSock();
 
-private:
+protected:
     int m_sockfd;
     int m_family;
     int m_type;
@@ -141,6 +142,49 @@ private:
     Address::Ptr m_local_addr;
     Address::Ptr m_peer_addr;
 };
+
+class SSLSocket : public Socket
+{
+public:
+    typedef std::shared_ptr<SSLSocket> Ptr;
+    static SSLSocket::Ptr CreateTcp(Address::Ptr addr);
+    static SSLSocket::Ptr CreateTcpSocket();
+    static SSLSocket::Ptr CreateTcpScoketv6();
+
+    SSLSocket(int family, int type, int protocol = 0);
+
+    virtual bool connect(const Address::Ptr& addr, uint64_t timeout = -1) override;
+
+
+    virtual bool bind(const Address::Ptr& addr) override;
+
+    virtual bool listen(int backlog = 5) override;
+
+    virtual Socket::Ptr accept() override;
+
+    virtual int send(const void* buf, size_t len, int flags = 0) override;
+    virtual int send(const iovec* iov, int iovcnt, int flags = 0) override;
+
+    virtual int recv(void* buf, size_t len, int flags = 0) override;
+    virtual int recv(iovec* iov, int iovcnt, int flags = 0) override;
+
+
+    virtual bool close() override;
+
+    virtual int shutdown(int how) override;
+
+    virtual std::string to_string() const override;
+
+    bool loadCertificate(const std::string& cert_file, const std::string& key_file);
+
+protected:
+    virtual bool init(int sock) override;
+
+private:
+    std::shared_ptr<SSL_CTX> m_ctx;
+    std::shared_ptr<SSL> m_ssl;
+};
+
 }   // namespace pico
 
 

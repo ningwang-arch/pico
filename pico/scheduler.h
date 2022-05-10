@@ -22,6 +22,8 @@ public:
 
     const std::string getName() const { return m_name; }
 
+    void setName(const std::string& name) { m_name = name; }
+
     static Scheduler* GetThis();
     static Fiber* GetMainFiber();
 

@@ -26,6 +26,7 @@ public:
 
     ~HttpServer(){};
 
+    RequestHandler::Ptr getRequestHandler() { return m_request_handler; }
 
 
 protected:

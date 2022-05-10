@@ -166,6 +166,12 @@ Layout::Ptr layout(new MyLayout());
 g_logger->setLayout(layout);
 ```
 
+###### Generate certificate
+
+```
+$ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes
+```
+
 #### Other
 
 Thanks to the [sylar](https://github.com/sylar-yin/sylar), [Crow](https://github.com/CrowCpp/Crow) and [mongrel2](https://github.com/mongrel2/mongrel2), pico is a powerful framework for creating web applications.
