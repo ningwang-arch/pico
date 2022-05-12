@@ -1,5 +1,4 @@
 - test https (finished)
 - add worker
-- read log conf from file
-- add env support
-...
+- read log conf from file(finished)
+- add env support(finished)
