@@ -15,6 +15,10 @@ public:
 
     Logger::Ptr getLogger(const std::string& name);
 
+    void removeLogger(const std::string& name);
+
+    void clearLoggers();
+
 private:
     MutexType m_mutex;
     Logger::Ptr m_root;

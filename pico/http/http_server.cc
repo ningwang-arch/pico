@@ -2,7 +2,6 @@
 
 #include "../class_factory.h"
 #include "pico/config.h"
-#include "pico/macro.h"
 
 namespace pico {
 

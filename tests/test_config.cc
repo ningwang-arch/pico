@@ -1,12 +1,8 @@
 #include "pico/config.h"
 #include <iostream>
 
-#ifndef CONF_ROOT
-#    define CONF_ROOT "root."
-#endif
 
-pico::ConfigVar<int>::Ptr g_int_var =
-    pico::Config::Lookup<int>(CONF_ROOT + std::string("int"), 0, "int var");
+pico::ConfigVar<int>::Ptr g_int_var = pico::Config::Lookup<int>(std::string("int"), 0, "int var");
 
 
 class Servlet
@@ -61,7 +57,7 @@ void test_config() {
 
 
 pico::ConfigVar<std::vector<Servlet>>::Ptr g_servlets = pico::Config::Lookup<std::vector<Servlet>>(
-    CONF_ROOT + std::string("servlet"), std::vector<Servlet>(), "servlets");
+    std::string("servlet"), std::vector<Servlet>(), "servlets");
 
 void test_self() {
     std::cout << "g_servlets: " << g_servlets->getValue().size() << std::endl;

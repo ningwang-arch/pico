@@ -13,7 +13,7 @@ static const int uri_parser_error = 0;
 static const int uri_parser_en_main = 451;
 
 
-#line 132 "uri.rl"
+#line 131 "uri.rl"
 
 
 Uri::Ptr Uri::Create(const std::string& uristr) {
@@ -26,7 +26,7 @@ Uri::Ptr Uri::Create(const std::string& uristr) {
 	cs = uri_parser_start;
 	}
 
-#line 139 "uri.rl"
+#line 138 "uri.rl"
     const char *p = uristr.c_str();
     const char *pe = p + uristr.size();
     const char* eof = pe;
@@ -96,7 +96,7 @@ cs = 0;
 tr467:
 #line 16 "uri.rl"
 	{ mark = p; }
-#line 104 "uri.rl"
+#line 103 "uri.rl"
 	{
         //std::cout << std::string(mark, fpc - mark) << std::endl;
         uri->setQuery(std::string(mark, p - mark));
@@ -104,7 +104,7 @@ tr467:
     }
 	goto st453;
 tr469:
-#line 104 "uri.rl"
+#line 103 "uri.rl"
 	{
         //std::cout << std::string(mark, fpc - mark) << std::endl;
         uri->setQuery(std::string(mark, p - mark));
@@ -163,8 +163,7 @@ tr548:
     }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st453;
@@ -180,16 +179,14 @@ tr559:
 	{ mark = p; }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st453;
 tr563:
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st453;
@@ -205,8 +202,7 @@ tr566:
     }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st453;
@@ -222,8 +218,7 @@ tr570:
 	{ mark = p; }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st453;
@@ -231,7 +226,7 @@ st453:
 	if ( ++p == pe )
 		goto _test_eof453;
 case 453:
-#line 235 "uri.cc"
+#line 230 "uri.cc"
 	switch( (*p) ) {
 		case 37: goto tr463;
 		case 60: goto st0;
@@ -259,7 +254,7 @@ st454:
 	if ( ++p == pe )
 		goto _test_eof454;
 case 454:
-#line 263 "uri.cc"
+#line 258 "uri.cc"
 	switch( (*p) ) {
 		case 37: goto st1;
 		case 60: goto st0;
@@ -287,7 +282,7 @@ st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 291 "uri.cc"
+#line 286 "uri.cc"
 	if ( (*p) < 65 ) {
 		if ( 48 <= (*p) && (*p) <= 57 )
 			goto st2;
@@ -380,7 +375,7 @@ st455:
 	if ( ++p == pe )
 		goto _test_eof455;
 case 455:
-#line 384 "uri.cc"
+#line 379 "uri.cc"
 	switch( (*p) ) {
 		case 34: goto st0;
 		case 35: goto st453;
@@ -478,8 +473,7 @@ tr556:
     }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st456;
@@ -495,16 +489,14 @@ tr562:
 	{ mark = p; }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st456;
 tr565:
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st456;
@@ -520,8 +512,7 @@ tr569:
     }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st456;
@@ -537,8 +528,7 @@ tr573:
 	{ mark = p; }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	goto st456;
@@ -546,7 +536,7 @@ st456:
 	if ( ++p == pe )
 		goto _test_eof456;
 case 456:
-#line 550 "uri.cc"
+#line 540 "uri.cc"
 	switch( (*p) ) {
 		case 34: goto st0;
 		case 35: goto tr467;
@@ -573,7 +563,7 @@ st457:
 	if ( ++p == pe )
 		goto _test_eof457;
 case 457:
-#line 577 "uri.cc"
+#line 567 "uri.cc"
 	switch( (*p) ) {
 		case 34: goto st0;
 		case 35: goto tr469;
@@ -600,7 +590,7 @@ st7:
 	if ( ++p == pe )
 		goto _test_eof7;
 case 7:
-#line 604 "uri.cc"
+#line 594 "uri.cc"
 	if ( (*p) < 65 ) {
 		if ( 48 <= (*p) && (*p) <= 57 )
 			goto st8;
@@ -689,7 +679,7 @@ st9:
 	if ( ++p == pe )
 		goto _test_eof9;
 case 9:
-#line 693 "uri.cc"
+#line 683 "uri.cc"
 	if ( 48 <= (*p) && (*p) <= 52 )
 		goto st10;
 	goto st0;
@@ -837,7 +827,7 @@ st461:
 	if ( ++p == pe )
 		goto _test_eof461;
 case 461:
-#line 841 "uri.cc"
+#line 831 "uri.cc"
 	switch( (*p) ) {
 		case 35: goto tr489;
 		case 47: goto tr490;
@@ -854,7 +844,7 @@ st462:
 	if ( ++p == pe )
 		goto _test_eof462;
 case 462:
-#line 858 "uri.cc"
+#line 848 "uri.cc"
 	switch( (*p) ) {
 		case 35: goto tr493;
 		case 47: goto tr494;
@@ -1000,7 +990,7 @@ st467:
 	if ( ++p == pe )
 		goto _test_eof467;
 case 467:
-#line 1004 "uri.cc"
+#line 994 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st467;
 		case 35: goto tr485;
@@ -1030,7 +1020,7 @@ st31:
 	if ( ++p == pe )
 		goto _test_eof31;
 case 31:
-#line 1034 "uri.cc"
+#line 1024 "uri.cc"
 	if ( (*p) < 65 ) {
 		if ( 48 <= (*p) && (*p) <= 57 )
 			goto st32;
@@ -1077,7 +1067,7 @@ st468:
 	if ( ++p == pe )
 		goto _test_eof468;
 case 468:
-#line 1081 "uri.cc"
+#line 1071 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st33;
 		case 35: goto tr489;
@@ -1180,7 +1170,7 @@ st469:
 	if ( ++p == pe )
 		goto _test_eof469;
 case 469:
-#line 1184 "uri.cc"
+#line 1174 "uri.cc"
 	switch( (*p) ) {
 		case 2: goto tr472;
 		case 33: goto tr501;
@@ -1218,7 +1208,7 @@ st470:
 	if ( ++p == pe )
 		goto _test_eof470;
 case 470:
-#line 1222 "uri.cc"
+#line 1212 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st470;
 		case 35: goto tr485;
@@ -1247,7 +1237,7 @@ st36:
 	if ( ++p == pe )
 		goto _test_eof36;
 case 36:
-#line 1251 "uri.cc"
+#line 1241 "uri.cc"
 	if ( (*p) < 65 ) {
 		if ( 48 <= (*p) && (*p) <= 57 )
 			goto st37;
@@ -1278,7 +1268,7 @@ st471:
 	if ( ++p == pe )
 		goto _test_eof471;
 case 471:
-#line 1282 "uri.cc"
+#line 1272 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st470;
 		case 35: goto tr485;
@@ -1685,7 +1675,7 @@ st485:
 	if ( ++p == pe )
 		goto _test_eof485;
 case 485:
-#line 1689 "uri.cc"
+#line 1679 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st470;
 		case 35: goto tr485;
@@ -1719,7 +1709,7 @@ st486:
 	if ( ++p == pe )
 		goto _test_eof486;
 case 486:
-#line 1723 "uri.cc"
+#line 1713 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st470;
 		case 35: goto tr485;
@@ -1753,7 +1743,7 @@ st487:
 	if ( ++p == pe )
 		goto _test_eof487;
 case 487:
-#line 1757 "uri.cc"
+#line 1747 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st470;
 		case 35: goto tr485;
@@ -1819,7 +1809,7 @@ st38:
 	if ( ++p == pe )
 		goto _test_eof38;
 case 38:
-#line 1823 "uri.cc"
+#line 1813 "uri.cc"
 	switch( (*p) ) {
 		case 58: goto st146;
 		case 118: goto st225;
@@ -4666,7 +4656,7 @@ st489:
 	if ( ++p == pe )
 		goto _test_eof489;
 case 489:
-#line 4670 "uri.cc"
+#line 4660 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st33;
 		case 35: goto tr493;
@@ -4701,7 +4691,7 @@ st490:
 	if ( ++p == pe )
 		goto _test_eof490;
 case 490:
-#line 4705 "uri.cc"
+#line 4695 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st467;
 		case 35: goto tr485;
@@ -5122,7 +5112,7 @@ st504:
 	if ( ++p == pe )
 		goto _test_eof504;
 case 504:
-#line 5126 "uri.cc"
+#line 5116 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st467;
 		case 35: goto tr485;
@@ -5157,7 +5147,7 @@ st505:
 	if ( ++p == pe )
 		goto _test_eof505;
 case 505:
-#line 5161 "uri.cc"
+#line 5151 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st467;
 		case 35: goto tr485;
@@ -5192,7 +5182,7 @@ st506:
 	if ( ++p == pe )
 		goto _test_eof506;
 case 506:
-#line 5196 "uri.cc"
+#line 5186 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st467;
 		case 35: goto tr485;
@@ -5260,7 +5250,7 @@ st508:
 	if ( ++p == pe )
 		goto _test_eof508;
 case 508:
-#line 5264 "uri.cc"
+#line 5254 "uri.cc"
 	switch( (*p) ) {
 		case 34: goto st0;
 		case 35: goto st453;
@@ -5303,7 +5293,7 @@ st509:
 	if ( ++p == pe )
 		goto _test_eof509;
 case 509:
-#line 5307 "uri.cc"
+#line 5297 "uri.cc"
 	switch( (*p) ) {
 		case 34: goto st0;
 		case 35: goto st453;
@@ -5390,7 +5380,7 @@ st229:
 	if ( ++p == pe )
 		goto _test_eof229;
 case 229:
-#line 5394 "uri.cc"
+#line 5384 "uri.cc"
 	if ( 48 <= (*p) && (*p) <= 52 )
 		goto st230;
 	goto st0;
@@ -5562,7 +5552,7 @@ st513:
 	if ( ++p == pe )
 		goto _test_eof513;
 case 513:
-#line 5566 "uri.cc"
+#line 5556 "uri.cc"
 	switch( (*p) ) {
 		case 34: goto st0;
 		case 35: goto tr563;
@@ -5632,7 +5622,7 @@ st514:
 	if ( ++p == pe )
 		goto _test_eof514;
 case 514:
-#line 5636 "uri.cc"
+#line 5626 "uri.cc"
 	switch( (*p) ) {
 		case 35: goto tr566;
 		case 47: goto tr567;
@@ -5649,7 +5639,7 @@ st515:
 	if ( ++p == pe )
 		goto _test_eof515;
 case 515:
-#line 5653 "uri.cc"
+#line 5643 "uri.cc"
 	switch( (*p) ) {
 		case 35: goto tr570;
 		case 47: goto tr571;
@@ -5795,7 +5785,7 @@ st520:
 	if ( ++p == pe )
 		goto _test_eof520;
 case 520:
-#line 5799 "uri.cc"
+#line 5789 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st520;
 		case 35: goto tr559;
@@ -5825,7 +5815,7 @@ st253:
 	if ( ++p == pe )
 		goto _test_eof253;
 case 253:
-#line 5829 "uri.cc"
+#line 5819 "uri.cc"
 	if ( (*p) < 65 ) {
 		if ( 48 <= (*p) && (*p) <= 57 )
 			goto st254;
@@ -5872,7 +5862,7 @@ st521:
 	if ( ++p == pe )
 		goto _test_eof521;
 case 521:
-#line 5876 "uri.cc"
+#line 5866 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st255;
 		case 35: goto tr566;
@@ -5975,7 +5965,7 @@ st522:
 	if ( ++p == pe )
 		goto _test_eof522;
 case 522:
-#line 5979 "uri.cc"
+#line 5969 "uri.cc"
 	switch( (*p) ) {
 		case 2: goto tr546;
 		case 33: goto tr578;
@@ -6013,7 +6003,7 @@ st523:
 	if ( ++p == pe )
 		goto _test_eof523;
 case 523:
-#line 6017 "uri.cc"
+#line 6007 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st523;
 		case 35: goto tr559;
@@ -6042,7 +6032,7 @@ st258:
 	if ( ++p == pe )
 		goto _test_eof258;
 case 258:
-#line 6046 "uri.cc"
+#line 6036 "uri.cc"
 	if ( (*p) < 65 ) {
 		if ( 48 <= (*p) && (*p) <= 57 )
 			goto st259;
@@ -6073,7 +6063,7 @@ st524:
 	if ( ++p == pe )
 		goto _test_eof524;
 case 524:
-#line 6077 "uri.cc"
+#line 6067 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st523;
 		case 35: goto tr559;
@@ -6480,7 +6470,7 @@ st538:
 	if ( ++p == pe )
 		goto _test_eof538;
 case 538:
-#line 6484 "uri.cc"
+#line 6474 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st523;
 		case 35: goto tr559;
@@ -6514,7 +6504,7 @@ st539:
 	if ( ++p == pe )
 		goto _test_eof539;
 case 539:
-#line 6518 "uri.cc"
+#line 6508 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st523;
 		case 35: goto tr559;
@@ -6548,7 +6538,7 @@ st540:
 	if ( ++p == pe )
 		goto _test_eof540;
 case 540:
-#line 6552 "uri.cc"
+#line 6542 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st523;
 		case 35: goto tr559;
@@ -6614,7 +6604,7 @@ st260:
 	if ( ++p == pe )
 		goto _test_eof260;
 case 260:
-#line 6618 "uri.cc"
+#line 6608 "uri.cc"
 	switch( (*p) ) {
 		case 58: goto st368;
 		case 118: goto st447;
@@ -9461,7 +9451,7 @@ st542:
 	if ( ++p == pe )
 		goto _test_eof542;
 case 542:
-#line 9465 "uri.cc"
+#line 9455 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st255;
 		case 35: goto tr570;
@@ -9496,7 +9486,7 @@ st543:
 	if ( ++p == pe )
 		goto _test_eof543;
 case 543:
-#line 9500 "uri.cc"
+#line 9490 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st520;
 		case 35: goto tr559;
@@ -9917,7 +9907,7 @@ st557:
 	if ( ++p == pe )
 		goto _test_eof557;
 case 557:
-#line 9921 "uri.cc"
+#line 9911 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st520;
 		case 35: goto tr559;
@@ -9952,7 +9942,7 @@ st558:
 	if ( ++p == pe )
 		goto _test_eof558;
 case 558:
-#line 9956 "uri.cc"
+#line 9946 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st520;
 		case 35: goto tr559;
@@ -9987,7 +9977,7 @@ st559:
 	if ( ++p == pe )
 		goto _test_eof559;
 case 559:
-#line 9991 "uri.cc"
+#line 9981 "uri.cc"
 	switch( (*p) ) {
 		case 33: goto st520;
 		case 35: goto tr559;
@@ -10676,13 +10666,12 @@ case 560:
 	case 513: 
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	break;
 	case 457: 
-#line 104 "uri.rl"
+#line 103 "uri.rl"
 	{
         //std::cout << std::string(mark, fpc - mark) << std::endl;
         uri->setQuery(std::string(mark, p - mark));
@@ -10690,7 +10679,7 @@ case 560:
     }
 	break;
 	case 454: 
-#line 110 "uri.rl"
+#line 109 "uri.rl"
 	{
         //std::cout << std::string(mark, fpc - mark) << std::endl;
         uri->setFragment(std::string(mark, p - mark));
@@ -10700,7 +10689,7 @@ case 560:
 	case 456: 
 #line 16 "uri.rl"
 	{ mark = p; }
-#line 104 "uri.rl"
+#line 103 "uri.rl"
 	{
         //std::cout << std::string(mark, fpc - mark) << std::endl;
         uri->setQuery(std::string(mark, p - mark));
@@ -10710,7 +10699,7 @@ case 560:
 	case 453: 
 #line 16 "uri.rl"
 	{ mark = p; }
-#line 110 "uri.rl"
+#line 109 "uri.rl"
 	{
         //std::cout << std::string(mark, fpc - mark) << std::endl;
         uri->setFragment(std::string(mark, p - mark));
@@ -10754,8 +10743,7 @@ case 560:
     }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	break;
@@ -10772,8 +10760,7 @@ case 560:
     }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	break;
@@ -10790,8 +10777,7 @@ case 560:
 	{ mark = p; }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	break;
@@ -10849,19 +10835,18 @@ case 560:
 	{ mark = p; }
 #line 78 "uri.rl"
 	{
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, p - mark));
+        uri->setPath(std::string(mark, p));
         mark = NULL;
     }
 	break;
-#line 10858 "uri.cc"
+#line 10843 "uri.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 143 "uri.rl"
+#line 142 "uri.rl"
     if(cs == uri_parser_error) {
         return nullptr;
     } else if(cs >= uri_parser_first_final) {

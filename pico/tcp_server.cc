@@ -1,14 +1,16 @@
 #include "tcp_server.h"
+#include "config.h"
 #include "logging.h"
 #include <sstream>
 
 namespace pico {
-const static uint64_t recvTimeout = 60 * 1000;
+static pico::ConfigVar<uint64_t>::Ptr g_recvTimeout =
+    pico::Config::Lookup<uint64_t>("other.recv.timeout", uint64_t(60 * 1000), "recv timeout");
 TcpServer::TcpServer(IOManager* worker, IOManager* acceptor)
     : m_name("pico/1.0.0")
     , m_worker(worker)
     , m_acceptor(acceptor)
-    , m_recvTimeout(recvTimeout)
+    , m_recvTimeout(g_recvTimeout->getValue())
     , m_is_stop(true) {}
 
 TcpServer::~TcpServer() {

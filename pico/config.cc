@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "macro.h"
+#include "env.h"
 
 namespace pico {
 
@@ -51,7 +51,7 @@ void Config::LoadFromYaml(const YAML::Node& root) {
 }
 
 void Config::LoadFromFile(const std::string& filename) {
-    std::ifstream fin(CONF_DIR + filename);
+    std::ifstream fin(filename);
     if (!fin.good()) {
         LOG_ERROR("Config::LoadFromFile() %s not found", filename.c_str());
         return;
@@ -62,8 +62,8 @@ void Config::LoadFromFile(const std::string& filename) {
 
 void Config::LoadFromConfDir(const std::string& conf_dir) {
     std::vector<std::string> files;
-    std::string abs_path = getAbsolutePath(conf_dir);
-
+    std::string abs_path = pico::EnvManager::getInstance()->getAbsolutePath(conf_dir);
+    if (abs_path[abs_path.size() - 1] == '/') { abs_path.pop_back(); }
 
     listDir(abs_path, files, ".yml");
 

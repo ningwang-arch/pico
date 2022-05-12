@@ -53,7 +53,7 @@ void test_do_io() {
 
 void test_uri() {
     using pico::Uri;
-    Uri::Ptr uri = Uri::Create("http://www.baidu.com/");
+    Uri::Ptr uri = Uri::Create("http://www.baidu.com/abc?a=1&b=2#c=3");
     if (!uri) {
         LOG_INFO("uri create failed");
         return;
@@ -63,7 +63,7 @@ void test_uri() {
 
 int main(int argc, char const* argv[]) {
     // test();
-    test_do_io();
-    // test_uri();
+    // test_do_io();
+    test_uri();
     return 0;
 }

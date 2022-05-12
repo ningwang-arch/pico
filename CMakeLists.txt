@@ -14,7 +14,7 @@ set(CMAKE_C_FLAGS
     "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
 )
 
-option(BUILD_TEST "ON for complile test" ON)
+option(BUILD_TEST "ON for complile test" OFF)
 
 set(LIB_SRC
     pico/address.cc
@@ -22,6 +22,7 @@ set(LIB_SRC
     pico/class_factory.cc
     pico/config.cc
     pico/daemon.cc
+    pico/env.cc
     pico/fdmanager.cc
     pico/fiber.cc
     pico/hook.cc
@@ -34,6 +35,7 @@ set(LIB_SRC
     pico/http/request_handler.cc
     pico/http/servlet.cc
     pico/iomanager.cc
+    pico/logging.cc
     pico/log/LogAppender.cc
     pico/log/LogEvent.cc
     pico/log/Logger.cc
@@ -149,3 +151,8 @@ force_redefine_file_macro_for_sources(test_register)
 target_link_libraries(test_register ${LIBS})
 
 endif()
+
+add_executable(main pico/main.cc)
+add_dependencies(main pico)
+force_redefine_file_macro_for_sources(main)
+target_link_libraries(main ${LIBS})

@@ -1,14 +1,12 @@
 #include "application.h"
 
-#include <boost/program_options.hpp>
-
 #include "class_factory.h"
 #include "daemon.h"
-#include "macro.h"
+#include "env.h"
+#include "logging.h"
 
 #include "http/servlets/404_servlet.h"
 
-namespace po = boost::program_options;
 
 namespace pico {
 
@@ -31,7 +29,7 @@ public:
             r.path = route["path"].as<std::string>();
             r.servlet = std::static_pointer_cast<Servlet>(
                 ClassFactory::Instance().Create(route["class"].as<std::string>()));
-            if (r.servlet == nullptr) { r.servlet = std::make_shared<Servlet>(); }
+            if (r.servlet == nullptr) { r.servlet = std::make_shared<NotFoundServlet>(); }
             routes.insert(std::make_pair(route["name"].as<std::string>(), r));
         }
         return routes;
@@ -60,10 +58,10 @@ public:
 
 static ConfigVar<std::unordered_map<std::string, Route>>::Ptr g_servlets =
     Config::Lookup<std::unordered_map<std::string, Route>>(
-        CONF_ROOT "servlets", std::unordered_map<std::string, Route>(), "servlets");
+        "servlets", std::unordered_map<std::string, Route>(), "servlets");
 
-static pico::ConfigVar<std::vector<TcpServerOptions>>::Ptr g_servers_conf = pico::Config::Lookup(
-    CONF_ROOT "servers", std::vector<TcpServerOptions>(), "http server config");
+static pico::ConfigVar<std::vector<TcpServerOptions>>::Ptr g_servers_conf =
+    pico::Config::Lookup("servers", std::vector<TcpServerOptions>(), "http server config");
 
 
 Application* Application::s_instance = nullptr;
@@ -76,29 +74,35 @@ Application::Application() {
 bool Application::init(int argc, char* argv[]) {
     m_argc = argc;
     m_argv = argv;
-    pico::Config::LoadFromConfDir(CONF_DIR);
 
-    bool is_daemon = false;
-    po::options_description desc("options");
-    desc.add_options()("help,h", "help message")("daemon,d", po::bool_switch(&is_daemon), "daemon");
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
-    if (vm.count("help")) {
-        std::cout << desc << std::endl;
+    pico::EnvManager::getInstance()->addHelp("d,daemon", "run as daemon");
+    pico::EnvManager::getInstance()->addHelp("c,conf", "conf path [default: ./conf]");
+    pico::EnvManager::getInstance()->addHelp("h,help", "print help");
+
+    if (!pico::EnvManager::getInstance()->init(argc, argv)) { return false; }
+
+    std::string conf_path = pico::EnvManager::getInstance()->getConfigPath();
+    if (conf_path.empty()) { conf_path = "./conf"; }
+
+    pico::Config::LoadFromConfDir(conf_path);
+
+    LogInit log_init;
+
+    if (pico::EnvManager::getInstance()->has("h")) {
+        pico::EnvManager::getInstance()->printHelp();
         return false;
     }
-    m_is_daemon = is_daemon;
 
     return true;
 }
 
 int Application::run() {
+    bool is_daemon = pico::EnvManager::getInstance()->has("d");
     return start_daemon(
         m_argc,
         m_argv,
         std::bind(&Application::main, this, std::placeholders::_1, std::placeholders::_2),
-        m_is_daemon);
+        is_daemon);
 }
 
 int Application::main(int argc, char* argv[]) {

@@ -36,7 +36,18 @@ Logger::Ptr LoggerManager::getLogger(const std::string& name) {
 
 Logger::Ptr LoggerManager::getRootLogger() {
     MutexType::Lock lock(m_mutex);
-    return m_root;
+    return m_loggers.find("root") != m_loggers.end() ? m_loggers["root"] : m_root;
+    // return m_root;
+}
+
+void LoggerManager::removeLogger(const std::string& name) {
+    MutexType::Lock lock(m_mutex);
+    m_loggers.erase(name);
+}
+
+void LoggerManager::clearLoggers() {
+    MutexType::Lock lock(m_mutex);
+    m_loggers.clear();
 }
 
 }   // namespace pico

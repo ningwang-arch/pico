@@ -6,9 +6,6 @@
 #include "pico/session.h"
 #include <fstream>
 
-#ifndef CONF_ROOT
-#    define CONF_ROOT "root."
-#endif
 namespace pico {
 class HelloServlet : public Servlet
 {

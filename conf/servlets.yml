@@ -1,0 +1,8 @@
+servlets:
+  - name: hello
+    class: HelloServlet
+    path: /
+  - name: set
+    class: SessionSetServlet
+    path: /set
+  - { name: get, path: /get, class: SessionGetServlet }

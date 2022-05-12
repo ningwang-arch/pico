@@ -1,0 +1,5 @@
+other:
+  session:
+    timeout: 3600
+  recv:
+    timeout: 3000

@@ -418,19 +418,6 @@ std::string StringUtil::TrimRight(const std::string& str, const std::string& del
     return str.substr(0, end);
 }
 
-std::string getAbsolutePath(const std::string& path) {
-    if (path.empty()) { return ""; }
-    if (path[0] == '/') { return path; }
-    // get current working directory
-    char buf[1024];
-    if (getcwd(buf, 1024) == nullptr) { return ""; }
-    std::string cwd(buf);
-    // concatenate path
-    std::string abs_path = cwd + "/" + path;
-
-    return abs_path;
-}
-
 void listDir(const std::string& path, std::vector<std::string>& files, const std::string& suffix) {
     if (access(path.c_str(), 0) != 0) { return; }
     DIR* dir = opendir(path.c_str());
@@ -444,14 +431,14 @@ void listDir(const std::string& path, std::vector<std::string>& files, const std
         else if (dp->d_type == DT_REG) {
             std::string filename(dp->d_name);
             if (suffix.empty()) {
-                // files.push_back(path + filename);
-                files.push_back(filename);
+                files.push_back(path + "/" + filename);
+                // files.push_back(filename);
             }
             else {
                 if (filename.size() < suffix.size()) { continue; }
                 if (filename.substr(filename.length() - suffix.size()) == suffix) {
-                    // files.push_back(path + filename);
-                    files.push_back(filename);
+                    files.push_back(path + "/" + filename);
+                    // files.push_back(filename);
                 }
             }
         }

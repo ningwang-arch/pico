@@ -36,7 +36,6 @@ public:
 };
 
 
-std::string getAbsolutePath(const std::string& path);
 
 void listDir(const std::string& path, std::vector<std::string>& files,
              const std::string& suffix = "");

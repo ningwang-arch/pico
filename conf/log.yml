@@ -1,0 +1,10 @@
+logs:
+  - name: root
+    level: info
+    appenders:
+      - type: console
+        layout: simple
+      - type: file
+        filename: logs/app.log
+        layout: pattern
+        pattern: "[%d{%Y-%m-%d %H:%M:%S}] %p %m"

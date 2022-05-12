@@ -36,8 +36,6 @@ private:
 
     int m_argc = 0;
     char** m_argv = nullptr;
-
-    bool m_is_daemon = false;
 };
 
 }   // namespace pico

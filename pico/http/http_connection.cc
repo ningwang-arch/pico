@@ -1,9 +1,12 @@
 #include "http_connection.h"
 #include "../logging.h"
 
+#include "pico/config.h"
+
 namespace pico {
 
-static uint64_t DEFAULT_TIMEOUT = 3 * 1000;
+static pico::ConfigVar<uint64_t>::Ptr g_recvTimeout =
+    pico::Config::Lookup<uint64_t>("other.recv.timeout", uint64_t(60 * 1000), "recv timeout");
 
 HttpConnection::HttpConnection(Socket::Ptr sock, bool owner)
     : SocketStream(sock, owner) {}
@@ -256,7 +259,7 @@ HttpResponse::Ptr HttpConnection::doRequest(const HttpRequest::Ptr req, const Ur
         return nullptr;
     }
 
-    if (timeout == 0) { timeout = DEFAULT_TIMEOUT; }
+    if (timeout == 0) { timeout = g_recvTimeout->getValue(); }
     sock->setRecvTimeout(timeout);
     HttpConnection::Ptr conn = std::make_shared<HttpConnection>(sock);
     if (!conn->sendRequest(req)) {

@@ -76,8 +76,7 @@ namespace pico {
 
     action save_path
     {
-            //std::cout << std::string(mark, fpc - mark) << std::endl;
-        uri->setPath(std::string(mark, fpc - mark));
+        uri->setPath(std::string(mark, fpc));
         mark = NULL;
     }
 

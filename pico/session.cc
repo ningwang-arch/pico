@@ -1,13 +1,12 @@
 #include "session.h"
 
 #include "config.h"
-#include "macro.h"
 
 
 namespace pico {
 
 ConfigVar<uint64_t>::Ptr session_timeout =
-    Config::Lookup<uint64_t>(CONF_ROOT + std::string("session.timeout"), 3600, "session_timeout");
+    Config::Lookup<uint64_t>("other.session.timeout", 3600, "session timeout");
 
 namespace tools {
 
