@@ -54,7 +54,8 @@ set(LIB_SRC
     pico/thread.cc
     pico/timer.cc
     pico/uri.cc
-    pico/util.cc)
+    pico/util.cc
+    pico/worker.cc)
 
 add_library(pico SHARED ${LIB_SRC})
 

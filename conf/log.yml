@@ -3,7 +3,7 @@ logs:
     level: info
     appenders:
       - type: console
-        layout: simple
+        layout: pattern
       - type: file
         filename: logs/app.log
         layout: pattern

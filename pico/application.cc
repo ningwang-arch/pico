@@ -4,6 +4,7 @@
 #include "daemon.h"
 #include "env.h"
 #include "logging.h"
+#include "worker.h"
 
 #include "http/servlets/404_servlet.h"
 
@@ -81,17 +82,17 @@ bool Application::init(int argc, char* argv[]) {
 
     if (!pico::EnvManager::getInstance()->init(argc, argv)) { return false; }
 
+    if (pico::EnvManager::getInstance()->has("h")) {
+        pico::EnvManager::getInstance()->printHelp();
+        return false;
+    }
+
     std::string conf_path = pico::EnvManager::getInstance()->getConfigPath();
     if (conf_path.empty()) { conf_path = "./conf"; }
 
     pico::Config::LoadFromConfDir(conf_path);
 
     LogInit log_init;
-
-    if (pico::EnvManager::getInstance()->has("h")) {
-        pico::EnvManager::getInstance()->printHelp();
-        return false;
-    }
 
     return true;
 }
@@ -119,6 +120,8 @@ int Application::main(int argc, char* argv[]) {
 void Application::run_in_fiber() {
     auto server_confs = g_servers_conf->getValue();
     auto servlets = g_servlets->getValue();
+
+    pico::WorkerMgr::getInstance()->init();
 
     std::vector<TcpServer::Ptr> servers;
     for (auto& server_conf : server_confs) {
@@ -154,11 +157,24 @@ void Application::run_in_fiber() {
         }
 
         IOManager* worker = IOManager::getThis();
-        worker->setName("worker");
         IOManager* acceptor = IOManager::getThis();
-        acceptor->setName("acceptor");
 
-        HttpServer::Ptr server(new HttpServer(false, worker, acceptor));
+        if (!server_conf.worker.empty()) {
+            worker = pico::WorkerMgr::getInstance()->get(server_conf.worker).get();
+            if (!worker) {
+                LOG_ERROR("invalid worker: %s", server_conf.worker.c_str());
+                exit(1);
+            }
+        }
+        if (!server_conf.acceptor.empty()) {
+            acceptor = pico::WorkerMgr::getInstance()->get(server_conf.acceptor).get();
+            if (!acceptor) {
+                LOG_ERROR("invalid acceptor: %s", server_conf.acceptor.c_str());
+                exit(1);
+            }
+        }
+
+        HttpServer::Ptr server(new HttpServer(server_conf.keep_alive, worker, acceptor));
         if (!server_conf.name.empty()) { server->setName(server_conf.name); }
         std::vector<Address::Ptr> fails;
         if (!server->bind(addresses, fails, server_conf.ssl)) {

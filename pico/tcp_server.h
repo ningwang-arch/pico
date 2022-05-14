@@ -21,8 +21,12 @@ struct TcpServerOptions
 
     bool ssl = false;
 
+    std::string worker = "";
+    std::string acceptor = "";
+
     std::string cert_file = "";
     std::string key_file = "";
+    bool keep_alive = false;
     std::vector<std::string> servlets;
 
     bool isValid() const { return !addresses.empty(); }
@@ -44,6 +48,9 @@ public:
         options.type = node["type"].as<std::string>(options.type);
         options.name = node["name"].as<std::string>(options.name);
         options.ssl = node["ssl"].as<bool>(options.ssl);
+        options.keep_alive = node["keep_alive"].as<bool>(options.keep_alive);
+        options.worker = node["worker"].as<std::string>(options.worker);
+        options.acceptor = node["acceptor"].as<std::string>(options.acceptor);
         if (options.ssl) {
             // std::cout << node["certificates"] << std::endl;
             options.cert_file = node["certificates"]["file"].as<std::string>(options.cert_file);
@@ -73,6 +80,9 @@ public:
         node["type"] = options.type;
         node["name"] = options.name;
         node["ssl"] = options.ssl;
+        node["keep_alive"] = options.keep_alive;
+        node["worker"] = options.worker;
+        node["acceptor"] = options.acceptor;
         node["certicates"]["file"] = options.cert_file;
         node["certicates"]["key"] = options.key_file;
         for (auto& addr : options.addresses) { node["addresses"].push_back(addr); }

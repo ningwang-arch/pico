@@ -1,0 +1,5 @@
+workers:
+  worker:
+    thread_num: 1
+  acceptor:
+    thread_num: 2

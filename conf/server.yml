@@ -3,6 +3,9 @@ servers:
     type: http
     ssl: false
     name: server
+    worker: worker
+    keep_alive: false
+    acceptor: acceptor
     servlets:
       - hello
       - set

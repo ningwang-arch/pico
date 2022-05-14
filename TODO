@@ -1,4 +1,7 @@
 - test https (finished)
-- add worker
+- add worker (finished)
 - read log conf from file(finished)
 - add env support(finished)
+
+- add filter same as java servlet
+- add db support

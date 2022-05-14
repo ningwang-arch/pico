@@ -296,7 +296,7 @@ public:
         if (it != getDatas().end()) {
             auto tmp = std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
             if (tmp) {
-                LOG_INFO("Config::Lookup() %s found", name.c_str());
+                // LOG_INFO("Config::Lookup() %s found", name.c_str());
                 return tmp;
             }
             else {
