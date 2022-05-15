@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "pico/filter.h"
 #include "servlet.h"
 
 namespace pico {
@@ -32,6 +33,8 @@ public:
     void addRoute(const std::string& path, Servlet::Ptr servlet);
     void addGlobalRoute(const std::string& path, Servlet::Ptr servlet);
 
+    void addFilterChain(const std::string& url_pattern, FilterChain::Ptr filter_chain);
+
 
     void delRoute(const std::string& path);
     void delGlobalRoute(const std::string& path);
@@ -46,9 +49,13 @@ private:
      */
     Servlet::Ptr findHandler(const std::string& path);
 
+    FilterChain::Ptr findFilterChain(const std::string& path);
+
 private:
     std::vector<Route> m_glob_routes;
     std::vector<Route> m_routes;
+
+    std::map<std::string, FilterChain::Ptr> m_filter_chains;
 };
 }   // namespace pico
 

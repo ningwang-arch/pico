@@ -1,5 +1,5 @@
-#ifndef __SYLAR_CONFIG_H__
-#define __SYLAR_CONFIG_H__
+#ifndef __PICO_CONFIG_H__
+#define __PICO_CONFIG_H__
 
 #include <yaml-cpp/yaml.h>
 

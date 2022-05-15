@@ -7,84 +7,68 @@
 
 namespace pico {
 class Scheduler;
+class Scheduler;
+
+/**
+ * @brief 协程类
+ */
 class Fiber : public std::enable_shared_from_this<Fiber>
 {
     friend class Scheduler;
 
 public:
     typedef std::shared_ptr<Fiber> Ptr;
-    typedef std::function<void()> FiberFunc;
 
     enum State
     {
-        // 初始状态
+        /// 初始化状态
         INIT,
-        // 准备就绪
+        /// 暂停状态
+        HOLD,
+        /// 执行中状态
+        EXEC,
+        /// 结束状态
+        TERM,
+        /// 可执行状态
         READY,
-        // 运行中
-        RUNNING,
-        // 挂起
-        SUSPEND,
-        // 已经完成
-        EXIT
+        /// 异常状态
+        EXCEPT
     };
 
 private:
     Fiber();
 
 public:
-    Fiber(FiberFunc func, size_t stacksize = 0, bool use_caller = false);
+    Fiber(std::function<void()> cb, size_t stacksize = 0, bool use_caller = false);
     ~Fiber();
 
-    // 重置协程函数
-    // pre: getState() == INIT||READY
-    // after: getState=INIT
-    void reset(FiberFunc func);
+    void reset(std::function<void()> cb);
 
-    // 切换到当前fiber
-    // pre: getState() != RUNNING
-    // after: getState() == RUNNING
     void swapIn();
-    // 切换到另一个fiber
     void swapOut();
-
-    // 将当前协程切换到执行状态
-    // 执行者为主协程
     void call();
-    // 将当前协程挂起
-    // 执行者为该协程
-    // 返回主协程
-    void back();
 
+    void back();
     uint64_t getId() const { return m_id; }
     State getState() const { return m_state; }
 
 public:
     static void SetThis(Fiber* f);
     static Fiber::Ptr GetThis();
-
-    // 将当前协程切换到后台并设置状态为READY
     static void yieldToReady();
-
-    // 将当前协程切换到后台并设置状态为SUSPEND
-    static void yieldToSuspend();
-
-    static uint64_t GetTotalFiberCount();
-
+    static void yieldToHold();
+    static uint64_t TotalFibers();
     static void MainFunc();
-
     static void CallerMainFunc();
-
     static uint64_t GetFiberId();
-
 
 private:
     uint64_t m_id = 0;
-    ucontext_t m_ctx;
-    FiberFunc m_func;
-    State m_state = INIT;
-    void* m_stack = nullptr;
     uint32_t m_stacksize = 0;
+    State m_state = INIT;
+    ucontext_t m_ctx;
+    void* m_stack = nullptr;
+    std::function<void()> m_cb;
 };
 };   // namespace pico
 

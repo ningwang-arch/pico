@@ -14,9 +14,7 @@ class IOManager : public Scheduler, public TimerManager
 {
 public:
     typedef std::shared_ptr<IOManager> Ptr;
-    typedef std::function<void()> Callback;
-    typedef RWMutex MutexType;
-
+    typedef RWMutex RWMutexType;
     enum Event
     {
         /// 无事件
@@ -30,52 +28,52 @@ public:
 private:
     struct FdContext
     {
-        typedef Mutex Type;
+        typedef Mutex MutexType;
         struct EventContext
         {
             Scheduler* scheduler = nullptr;
             Fiber::Ptr fiber;
-            Callback callback;
+            std::function<void()> cb;
         };
+        EventContext& getContext(Event event);
+        void resetContext(EventContext& ctx);
 
-        EventContext& getEventContext(Event event);
-        void resetEventContext(EventContext& eventContext);
         void triggerEvent(Event event);
 
-        Type mutex;
         EventContext read;
         EventContext write;
-        Event events = NONE;
         int fd = 0;
+        Event events = NONE;
+        MutexType mutex;
     };
 
 public:
-    IOManager(int threads = 1, bool use_caller = true, const std::string& name = "");
+    IOManager(size_t threads = 1, bool use_caller = true, const std::string& name = "");
     ~IOManager();
-
-    int addEvent(int fd, Event event, Callback callback = nullptr);
+    int addEvent(int fd, Event event, std::function<void()> cb = nullptr);
     bool delEvent(int fd, Event event);
     bool cancelEvent(int fd, Event event);
-    bool cancelAllEvent(int fd);
 
-    static IOManager* getThis();
+    bool cancelAll(int fd);
+
+    static IOManager* GetThis();
 
 protected:
     void tickle() override;
     bool stopping() override;
-    bool stopping(uint64_t ms);
     void idle() override;
     void onTimerInsertAtFront() override;
     void contextResize(size_t size);
-
+    bool stopping(uint64_t& timeout);
 
 private:
-    int m_epoll_fd = -1;
-    std::vector<FdContext*> m_contexts;
-    int m_tickle_fd[2];
-    std::atomic<size_t> m_penddingEvent = {0};
-    MutexType m_mutex;
+    int m_epfd = 0;
+    int m_tickleFds[2];
+    std::atomic<size_t> m_pendingEventCount = {0};
+    RWMutexType m_mutex;
+    std::vector<FdContext*> m_fdContexts;
 };
+
 
 }   // namespace pico
 

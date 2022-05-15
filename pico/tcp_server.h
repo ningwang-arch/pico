@@ -100,7 +100,7 @@ class TcpServer : Noncopyable, public std::enable_shared_from_this<TcpServer>
 public:
     typedef std::shared_ptr<TcpServer> Ptr;
 
-    TcpServer(IOManager* worker = IOManager::getThis(), IOManager* acceptor = IOManager::getThis());
+    TcpServer(IOManager* worker = IOManager::GetThis(), IOManager* acceptor = IOManager::GetThis());
 
 
     virtual ~TcpServer();

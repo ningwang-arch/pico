@@ -63,7 +63,7 @@ public:
 
     uint64_t getNextTimer();
 
-    void listExperiedCb(std::vector<Callback>& callbacks);
+    void listExpiredCb(std::vector<Callback>& callbacks);
     bool hasTimer();
 
 protected:

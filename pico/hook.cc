@@ -85,7 +85,7 @@ retry:
     ssize_t ret = origin_fun(fd, std::forward<Args>(args)...);
     while (ret == -1 && errno == EINTR) { ret = origin_fun(fd, std::forward<Args>(args)...); }
     if (ret == -1 && errno == EAGAIN) {
-        pico::IOManager* iom = pico::IOManager::getThis();
+        pico::IOManager* iom = pico::IOManager::GetThis();
         pico::Timer::Ptr timer;
         std::weak_ptr<timer_info> wp(tinfo);
 
@@ -110,7 +110,7 @@ retry:
             return -1;
         }
         else {
-            pico::Fiber::yieldToSuspend();
+            pico::Fiber::yieldToHold();
             if (timer) { timer->cancel(); }
             if (tinfo->cancelled) {
                 errno = tinfo->cancelled;
@@ -133,7 +133,7 @@ unsigned int sleep(unsigned int seconds) {
     if (!pico::is_hook_enable()) { return sleep_f(seconds); }
 
     pico::Fiber::Ptr fiber = pico::Fiber::GetThis();
-    pico::IOManager* io_manager = pico::IOManager::getThis();
+    pico::IOManager* io_manager = pico::IOManager::GetThis();
 
     io_manager->addTimer(seconds * 1000,
                          std::bind((void(pico::IOManager::*)(pico::Fiber::Ptr, int thread)) &
@@ -141,7 +141,7 @@ unsigned int sleep(unsigned int seconds) {
                                    io_manager,
                                    fiber,
                                    -1));
-    pico::Fiber::yieldToSuspend();
+    pico::Fiber::yieldToHold();
 
     return 0;
 }
@@ -166,7 +166,7 @@ int connect_with_timeout(int sockfd, const struct sockaddr* addr, socklen_t addr
         return n;
     }
 
-    pico::IOManager* iom = pico::IOManager::getThis();
+    pico::IOManager* iom = pico::IOManager::GetThis();
     pico::Timer::Ptr timer;
     std::shared_ptr<timer_info> tinfo(new timer_info);
     std::weak_ptr<timer_info> winfo(tinfo);
@@ -185,7 +185,7 @@ int connect_with_timeout(int sockfd, const struct sockaddr* addr, socklen_t addr
 
     int rt = iom->addEvent(sockfd, pico::IOManager::WRITE);
     if (rt == 0) {
-        pico::Fiber::yieldToSuspend();
+        pico::Fiber::yieldToHold();
         if (timer) { timer->cancel(); }
         if (tinfo->cancelled) {
             errno = tinfo->cancelled;
@@ -291,8 +291,8 @@ int close(int fd) {
 
     pico::FdCtx::Ptr ctx = pico::FdMgr::getInstance()->getFdCtx(fd);
     if (ctx) {
-        auto iom = pico::IOManager::getThis();
-        iom->cancelAllEvent(fd);
+        auto iom = pico::IOManager::GetThis();
+        iom->cancelAll(fd);
         pico::FdMgr::getInstance()->delFdCtx(fd);
     }
     return close_f(fd);

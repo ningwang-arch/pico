@@ -383,15 +383,15 @@ std::string Socket::to_string() const {
 }
 
 bool Socket::cancelRead() {
-    return IOManager::getThis()->cancelEvent(m_sockfd, IOManager::READ);
+    return IOManager::GetThis()->cancelEvent(m_sockfd, IOManager::READ);
 }
 
 bool Socket::cancelWrite() {
-    return IOManager::getThis()->cancelEvent(m_sockfd, IOManager::WRITE);
+    return IOManager::GetThis()->cancelEvent(m_sockfd, IOManager::WRITE);
 }
 
 bool Socket::cancelAll() {
-    return IOManager::getThis()->cancelAllEvent(m_sockfd);
+    return IOManager::GetThis()->cancelAll(m_sockfd);
 }
 
 Address::Ptr Socket::getLocalAddress() {

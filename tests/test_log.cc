@@ -6,7 +6,7 @@
 
 void test_simple() {
     pico::Layout::Ptr layout(new pico::SimpleLayout);
-    g_logger->setLayout(layout);
+    // g_logger->setLayout(layout);
     LOG_DEBUG("debug");
     LOG_DEBUG("msg is %s", "debug");
     // g_logger->debug("debug");
@@ -32,7 +32,7 @@ void test_custom_pattern() {
     // g_logger->setLayout(pl);
     // layout->getPattern();
     pl->setPattern("%d %p [%c] - %m%n");
-    g_logger->setLayout(pl);
+    // g_logger->setLayout(pl);
     LOG_DEBUG("debug");
     LOG_FATAL("msg is %s", "fatal");
 }

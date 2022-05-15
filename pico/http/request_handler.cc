@@ -42,9 +42,13 @@ void RequestHandler::delGlobalRoute(const std::string& path) {
     }
 }
 
+void RequestHandler::addFilterChain(const std::string& url_pattern, FilterChain::Ptr filter_chain) {
+    m_filter_chains.insert({url_pattern, filter_chain});
+}
+
 Servlet::Ptr RequestHandler::findHandler(const std::string& path) {
     for (auto& route : m_routes) {
-        if (fnmatch(route.path.c_str(), path.c_str(), 0) == 0) { return route.servlet; }
+        if (route.path == path) { return route.servlet; }
     }
     for (auto& route : m_glob_routes) {
         if (fnmatch(route.path.c_str(), path.c_str(), 0) == 0) { return route.servlet; }
@@ -52,9 +56,27 @@ Servlet::Ptr RequestHandler::findHandler(const std::string& path) {
     return Servlet::Ptr(new NotFoundServlet());
 }
 
+FilterChain::Ptr RequestHandler::findFilterChain(const std::string& path) {
+    for (auto& filter_chain : m_filter_chains) {
+        if (fnmatch(filter_chain.first.c_str(), path.c_str(), 0) == 0) {
+            return filter_chain.second;
+        }
+    }
+    return nullptr;
+}
+
 void RequestHandler::handle(const HttpRequest::Ptr& req, HttpResponse::Ptr& resp) {
     auto path = req->get_path();
     auto servlet = findHandler(path);
+    FilterChain::Ptr filter_chain = nullptr;
+    if (findFilterChain(path)) {
+        filter_chain = std::make_shared<FilterChain>(findFilterChain(path)->getFilters());
+    }
+    if (filter_chain) {
+        filter_chain->reuse();
+        filter_chain->doFilter(req, resp);
+        if (!filter_chain->is_complete()) { return; }
+    }
     servlet->service(req, resp);
 }
 

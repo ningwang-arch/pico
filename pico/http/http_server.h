@@ -21,8 +21,8 @@ class HttpServer : public TcpServer
 public:
     typedef std::shared_ptr<HttpServer> Ptr;
 
-    HttpServer(bool keepalive = false, IOManager* worker = IOManager::getThis(),
-               IOManager* acceptor = IOManager::getThis());
+    HttpServer(bool keepalive = false, IOManager* worker = IOManager::GetThis(),
+               IOManager* acceptor = IOManager::GetThis());
 
     ~HttpServer(){};
 

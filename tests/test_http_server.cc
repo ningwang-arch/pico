@@ -2,6 +2,7 @@
 #include "pico/application.h"
 #include "pico/class_factory.h"
 #include "pico/config.h"
+#include "pico/filter.h"
 #include "pico/pico.h"
 #include "pico/session.h"
 #include <fstream>
@@ -49,14 +50,22 @@ public:
 };
 
 
+class HelloFilter : public Filter
+{
+public:
+    void doFilter(const HttpRequest::Ptr& request, HttpResponse::Ptr& response,
+                  FilterChain::Ptr chain) override {
+        std::cout << "HelloFilter::doFilter" << std::endl;
+        chain->doFilter(request, response);
+    }
+};
+
 REGISTER_CLASS(HelloServlet);
 REGISTER_CLASS(SessionSetServlet);
 REGISTER_CLASS(SessionGetServlet);
+REGISTER_CLASS(HelloFilter);
 
 }   // namespace pico
-
-// /home/eclipse/code/vscode/pico/conf
-// /home/eclipse/code/vscode/pico/conf/tmp.yml
 
 int main(int argc, char* argv[]) {
     pico::Application app;

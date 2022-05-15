@@ -3,6 +3,7 @@
 #include "class_factory.h"
 #include "daemon.h"
 #include "env.h"
+#include "filter.h"
 #include "logging.h"
 #include "worker.h"
 
@@ -64,6 +65,9 @@ static ConfigVar<std::unordered_map<std::string, Route>>::Ptr g_servlets =
 static pico::ConfigVar<std::vector<TcpServerOptions>>::Ptr g_servers_conf =
     pico::Config::Lookup("servers", std::vector<TcpServerOptions>(), "http server config");
 
+static ConfigVar<std::vector<FilterConfig::Ptr>>::Ptr g_filters_conf =
+    Config::Lookup<std::vector<FilterConfig::Ptr>>("filters", std::vector<FilterConfig::Ptr>(),
+                                                   "http filters config");
 
 Application* Application::s_instance = nullptr;
 
@@ -120,6 +124,16 @@ int Application::main(int argc, char* argv[]) {
 void Application::run_in_fiber() {
     auto server_confs = g_servers_conf->getValue();
     auto servlets = g_servlets->getValue();
+    auto filters = g_filters_conf->getValue();
+
+    std::unordered_map<std::string, FilterChain::Ptr> filter_chains;
+    for (auto& fc : filters) {
+        auto path = fc->getUrlPattern();
+        if (filter_chains.find(path) == filter_chains.end()) {
+            filter_chains[path] = std::make_shared<FilterChain>();
+        }
+        filter_chains[path]->addFilter(fc);
+    }
 
     pico::WorkerMgr::getInstance()->init();
 
@@ -156,8 +170,8 @@ void Application::run_in_fiber() {
             }
         }
 
-        IOManager* worker = IOManager::getThis();
-        IOManager* acceptor = IOManager::getThis();
+        IOManager* worker = IOManager::GetThis();
+        IOManager* acceptor = IOManager::GetThis();
 
         if (!server_conf.worker.empty()) {
             worker = pico::WorkerMgr::getInstance()->get(server_conf.worker).get();
@@ -197,6 +211,10 @@ void Application::run_in_fiber() {
             else {
                 req_handler->addRoute(servlets[handler_name].path, servlets[handler_name].servlet);
             }
+        }
+
+        for (auto filter_chain : filter_chains) {
+            req_handler->addFilterChain(filter_chain.first, filter_chain.second);
         }
 
         m_servers[server_conf.type].push_back(server);

@@ -29,13 +29,13 @@ void func() {
     if (!connect(sock, (const struct sockaddr*)&addr, sizeof(addr))) {}
     else if (errno == EINPROGRESS) {
         LOG_INFO("add event errno=%d, %s", errno, strerror(errno));
-        pico::IOManager::getThis()->addEvent(
+        pico::IOManager::GetThis()->addEvent(
             sock, pico::IOManager::READ, []() { LOG_INFO("read callback"); });
 
-        pico::IOManager::getThis()->addEvent(sock, pico::IOManager::WRITE, []() {
+        pico::IOManager::GetThis()->addEvent(sock, pico::IOManager::WRITE, []() {
             LOG_INFO("write callback");
 
-            pico::IOManager::getThis()->cancelEvent(sock, pico::IOManager::READ);
+            pico::IOManager::GetThis()->cancelEvent(sock, pico::IOManager::READ);
             close(sock);
         });
     }

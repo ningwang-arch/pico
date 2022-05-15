@@ -104,7 +104,7 @@ uint64_t TimerManager::getNextTimer() {
     return timer->m_next - time_now;
 }
 
-void TimerManager::listExperiedCb(std::vector<Callback>& cbs) {
+void TimerManager::listExpiredCb(std::vector<Callback>& cbs) {
     uint64_t time_now = pico::getCurrentTime();
     std::vector<Timer::Ptr> expired;
     {

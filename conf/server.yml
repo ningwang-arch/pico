@@ -10,13 +10,6 @@ servers:
       - hello
       - set
       - get
-  # - addresses: ['127.0.0.1:12233']
-  #   type: http
-  #   ssl: false
-  #   name: server_2
-  #   servlets:
-  #     - test
-  #     - hello
   - addresses: ["127.0.0.1:12233"]
     type: http
     ssl: true

@@ -6,30 +6,30 @@
 
 namespace pico {
 static thread_local Scheduler* t_scheduler = nullptr;
-static thread_local Fiber* t_fiber = nullptr;
+static thread_local Fiber* t_scheduler_fiber = nullptr;
 
-Scheduler::Scheduler(int threads, bool use_caller, const std::string& name)
+Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
     : m_name(name) {
     assert(threads > 0);
 
     if (use_caller) {
         pico::Fiber::GetThis();
         --threads;
-        assert(GetThis() == nullptr);
 
+        assert(GetThis() == nullptr);
         t_scheduler = this;
-        m_main_fiber.reset(new Fiber(std::bind(&Scheduler::run, this), 0, true));
+
+        m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this), 0, true));
         pico::Thread::SetName(m_name);
 
-        t_fiber = m_main_fiber.get();
-        m_main_thread_id = pico::getThreadId();
-        m_thread_ids.push_back(m_main_thread_id);
+        t_scheduler_fiber = m_rootFiber.get();
+        m_rootThread = pico::getThreadId();
+        m_threadIds.push_back(m_rootThread);
     }
     else {
-        m_main_thread_id = -1;
+        m_rootThread = -1;
     }
-
-    m_thread_count = threads;
+    m_threadCount = threads;
 }
 
 Scheduler::~Scheduler() {
@@ -42,7 +42,7 @@ Scheduler* Scheduler::GetThis() {
 }
 
 Fiber* Scheduler::GetMainFiber() {
-    return t_fiber;
+    return t_scheduler_fiber;
 }
 
 void Scheduler::start() {
@@ -51,48 +51,48 @@ void Scheduler::start() {
     m_stopping = false;
     assert(m_threads.empty());
 
-    m_threads.resize(m_thread_count);
-
-    for (size_t i = 0; i < m_thread_count; ++i) {
+    m_threads.resize(m_threadCount);
+    for (size_t i = 0; i < m_threadCount; ++i) {
         m_threads[i].reset(
             new Thread(std::bind(&Scheduler::run, this), m_name + "_" + std::to_string(i)));
-        m_thread_ids.push_back(m_threads[i]->getId());
+        m_threadIds.push_back(m_threads[i]->getId());
     }
-
     lock.unlock();
 }
 
 void Scheduler::stop() {
     m_autoStop = true;
-    if (m_main_fiber && m_thread_count == 0 &&
-        (m_main_fiber->getState() == Fiber::INIT || m_main_fiber->getState() == Fiber::EXIT)) {
-        LOG_INFO("Scheduler::stop() called from main fiber, exiting immediately");
+    if (m_rootFiber && m_threadCount == 0 &&
+        (m_rootFiber->getState() == Fiber::TERM || m_rootFiber->getState() == Fiber::INIT)) {
         m_stopping = true;
 
         if (stopping()) { return; }
     }
 
-    if (m_main_thread_id != -1) { assert(GetThis() == this); }
+    // bool exit_on_this_fiber = false;
+    if (m_rootThread != -1) { assert(GetThis() == this); }
     else {
         assert(GetThis() != this);
     }
 
     m_stopping = true;
+    for (size_t i = 0; i < m_threadCount; ++i) { tickle(); }
 
-    for (size_t i = 0; i < m_thread_count; ++i) { tickle(); }
+    if (m_rootFiber) { tickle(); }
 
-    if (m_main_fiber) { tickle(); }
-
-    if (m_main_fiber) {
-        if (!stopping()) { m_main_fiber->call(); }
+    if (m_rootFiber) {
+        if (!stopping()) { m_rootFiber->call(); }
     }
+
     std::vector<Thread::Ptr> thrs;
     {
         MutexType::Lock lock(m_mutex);
         thrs.swap(m_threads);
     }
 
-    for (auto& thr : thrs) { thr->join(); }
+    for (auto& i : thrs) { i->join(); }
+    // if(exit_on_this_fiber) {
+    // }
 }
 
 void Scheduler::setThis() {
@@ -102,92 +102,103 @@ void Scheduler::setThis() {
 void Scheduler::run() {
     set_hook_enable(true);
     setThis();
-    if (pico::getThreadId() != m_main_thread_id) { t_fiber = Fiber::GetThis().get(); }
+    if (pico::getThreadId() != m_rootThread) { t_scheduler_fiber = Fiber::GetThis().get(); }
 
-    Fiber::Ptr idle_ptr(new Fiber(std::bind(&Scheduler::idle, this)));
+    Fiber::Ptr idle_fiber(new Fiber(std::bind(&Scheduler::idle, this)));
     Fiber::Ptr cb_fiber;
 
-    SchedulerTask task;
+    FiberAndThread ft;
     while (true) {
-        task.reset();
+        ft.reset();
         bool tickle_me = false;
+        bool is_active = false;
         {
             MutexType::Lock lock(m_mutex);
-            auto it = m_tasks.begin();
-            while (it != m_tasks.end()) {
+            auto it = m_fibers.begin();
+            while (it != m_fibers.end()) {
                 if (it->thread != -1 && it->thread != pico::getThreadId()) {
-                    it++;
+                    ++it;
                     tickle_me = true;
                     continue;
                 }
-                assert(it->fiber || it->func);
-                if (it->fiber && it->fiber->getState() == Fiber::RUNNING) {
+
+                assert(it->fiber || it->cb);
+                if (it->fiber && it->fiber->getState() == Fiber::EXEC) {
                     ++it;
                     continue;
                 }
-                task = *it;
-                m_tasks.erase(it);
-                ++m_active_count;
+
+                ft = *it;
+                m_fibers.erase(it++);
+                ++m_activeThreadCount;
+                is_active = true;
                 break;
             }
+            tickle_me |= it != m_fibers.end();
+        }
 
-            tickle_me |= (it != m_tasks.end());
-        }
         if (tickle_me) { tickle(); }
-        if (task.fiber && task.fiber->getState() != Fiber::EXIT) {
-            task.fiber->swapIn();
-            --m_active_count;
-            if (task.fiber->getState() == Fiber::READY) { schedule(task.fiber); }
-            else if (task.fiber->getState() != Fiber::EXIT) {
-                task.fiber->m_state = Fiber::SUSPEND;
+
+        if (ft.fiber &&
+            (ft.fiber->getState() != Fiber::TERM && ft.fiber->getState() != Fiber::EXCEPT)) {
+            ft.fiber->swapIn();
+            --m_activeThreadCount;
+
+            if (ft.fiber->getState() == Fiber::READY) { schedule(ft.fiber); }
+            else if (ft.fiber->getState() != Fiber::TERM && ft.fiber->getState() != Fiber::EXCEPT) {
+                ft.fiber->m_state = Fiber::HOLD;
             }
-            task.reset();
+            ft.reset();
         }
-        else if (task.func) {
-            if (cb_fiber) { cb_fiber->reset(task.func); }
+        else if (ft.cb) {
+            if (cb_fiber) { cb_fiber->reset(ft.cb); }
             else {
-                cb_fiber.reset(new Fiber(task.func));
+                cb_fiber.reset(new Fiber(ft.cb));
             }
-            task.reset();
+            ft.reset();
             cb_fiber->swapIn();
-            --m_active_count;
+            --m_activeThreadCount;
             if (cb_fiber->getState() == Fiber::READY) {
                 schedule(cb_fiber);
                 cb_fiber.reset();
             }
-            else if (cb_fiber->getState() == Fiber::EXIT) {
+            else if (cb_fiber->getState() == Fiber::EXCEPT || cb_fiber->getState() == Fiber::TERM) {
                 cb_fiber->reset(nullptr);
             }
-            else {
-                cb_fiber->m_state = Fiber::SUSPEND;
+            else {   // if(cb_fiber->getState() != Fiber::TERM) {
+                cb_fiber->m_state = Fiber::HOLD;
                 cb_fiber.reset();
             }
         }
         else {
-            if (idle_ptr->getState() == Fiber::EXIT) {
-                LOG_INFO("idle fiber exit");
-                break;
+            if (is_active) {
+                --m_activeThreadCount;
+                continue;
             }
-            ++m_idle_count;
-            idle_ptr->swapIn();
-            --m_idle_count;
-            if (idle_ptr->getState() != Fiber::EXIT) idle_ptr->m_state = Fiber::SUSPEND;
+            if (idle_fiber->getState() == Fiber::TERM) { break; }
+
+            ++m_idleThreadCount;
+            idle_fiber->swapIn();
+            --m_idleThreadCount;
+            if (idle_fiber->getState() != Fiber::TERM && idle_fiber->getState() != Fiber::EXCEPT) {
+                idle_fiber->m_state = Fiber::HOLD;
+            }
         }
     }
 }
 
 void Scheduler::tickle() {
-    LOG_INFO("Scheduler::tickle()");
+    LOG_INFO("tickle");
 }
 
 bool Scheduler::stopping() {
     MutexType::Lock lock(m_mutex);
-    return m_autoStop && m_stopping && m_tasks.empty() && m_active_count == 0;
+    return m_autoStop && m_stopping && m_fibers.empty() && m_activeThreadCount == 0;
 }
 
 void Scheduler::idle() {
-    LOG_INFO("Scheduler::idle()");
-    while (!stopping()) { pico::Fiber::yieldToSuspend(); }
+    LOG_INFO("idle");
+    while (!stopping()) { pico::Fiber::yieldToHold(); }
 }
 
 void Scheduler::switchTo(int thread) {
@@ -196,7 +207,7 @@ void Scheduler::switchTo(int thread) {
         if (thread == -1 || thread == pico::getThreadId()) { return; }
     }
     schedule(Fiber::GetThis(), thread);
-    Fiber::yieldToSuspend();
+    Fiber::yieldToHold();
 }
 
 }   // namespace pico

@@ -7,9 +7,9 @@ pico::Mutex mutex;
 
 void run_in_fiber() {
     LOG_INFO("run_in_fiber begin");
-    pico::Fiber::yieldToSuspend();
+    pico::Fiber::yieldToHold();
     LOG_INFO("run_in_fiber end");
-    pico::Fiber::yieldToSuspend();
+    pico::Fiber::yieldToHold();
 }
 
 void test_fiber() {

@@ -14,7 +14,7 @@ set(CMAKE_C_FLAGS
     "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
 )
 
-option(BUILD_TEST "ON for complile test" OFF)
+option(BUILD_TEST "ON for complile test" ON)
 
 set(LIB_SRC
     pico/address.cc
@@ -25,6 +25,7 @@ set(LIB_SRC
     pico/env.cc
     pico/fdmanager.cc
     pico/fiber.cc
+    pico/filter.cc
     pico/hook.cc
     pico/http/http_connection.cc
     pico/http/http_parser.cc
