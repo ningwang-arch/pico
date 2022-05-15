@@ -22,6 +22,9 @@ set(LIB_SRC
     pico/class_factory.cc
     pico/config.cc
     pico/daemon.cc
+
+    # pico/db/mysql.cc
+
     pico/env.cc
     pico/fdmanager.cc
     pico/fiber.cc

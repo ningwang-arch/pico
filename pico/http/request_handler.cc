@@ -68,16 +68,11 @@ FilterChain::Ptr RequestHandler::findFilterChain(const std::string& path) {
 void RequestHandler::handle(const HttpRequest::Ptr& req, HttpResponse::Ptr& resp) {
     auto path = req->get_path();
     auto servlet = findHandler(path);
-    FilterChain::Ptr filter_chain = nullptr;
-    if (findFilterChain(path)) {
-        filter_chain = std::make_shared<FilterChain>(findFilterChain(path)->getFilters());
-    }
-    if (filter_chain) {
-        filter_chain->reuse();
-        filter_chain->doFilter(req, resp);
-        if (!filter_chain->is_complete()) { return; }
-    }
-    servlet->service(req, resp);
-}
+    FilterChain::Ptr filter_chain(new FilterChain());
+    if (findFilterChain(path)) { filter_chain->setFilters(findFilterChain(path)->getFilters()); }
 
+    filter_chain->reuse();
+    filter_chain->setServlet(servlet);
+    filter_chain->doFilter(req, resp);
+}
 }   // namespace pico

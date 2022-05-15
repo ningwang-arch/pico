@@ -8,6 +8,7 @@
 #include "class_factory.h"
 #include "config.h"
 #include "http/http.h"
+#include "http/servlet.h"
 
 namespace pico {
 class FilterConfig;
@@ -24,6 +25,8 @@ public:
 
     virtual void doFilter(const pico::HttpRequest::Ptr& request, pico::HttpResponse::Ptr& response,
                           std::shared_ptr<FilterChain> chain) = 0;
+
+    virtual void destroy() { std::cout << "Filter::destroy()" << std::endl; }
 };
 
 class FilterConfig
@@ -31,6 +34,13 @@ class FilterConfig
 public:
     typedef std::shared_ptr<FilterConfig> Ptr;
     FilterConfig() { m_filter = nullptr; }
+
+    ~FilterConfig() {
+        if (m_filter) {
+            m_filter->destroy();
+            m_filter = nullptr;
+        }
+    }
 
     // setters
     void setName(const std::string& name) { m_name = name; }
@@ -50,8 +60,6 @@ public:
     }
 
     std::map<std::string, std::string> getInitParams() const { return m_init_params; }
-
-
 
     std::string toString() const {
         std::stringstream ss;
@@ -78,13 +86,17 @@ public:
 
 
     FilterChain();
-    FilterChain(const std::vector<FilterConfig::Ptr>& filters);
     FilterChain(const FilterChain& other);
 
 
     ~FilterChain();
 
     std::vector<FilterConfig::Ptr>& getFilters() { return m_filters; }
+    void setFilters(const std::vector<FilterConfig::Ptr>& filters) {
+        m_filters = filters;
+        m_size = m_filters.size();
+    }
+
 
     void doFilter(const HttpRequest::Ptr& request, HttpResponse::Ptr& response);
 
@@ -92,9 +104,9 @@ public:
 
     void reuse() { m_index = 0; }
 
-    bool is_complete() { return m_index == m_size; }
-
     void addFilter(const FilterConfig::Ptr& filter_config);
+
+    void setServlet(const Servlet::Ptr& servlet) { m_servlet = servlet; }
 
     std::string toString() {
         std::stringstream ss;
@@ -108,6 +120,7 @@ private:
     int m_size = 0;
 
     std::vector<FilterConfig::Ptr> m_filters;
+    Servlet::Ptr m_servlet;
 };
 
 
@@ -130,6 +143,7 @@ public:
                 config->addParam(param.first.as<std::string>(), param.second.as<std::string>());
             }
         }
+        filter->init(config);
         return config;
     }
 };

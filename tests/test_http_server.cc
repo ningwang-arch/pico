@@ -74,7 +74,8 @@ public:
         for (auto& param : m_init_params) {
             std::cout << param.first << "=" << param.second << std::endl;
         }
-        chain->doFilter(request, response);
+        return;
+        // chain->doFilter(request, response);
     }
 
 private:

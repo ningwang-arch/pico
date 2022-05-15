@@ -3,11 +3,6 @@
 namespace pico {
 FilterChain::FilterChain() {}
 
-FilterChain::FilterChain(const std::vector<FilterConfig::Ptr>& filters)
-    : m_filters(filters) {
-    m_size = filters.size();
-}
-
 FilterChain::FilterChain(const FilterChain& other) {
     m_filters = other.m_filters;
     m_size = other.m_size;
@@ -21,8 +16,10 @@ void FilterChain::internalDoFilter(const HttpRequest::Ptr& request, HttpResponse
     if (m_index < m_size) {
         FilterConfig::Ptr filter_config = m_filters[m_index++];
         Filter::Ptr filter = filter_config->getFilter();
-        filter->init(filter_config);
         filter->doFilter(request, response, shared_from_this());
+    }
+    else {
+        m_servlet->service(request, response);
     }
 }
 
