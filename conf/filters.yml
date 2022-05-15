@@ -6,3 +6,10 @@ filters:
     init_params:
       param1: "value1"
       param2: "value2"
+  - name: "filter2"
+    path: /
+    class: TestFilter
+    description: "Filter2 description"
+    init_params:
+      param1: "value1"
+      param2: "value2"

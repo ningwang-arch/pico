@@ -60,10 +60,32 @@ public:
     }
 };
 
+class TestFilter : public Filter
+{
+public:
+    void init(const FilterConfig::Ptr& config) override {
+        std::cout << "TestFilter::init" << std::endl;
+        m_init_params = config->getInitParams();
+    }
+
+    void doFilter(const HttpRequest::Ptr& request, HttpResponse::Ptr& response,
+                  FilterChain::Ptr chain) override {
+        std::cout << "TestFilter::doFilter" << std::endl;
+        for (auto& param : m_init_params) {
+            std::cout << param.first << "=" << param.second << std::endl;
+        }
+        chain->doFilter(request, response);
+    }
+
+private:
+    std::map<std::string, std::string> m_init_params;
+};
+
 REGISTER_CLASS(HelloServlet);
 REGISTER_CLASS(SessionSetServlet);
 REGISTER_CLASS(SessionGetServlet);
 REGISTER_CLASS(HelloFilter);
+REGISTER_CLASS(TestFilter);
 
 }   // namespace pico
 
