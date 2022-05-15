@@ -3,5 +3,5 @@
 - read log conf from file(finished)
 - add env support(finished)
 
-- add filter same as java servlet
+- add filter same as java servlet(finished)
 - add db support
