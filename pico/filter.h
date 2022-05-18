@@ -13,8 +13,6 @@
 namespace pico {
 class FilterConfig;
 class FilterChain;
-
-
 class Filter
 {
 public:
@@ -26,7 +24,7 @@ public:
     virtual void doFilter(const pico::HttpRequest::Ptr& request, pico::HttpResponse::Ptr& response,
                           std::shared_ptr<FilterChain> chain) = 0;
 
-    virtual void destroy() { std::cout << "Filter::destroy()" << std::endl; }
+    virtual void destroy() {}
 };
 
 class FilterConfig
@@ -44,14 +42,12 @@ public:
 
     // setters
     void setName(const std::string& name) { m_name = name; }
-    void setUrlPattern(const std::string& url_pattern) { m_url_pattern = url_pattern; }
     void setClass(const std::string& class_name) { m_class = class_name; }
     void setDescription(const std::string& description) { m_description = description; }
     void setFilter(const Filter::Ptr& filter) { m_filter = filter; }
 
     std::string getName() const { return m_name; }
     std::string getClass() const { return m_class; }
-    std::string getUrlPattern() const { return m_url_pattern; }
     std::string getDescription() const { return m_description; }
     Filter::Ptr getFilter() const { return m_filter; }
 
@@ -59,18 +55,20 @@ public:
         m_init_params[name] = value;
     }
 
+    void setInitParams(const std::map<std::string, std::string>& init_params) {
+        m_init_params = init_params;
+    }
+
     std::map<std::string, std::string> getInitParams() const { return m_init_params; }
 
     std::string toString() const {
         std::stringstream ss;
-        ss << "FilterConfig: " << m_name << " " << m_class << " " << m_url_pattern << " "
-           << m_description;
+        ss << "FilterConfig: " << m_name << " " << m_class << " " << m_description;
         return ss.str();
     }
 
 private:
     std::string m_name;
-    std::string m_url_pattern;
     std::string m_class;
     std::string m_description;
     std::map<std::string, std::string> m_init_params;
@@ -123,47 +121,63 @@ private:
     Servlet::Ptr m_servlet;
 };
 
+struct FilterConfs
+{
+    std::string name;
+    std::string cls_name;
+    std::string description;
+    std::vector<std::string> url_patterns;
+    std::map<std::string, std::string> init_params;
+
+    bool operator==(const FilterConfs& other) const {
+        return name == other.name && cls_name == other.cls_name &&
+               description == other.description && url_patterns == other.url_patterns &&
+               init_params == other.init_params;
+    }
+};
+
 
 template<>
-class LexicalCast<std::string, FilterConfig::Ptr>
+class LexicalCast<std::string, FilterConfs>
 {
 public:
-    FilterConfig::Ptr operator()(const std::string& v) {
-        YAML::Node node = YAML::Load(v);
-        FilterConfig::Ptr config(new FilterConfig);
-        config->setName(node["name"].as<std::string>());
-        config->setClass(node["class"].as<std::string>());
-        config->setUrlPattern(node["path"].as<std::string>());
-        Filter::Ptr filter =
-            std::static_pointer_cast<Filter>(ClassFactory::Instance().Create(config->getClass()));
-        config->setFilter(filter);
-        config->setDescription(node["description"].as<std::string>());
+    FilterConfs operator()(const std::string& str) {
+        FilterConfs conf;
+        YAML::Node node = YAML::Load(str);
+        conf.name = node["name"].as<std::string>();
+        conf.cls_name = node["class"].as<std::string>();
+        conf.description = node["description"].as<std::string>();
+        if (node["path"].IsDefined()) {
+            for (auto path : node["path"]) { conf.url_patterns.push_back(path.as<std::string>()); }
+        }
         if (node["init_params"].IsDefined()) {
             for (auto param : node["init_params"]) {
-                config->addParam(param.first.as<std::string>(), param.second.as<std::string>());
+                conf.init_params.insert(
+                    std::make_pair(param.first.as<std::string>(), param.second.as<std::string>()));
             }
         }
-        filter->init(config);
-        return config;
+        return conf;
     }
 };
 
 template<>
-class LexicalCast<FilterConfig::Ptr, std::string>
+class LexicalCast<FilterConfs, std::string>
 {
 public:
-    std::string operator()(const FilterConfig::Ptr& v) {
+    std::string operator()(const FilterConfs& conf) {
         YAML::Node node;
-        node["name"] = v->getName();
-        node["class"] = v->getClass();
-        node["path"] = v->getUrlPattern();
-        node["description"] = v->getDescription();
-        for (auto& i : v->getInitParams()) { node["init_params"][i.first] = i.second; }
         std::stringstream ss;
+        node["name"] = conf.name;
+        node["class"] = conf.cls_name;
+        node["description"] = conf.description;
+        for (auto& path : conf.url_patterns) { node["path"].push_back(path); }
+        for (auto& param : conf.init_params) { node["init_params"][param.first] = param.second; }
+
         ss << node;
         return ss.str();
     }
 };
+
 }   // namespace pico
 
 #endif

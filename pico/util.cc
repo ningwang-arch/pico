@@ -2,11 +2,14 @@
 
 #include <chrono>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdarg.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <vector>
+
+#include "logging.h"
 
 namespace pico {
 pid_t getThreadId() {
@@ -61,266 +64,14 @@ std::string StringUtil::Formatv(const char* fmt, va_list ap) {
 }
 
 static const char uri_chars[256] = {
-    /* 0 */
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
-    /* 64 */
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    1,
-    0,
-    /* 128 */
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    /* 192 */
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
 static const char xdigit_chars[256] = {
@@ -444,6 +195,207 @@ void listDir(const std::string& path, std::vector<std::string>& files, const std
         }
     }
     closedir(dir);
+}
+
+std::string base64_encode(const char* data, size_t length) {
+    auto input = reinterpret_cast<const unsigned char*>(data);
+    const auto pl = 4 * ((length + 2) / 3);
+    auto output = reinterpret_cast<char*>(
+        calloc(pl + 1, 1));   //+1 for the terminating null that EVP_EncodeBlock adds on
+    const auto ol = EVP_EncodeBlock(reinterpret_cast<unsigned char*>(output), input, length);
+    if ((int)pl != ol) {
+        std::cerr << "Whoops, encode predicted " << pl << " but we got " << ol << "\n";
+    }
+    std::string str = reinterpret_cast<char*>(output);
+    // delete '=' padding
+    str.erase(std::remove(str.begin(), str.end(), '='), str.end());
+    // replace '/' with '_', '+' with '-'
+    std::replace(str.begin(), str.end(), '/', '_');
+    std::replace(str.begin(), str.end(), '+', '-');
+    free(output);
+    return str;
+}
+
+std::string base64_decode(const char* data, size_t length) {
+    std::string input = data;
+    // add '=' padding
+    if (length % 4 != 0) {
+        size_t pad = 4 - length % 4;
+        for (size_t i = 0; i < pad; i++) { input += '='; }
+    }
+    // replace '-' with '+', '_' with '/'
+    std::replace(input.begin(), input.end(), '-', '+');
+    std::replace(input.begin(), input.end(), '_', '/');
+
+    const auto pl = 3 * input.size() / 4;
+    auto output = reinterpret_cast<unsigned char*>(calloc(pl + 1, 1));
+    const auto ol =
+        EVP_DecodeBlock(output, reinterpret_cast<const unsigned char*>(input.data()), input.size());
+    if ((int)pl != ol) {
+        std::cerr << "Whoops, decode predicted " << pl << " but we got " << ol << "\n";
+        return std::string();
+    }
+    // std::string str = reinterpret_cast<char*>(output);
+    // free(output);
+    return reinterpret_cast<char*>(output);
+}
+
+std::string Json2Str(const Json::Value& json) {
+    Json::StreamWriterBuilder builder;
+    builder.settings_["indentation"] = "";
+    std::string str = Json::writeString(builder, json);
+    return str;
+}
+
+bool Str2Json(const std::string& str, Json::Value& json) {
+    Json::CharReaderBuilder builder;
+    Json::CharReader* reader = builder.newCharReader();
+
+    std::string errors;
+
+    bool parsingSuccessful = reader->parse(str.c_str(), str.c_str() + str.size(), &json, &errors);
+    delete reader;
+
+    if (!parsingSuccessful) {
+        LOG_ERROR("Failed to parse json: %s", errors.c_str());
+        return false;
+    }
+    return true;
+}
+
+void split(const std::string& str, std::vector<std::string>& tokens, const std::string delim) {
+    tokens.clear();
+
+    char* buffer = new char[str.size() + 1];
+    std::strcpy(buffer, str.c_str());
+
+    char* tmp;
+    char* p = strtok_r(buffer, delim.c_str(), &tmp);   // 第一次分割
+    do {
+        tokens.push_back(p);   // 如果 p 为 nullptr，则将整个字符串作为结果
+    } while ((p = strtok_r(nullptr, delim.c_str(), &tmp)) != nullptr);
+    // strtok_r 为 strtok 的线程安全版本。
+}
+
+std::string extract_pubkey_from_cert(const std::string& certstr, const std::string& pw) {
+    std::unique_ptr<BIO, decltype(&BIO_free_all)> certbio(
+        BIO_new_mem_buf(certstr.data(), static_cast<int>(certstr.size())), BIO_free_all);
+    std::unique_ptr<BIO, decltype(&BIO_free_all)> keybio(BIO_new(BIO_s_mem()), BIO_free_all);
+    if (!certbio || !keybio) { return {}; }
+
+    std::unique_ptr<X509, decltype(&X509_free)> cert(
+        PEM_read_bio_X509(certbio.get(), nullptr, nullptr, const_cast<char*>(pw.c_str())),
+        X509_free);
+    if (!cert) { return {}; }
+    std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)> key(X509_get_pubkey(cert.get()),
+                                                            EVP_PKEY_free);
+    if (!key) { return {}; }
+    if (PEM_write_bio_PUBKEY(keybio.get(), key.get()) == 0) { return {}; }
+    char* ptr = nullptr;
+    auto len = BIO_get_mem_data(keybio.get(), &ptr);
+    if (len <= 0 || ptr == nullptr) { return {}; }
+    return {ptr, static_cast<size_t>(len)};
+}
+
+
+std::shared_ptr<EVP_PKEY> load_public_key_from_string(const std::string& key,
+                                                      const std::string& password) {
+    std::unique_ptr<BIO, decltype(&BIO_free_all)> pubkey_bio(BIO_new(BIO_s_mem()), BIO_free_all);
+    if (!pubkey_bio) { return nullptr; }
+    if (key.substr(0, 27) == "-----BEGIN CERTIFICATE-----") {
+        auto epkey = extract_pubkey_from_cert(key, password);
+        if (epkey.empty()) { return nullptr; }
+        const int len = static_cast<int>(epkey.size());
+        if (BIO_write(pubkey_bio.get(), epkey.data(), len) != len) { return nullptr; }
+    }
+    else {
+        const int len = static_cast<int>(key.size());
+        if (BIO_write(pubkey_bio.get(), key.data(), len) != len) { return nullptr; }
+    }
+
+    std::shared_ptr<EVP_PKEY> pkey(
+        PEM_read_bio_PUBKEY(
+            pubkey_bio.get(),
+            nullptr,
+            nullptr,
+            (void*)password.data()),   // NOLINT(google-readability-casting) requires `const_cast`
+        EVP_PKEY_free);
+    if (!pkey) { return nullptr; }
+    return pkey;
+}
+
+
+
+std::shared_ptr<EVP_PKEY> load_private_key_from_string(const std::string& key,
+                                                       const std::string& password) {
+    std::unique_ptr<BIO, decltype(&BIO_free_all)> privkey_bio(BIO_new(BIO_s_mem()), BIO_free_all);
+    if (!privkey_bio) { return nullptr; }
+    const int len = static_cast<int>(key.size());
+    if (BIO_write(privkey_bio.get(), key.data(), len) != len) { return nullptr; }
+    std::shared_ptr<EVP_PKEY> pkey(
+        PEM_read_bio_PrivateKey(
+            privkey_bio.get(), nullptr, nullptr, const_cast<char*>(password.c_str())),
+        EVP_PKEY_free);
+    if (!pkey) { return nullptr; }
+    return pkey;
+}
+
+
+
+std::shared_ptr<EVP_PKEY> load_public_ec_key_from_string(const std::string& key,
+                                                         const std::string& password) {
+    std::unique_ptr<BIO, decltype(&BIO_free_all)> pubkey_bio(BIO_new(BIO_s_mem()), BIO_free_all);
+    if (!pubkey_bio) { return nullptr; }
+    if (key.substr(0, 27) == "-----BEGIN CERTIFICATE-----") {
+        auto epkey = extract_pubkey_from_cert(key, password);
+        if (epkey.empty()) return nullptr;
+        const int len = static_cast<int>(epkey.size());
+        if (BIO_write(pubkey_bio.get(), epkey.data(), len) != len) { return nullptr; }
+    }
+    else {
+        const int len = static_cast<int>(key.size());
+        if (BIO_write(pubkey_bio.get(), key.data(), len) != len) { return nullptr; }
+    }
+
+    std::shared_ptr<EVP_PKEY> pkey(
+        PEM_read_bio_PUBKEY(
+            pubkey_bio.get(),
+            nullptr,
+            nullptr,
+            (void*)password.data()),   // NOLINT(google-readability-casting) requires `const_cast`
+        EVP_PKEY_free);
+    if (!pkey) { return nullptr; }
+    return pkey;
+}
+
+std::shared_ptr<EVP_PKEY> load_private_ec_key_from_string(const std::string& key,
+                                                          const std::string& password) {
+    std::unique_ptr<BIO, decltype(&BIO_free_all)> privkey_bio(BIO_new(BIO_s_mem()), BIO_free_all);
+    if (!privkey_bio) { return nullptr; }
+    const int len = static_cast<int>(key.size());
+    if (BIO_write(privkey_bio.get(), key.data(), len) != len) { return nullptr; }
+    std::shared_ptr<EVP_PKEY> pkey(
+        PEM_read_bio_PrivateKey(
+            privkey_bio.get(), nullptr, nullptr, const_cast<char*>(password.c_str())),
+        EVP_PKEY_free);
+    if (!pkey) { return nullptr; }
+    return pkey;
+}
+
+std::string bn2raw(const BIGNUM* bn) {
+    std::string res(BN_num_bytes(bn), '\0');
+    BN_bn2bin(
+        bn,
+        (unsigned char*)res.data());   // NOLINT(google-readability-casting) requires `const_cast`
+    return res;
+}
+
+std::unique_ptr<BIGNUM, decltype(&BN_free)> raw2bn(const std::string& raw) {
+    return std::unique_ptr<BIGNUM, decltype(&BN_free)>(
+        BN_bin2bn(reinterpret_cast<const unsigned char*>(raw.data()),
+                  static_cast<int>(raw.size()),
+                  nullptr),
+        BN_free);
 }
 
 }   // namespace pico

@@ -1,11 +1,27 @@
 #ifndef __PICO_UTIL_H__
 #define __PICO_UTIL_H__
 
+#include <boost/lexical_cast.hpp>
 #include <dirent.h>
+#include <map>
 #include <pthread.h>
 #include <string.h>
 #include <string>
 #include <vector>
+
+#include <json/json.h>
+#include <mbedtls/base64.h>
+#include <mbedtls/md.h>
+#include <mbedtls/platform.h>
+#include <mbedtls/sha1.h>
+#include <openssl/ec.h>
+#include <openssl/ecdsa.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/hmac.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
+#include <openssl/ssl.h>
 
 #include "fiber.h"
 
@@ -39,6 +55,47 @@ public:
 
 void listDir(const std::string& path, std::vector<std::string>& files,
              const std::string& suffix = "");
+
+template<class T>
+T getValueFromMap(const std::map<std::string, std::string>& map, const std::string& key,
+                  const T& default_value = T()) {
+    auto it = map.find(key);
+    if (it != map.end()) { return boost::lexical_cast<T>(it->second); }
+    return default_value;
+}
+
+
+std::string base64_encode(const char* data, size_t data_len);
+
+std::string base64_decode(const char* encoded_data, size_t encoded_data_len);
+
+std::string Json2Str(const Json::Value& json);
+
+bool Str2Json(const std::string& str, Json::Value& json);
+
+void split(const std::string& str, std::vector<std::string>& tokens, const std::string delim);
+
+
+std::string extract_pubkey_from_cert(const std::string& certstr, const std::string& pw = "");
+
+
+std::shared_ptr<EVP_PKEY> load_public_key_from_string(const std::string& key,
+                                                      const std::string& password = "");
+
+
+std::shared_ptr<EVP_PKEY> load_private_key_from_string(const std::string& key,
+                                                       const std::string& password = "");
+
+std::shared_ptr<EVP_PKEY> load_public_ec_key_from_string(const std::string& key,
+                                                         const std::string& password = "");
+
+std::shared_ptr<EVP_PKEY> load_private_ec_key_from_string(const std::string& key,
+                                                          const std::string& password = "");
+
+
+std::string bn2raw(const BIGNUM* bn);
+
+std::unique_ptr<BIGNUM, decltype(&BN_free)> raw2bn(const std::string& raw);
 
 }   // namespace pico
 

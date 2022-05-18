@@ -1,13 +1,17 @@
 filters:
   - name: "filter1"
-    path: /
     class: HelloFilter
     description: "Filter1 description"
+    path:
+      - /
+      - /set
     init_params:
       param1: "value1"
       param2: "value2"
   - name: "filter2"
-    path: /
+    path:
+      - /
+      - /get
     class: TestFilter
     description: "Filter2 description"
     init_params:

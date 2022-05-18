@@ -4,4 +4,6 @@
 - add env support(finished)
 
 - add filter same as java servlet(finished)
-- add db support
+- add jwt support(on going)
+
+- enable exclude filter in server conf

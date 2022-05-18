@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(pico)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(cmake/utils.cmake)
+# include(cmake/FindMySQL.cmake)
 
 include_directories(.)
 
@@ -16,15 +18,14 @@ set(CMAKE_C_FLAGS
 
 option(BUILD_TEST "ON for complile test" ON)
 
+
 set(LIB_SRC
     pico/address.cc
     pico/application.cc
     pico/class_factory.cc
     pico/config.cc
     pico/daemon.cc
-
-    # pico/db/mysql.cc
-
+    pico/date.cc
     pico/env.cc
     pico/fdmanager.cc
     pico/fiber.cc
@@ -39,6 +40,10 @@ set(LIB_SRC
     pico/http/request_handler.cc
     pico/http/servlet.cc
     pico/iomanager.cc
+    pico/jwt/jwt_creator.cc
+    pico/jwt/jwt_decoder.cc
+    pico/jwt/jwt_verifier.cc
+    pico/jwt/jwt.cc
     pico/logging.cc
     pico/log/LogAppender.cc
     pico/log/LogEvent.cc
@@ -72,7 +77,8 @@ set(LIBS
     jsoncpp
     yaml-cpp
     ssl
-    boost_program_options
+    jsoncpp
+    crypto
     )
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -154,6 +160,16 @@ add_executable(test_register tests/test_register.cc)
 add_dependencies(test_register pico)
 force_redefine_file_macro_for_sources(test_register)
 target_link_libraries(test_register ${LIBS})
+
+add_executable(test_jwt tests/test_jwt.cc)
+add_dependencies(test_jwt pico)
+force_redefine_file_macro_for_sources(test_jwt)
+target_link_libraries(test_jwt ${LIBS})
+
+add_executable(test_date tests/test_date.cc)
+add_dependencies(test_date pico)
+force_redefine_file_macro_for_sources(test_date)
+target_link_libraries(test_date ${LIBS})
 
 endif()
 

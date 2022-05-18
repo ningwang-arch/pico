@@ -65,9 +65,9 @@ static ConfigVar<std::unordered_map<std::string, Route>>::Ptr g_servlets =
 static pico::ConfigVar<std::vector<TcpServerOptions>>::Ptr g_servers_conf =
     pico::Config::Lookup("servers", std::vector<TcpServerOptions>(), "http server config");
 
-static ConfigVar<std::vector<FilterConfig::Ptr>>::Ptr g_filters_conf =
-    Config::Lookup<std::vector<FilterConfig::Ptr>>("filters", std::vector<FilterConfig::Ptr>(),
-                                                   "http filters config");
+static ConfigVar<std::vector<FilterConfs>>::Ptr g_filters_conf =
+    Config::Lookup<std::vector<FilterConfs>>("filters", std::vector<FilterConfs>(),
+                                             "http filters config");
 
 Application* Application::s_instance = nullptr;
 
@@ -128,11 +128,31 @@ void Application::run_in_fiber() {
 
     std::unordered_map<std::string, FilterChain::Ptr> filter_chains;
     for (auto& fc : filters) {
-        auto path = fc->getUrlPattern();
-        if (filter_chains.find(path) == filter_chains.end()) {
-            filter_chains[path] = std::make_shared<FilterChain>();
+        std::string name = fc.name;
+        std::vector<std::string> url_patterns = fc.url_patterns;
+        std::string filter_class = fc.cls_name;
+        Filter::Ptr filter =
+            std::static_pointer_cast<Filter>(ClassFactory::Instance().Create(filter_class));
+        if (!filter) { continue; }
+        std::string desc = fc.description;
+        auto init_params = fc.init_params;
+
+        FilterConfig::Ptr filter_conf(new FilterConfig());
+        filter_conf->setName(name);
+        filter_conf->setClass(filter_class);
+        filter_conf->setDescription(desc);
+        filter_conf->setInitParams(init_params);
+        filter_conf->setFilter(filter);
+
+        filter->init(filter_conf);
+
+        for (auto url_pattern : url_patterns) {
+            if (filter_chains.find(url_pattern) == filter_chains.end()) {
+                filter_chains[url_pattern] = std::make_shared<FilterChain>();
+            }
+
+            filter_chains[url_pattern]->addFilter(filter_conf);
         }
-        filter_chains[path]->addFilter(fc);
     }
 
     pico::WorkerMgr::getInstance()->init();
