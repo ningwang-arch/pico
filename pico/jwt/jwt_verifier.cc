@@ -109,7 +109,7 @@ void JWTVerifier::assertValidClaim(Json::Value claim, std::string name, Json::Va
         }
         // if tmp contains all elements of expectedClaim, isValid = true
         for (auto i : expectedClaim) {
-            if (!tmp.contains(i)) {
+            if (std::find(tmp.begin(), tmp.end(), i) == tmp.end()) {
                 isValid = false;
                 break;
             }

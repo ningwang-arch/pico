@@ -9,16 +9,18 @@ Pico is a C++ framework for creating web applications. It is designed to be easy
 - Easy Routing
 - Uses Morden C++11
 - Http/1.1 support
+- Filter and servlet similar to Java
+- JWT authentication
 
 ### Still to do
 
-- HTTPS support
 - WebSocket support
 
 ### Dependencies
 
 - [jsoncpp](https://github.com/open-source-parsers/jsoncpp)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+- [openssl](https://www.openssl.org/)
 
 ### Note
 
@@ -95,7 +97,7 @@ using request = pico::HttpRequest::Ptr;
 using response = pico::HttpResponse::Ptr;
 class MyServlet : public pico::Servlet {
 public:
-    void doGet(const request& req, const response& res)  override{
+    void doGet(const request& req, response& res)  override{
         res->set_status(pico::HttpStatus::OK);
         res->set_header("Content-Type", "text/plain");
         res->set_body("Hello World");
@@ -104,13 +106,44 @@ public:
 REGISTER_CLASS(MyServlet);
 ```
 
-If you want to use the servlet, you can add configuration in the web.yml file under the servlet section.
+If you want to use the servlet, you can add configuration in the servlets.yml file under the servlet section.
 
 ```yml
-servlet:
+servlets:
   - class: MyServlet
     path: /hello
     name: hello
+```
+
+#### Filter
+Similar to servlet, you must inherit from pico::Filter, and then override the doFilter method.
+
+```c++
+using request = pico::HttpRequest::Ptr;
+using response = pico::HttpResponse::Ptr;
+class MyFilter : public pico::Filter {
+public:
+    void doFilter(const request& req, response& res, pico::FilterChain& chain) override{
+      // do something
+      chain.doFilter(req, res);
+    }
+};
+REGISTER_CLASS(MyFilter);
+```
+If you want to use the filter, you can add configuration in the filters.yml file under the filter section.
+
+```yml
+filters:
+  - name: "filter1"
+    class: MyFilter
+    description: "Filter1 description"
+    path:
+      - /
+      - /set
+    init_params:
+      param1: "value1"
+      param2: "value2"
+
 ```
 
 #### Config File
@@ -118,20 +151,50 @@ servlet:
 The config file is located in the conf/ directory.
 
 ```yaml
-root:
-  server:
-    address: 127.0.0.1
-    port: 8080
-  servlet:
-    - { name: hello, path: /, class: HelloServlet }
-    - { name: set, path: /set, class: SessionSetServlet }
-    - { name: get, path: /get, class: SessionGetServlet }
-  session:
-    timeout: 1800
-```
+# server
+servers:
+  - addresses: ["127.0.0.1:8080", "127.0.0.1:11223"]
+    type: http
+    ssl: false
+    name: server
+    worker: worker
+    keep_alive: false
+    acceptor: acceptor
+    servlets:
+      - hello
+  - addresses: ["127.0.0.1:12233"]
+    type: http
+    ssl: true
+    name: server_1
+    servlets:
+      - hello
+    certificates:
+      file: conf/cert.pem
+      key: conf/key.pem
 
-The default conf dir is `conf/`, if you want to change it, you can use `#define CONF_DIR "your conf location"` in your main.cpp.
-If you conf root is not `root`, you can use `#define CONF_ROOT "your root"` in your main.cpp.
+# servlet
+servlets:
+  - class: MyServlet
+    path: /hello
+    name: hello
+  
+# filter
+filters:
+  - name: "filter1"
+    class: HelloFilter
+    description: "Filter1 description"
+    path:
+      - /
+      - /set
+    init_params:
+      param1: "value1"
+      param2: "value2"
+
+```
+All configuration files are in yaml format, and can be loaded by pico::Config::LoadFromFile.
+All conf files should be in the conf/ directory.
+
+Default conf dir is `${PWD/conf`, but you can change it by add a `-c conf_dir` option to the command line.
 
 #### Logging
 
@@ -159,12 +222,54 @@ LOG_FATAL("msg fmt",msg...);
 
 If you want to create a new layout, please implement Layout interface and override the format() method.
 
-Use the following code to create a new layout and set it to the logger.
+Use the following code to create / add a new layout to the logger.
+``` yml
+logs:
+  - name: root
+    level: info
+    appenders:
+      - type: console
+        layout: my_layout
+      - type: file
+        filename: logs/app.log
+        layout: pattern
+        pattern: "[%d{%Y-%m-%d %H:%M:%S}] %p %m"
+```
+Don't forget to modify pico/logging.cc to add the new layout.
+
+#### JWT
+Same to java, you can use the JWT to create a token.
 
 ```c++
-Layout::Ptr layout(new MyLayout());
-g_logger->setLayout(layout);
+// create a token
+pico::Algorithm::Ptr alg = pico::Algorithm::HMAC256(TOKEN_SECRET);
+pico::JWTCreator::Builder::Ptr builder = pico::JWTCreator::init();
+
+builder->withHeader(Json::Value(Json::objectValue))
+        ->withKeyId("keyId")
+        ->withIssuer("issuer")
+        ->withSubject("subject")
+        ->withAudience(std::vector<std::string>{"audience1", "audience2"})
+        ->withExpiresAt(pico::Date() + 3)
+        ->withNotBefore(pico::Date() /* + 30*/)
+        ->withIssuedAt(pico::Date())
+        ->withJWTId("jwtId")
+        ->withClaim("name", "value")
+
+std::string token = builder->sign(alg);
+
+// verify the token
+try{
+  pico::Algorithm::Ptr alg = pico::Algorithm::HMAC256("privateKey");
+  auto verifier = pico::JWT::require(alg)->build();
+  auto decoder = verifier->verify(token);
+}catch(...){
+  // do something
+}
+
 ```
+when some error occurs, you can get the error message by the exception.
+More usage about jwt module just same as java.
 
 ###### Generate certificate
 

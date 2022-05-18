@@ -17,7 +17,7 @@ std::string token_gen() {
         ->withIssuer("issuer")
         ->withSubject("subject")
         ->withAudience(std::vector<std::string>{"audience1", "audience2"})
-        ->withExpiresAt(pico::Date() + 3)
+        ->withExpiresAt(pico::Date() + 3)   // 3 seconds
         ->withNotBefore(pico::Date() /* + 30*/)
         ->withIssuedAt(pico::Date())
         ->withJWTId("jwtId")
@@ -45,6 +45,7 @@ void verify(std::string token) {
         // std::cout << decoder->to_string() << std::endl;
         std::cout << decoder->getExpiration().to_string() << std::endl;
         std::cout << decoder->getJwtId() << std::endl;
+        std::cout << decoder->getClaim("name") << std::endl;
         sleep(5);
         //
         std::cout << verifier->build()->verify(token)->getJwtId();

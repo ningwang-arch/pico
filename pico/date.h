@@ -4,6 +4,16 @@
 #include <string>
 
 namespace pico {
+
+/**
+ * @brief The Date class
+ * @details
+ *  Date class is a wrapper of struct tm.
+ *  So it's accuracy is second.
+ *  If you want to get more accurate time,
+ *  you should rewrite this class.
+ *  But please be careful to change the method function call.
+ */
 class Date
 {
 public:
