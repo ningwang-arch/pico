@@ -27,7 +27,7 @@ public:
 
     virtual void doHead(const request& req, response& res);
 
-    void doOptions(const request& req, response& res);
+    virtual void doOptions(const request& req, response& res);
 
 private:
     void sendMethodNotAllowed(const request& req, response& res);

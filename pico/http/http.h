@@ -171,6 +171,9 @@ public:
     std::string get_header(const std::string& key, const std::string& def = "");
     std::string get_param(const std::string& key, const std::string& def = "");
     std::string get_cookie(const std::string& key, const std::string& def = "");
+    std::string get_token();
+
+    MapType get_params() const { return m_params; }
 
     // setter
     void set_version(const std::string& version) { m_version = version; }
@@ -182,6 +185,8 @@ public:
     void set_header(const std::string& key, const std::string& value);
     void set_param(const std::string& key, const std::string& value);
     void set_cookie(const std::string& key, const std::string& value);
+
+    void set_token(const std::string& token);
 
     // delete
     void del_header(const std::string& key);
@@ -206,8 +211,6 @@ public:
     void initQueryParam();
     void initBodyParam();
     void initCookies();
-
-    void* middleware_ctx = nullptr;
 
 private:
     bool m_is_close;
@@ -252,6 +255,8 @@ public:
     void set_close(bool is_close) { m_is_close = is_close; }
 
     void set_redirect(const std::string& url);
+
+    void set_token(const std::string& token);
 
     void set_cookie(const std::string& key, const std::string& val, time_t expired = 0,
                     const std::string& path = "", const std::string& domain = "",

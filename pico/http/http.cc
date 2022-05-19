@@ -120,6 +120,14 @@ std::string HttpRequest::get_cookie(const std::string& key, const std::string& d
     return it->second;
 }
 
+std::string HttpRequest::get_token() {
+    std::string token_str = get_header("Authorization");
+    if (token_str.empty()) { return ""; }
+    size_t pos = token_str.find(' ');
+    if (pos == std::string::npos) { return ""; }
+    return token_str.substr(pos + 1);
+}
+
 void HttpRequest::set_header(const std::string& key, const std::string& value) {
     m_headers[key] = value;
 }
@@ -130,6 +138,14 @@ void HttpRequest::set_param(const std::string& key, const std::string& value) {
 
 void HttpRequest::set_cookie(const std::string& key, const std::string& value) {
     m_cookies[key] = value;
+}
+
+void HttpRequest::set_token(const std::string& token) {
+    if (token.empty()) {
+        m_headers.erase("Authorization");
+        return;
+    }
+    set_header("Authorization", "Bearer " + token);
 }
 
 void HttpRequest::del_header(const std::string& key) {
@@ -207,6 +223,14 @@ void HttpResponse::del_header(const std::string& key) {
 void HttpResponse::set_redirect(const std::string& url) {
     set_header("Location", url);
     set_status(HttpStatus::FOUND);
+}
+
+void HttpResponse::set_token(const std::string& token) {
+    if (token.empty()) {
+        m_headers.erase("Authorization");
+        return;
+    }
+    set_header("Authorization", "Bearer " + token);
 }
 
 void HttpResponse::set_cookie(const std::string& key, const std::string& val, time_t expired,
