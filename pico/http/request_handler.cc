@@ -43,7 +43,14 @@ void RequestHandler::delGlobalRoute(const std::string& path) {
 }
 
 void RequestHandler::addFilterChain(const std::string& url_pattern, FilterChain::Ptr filter_chain) {
-    m_filter_chains.insert({url_pattern, filter_chain});
+    auto chain = findFilterChain(url_pattern);
+    if (chain) {
+        if (chain != filter_chain) {
+            auto filters = chain->getFilters();
+            for (auto& filter : filters) { filter_chain->addFilter(filter); }
+        }
+    }
+    m_filter_chains[url_pattern] = filter_chain;
 }
 
 Servlet::Ptr RequestHandler::findHandler(const std::string& path) {

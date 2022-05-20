@@ -24,8 +24,15 @@ void FilterChain::internalDoFilter(const HttpRequest::Ptr& request, HttpResponse
 }
 
 void FilterChain::addFilter(const FilterConfig::Ptr& filter_config) {
-    m_filters.push_back(filter_config);
-    m_size++;
+    // check if the filter is already in the chain
+    auto it =
+        std::find_if(m_filters.begin(), m_filters.end(), [&](const FilterConfig::Ptr& filter) {
+            return filter->getFilter() == filter_config->getFilter();
+        });
+    if (it == m_filters.end()) {
+        m_filters.push_back(filter_config);
+        m_size++;
+    }
 }
 
 

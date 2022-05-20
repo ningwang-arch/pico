@@ -13,6 +13,14 @@
 #include "servlet.h"
 
 namespace pico {
+
+struct InsertByLength
+{
+    bool operator()(const std::string& a, const std::string& b) const {
+        return a.size() > b.size();
+    }
+};
+
 class RequestHandler
 {
 public:
@@ -55,7 +63,11 @@ private:
     std::vector<Route> m_glob_routes;
     std::vector<Route> m_routes;
 
-    std::map<std::string, FilterChain::Ptr> m_filter_chains;
+    //  /abc/def/*  filter3 + /abc/*
+    //  /abc/*      filter2 + /*
+    //  /def        filter4 + /*
+    //  /*          filter1
+    std::map<std::string, FilterChain::Ptr, InsertByLength> m_filter_chains;
 };
 }   // namespace pico
 

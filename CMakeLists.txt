@@ -16,7 +16,7 @@ set(CMAKE_C_FLAGS
     "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
 )
 
-option(BUILD_TEST "ON for complile test" ON)
+option(BUILD_TEST "ON for complile test" OFF)
 
 
 set(LIB_SRC
