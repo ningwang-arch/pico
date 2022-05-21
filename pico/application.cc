@@ -224,7 +224,7 @@ void Application::run_in_fiber() {
         auto handlers = server_conf.servlets;
         auto req_handler = server->getRequestHandler();
         for (auto handler_name : handlers) {
-            if (handler_name.find("*") != std::string::npos) {
+            if (servlets[handler_name].path.find("*") != std::string::npos) {
                 req_handler->addGlobalRoute(servlets[handler_name].path,
                                             servlets[handler_name].servlet);
             }
