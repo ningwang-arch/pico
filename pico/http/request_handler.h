@@ -17,7 +17,7 @@ namespace pico {
 struct InsertByLength
 {
     bool operator()(const std::string& a, const std::string& b) const {
-        return a.size() > b.size();
+        return a.size() >= b.size();
     }
 };
 

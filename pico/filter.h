@@ -22,7 +22,7 @@ public:
     virtual void init(const std::shared_ptr<FilterConfig>& config) {}
 
     virtual void doFilter(const pico::HttpRequest::Ptr& request, pico::HttpResponse::Ptr& response,
-                          std::shared_ptr<FilterChain> chain) = 0;
+                          std::shared_ptr<pico::FilterChain> chain) = 0;
 
     virtual void destroy() {}
 };
