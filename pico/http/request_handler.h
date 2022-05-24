@@ -14,12 +14,6 @@
 
 namespace pico {
 
-struct InsertByLength
-{
-    bool operator()(const std::string& a, const std::string& b) const {
-        return a.size() >= b.size();
-    }
-};
 
 class RequestHandler
 {
@@ -41,14 +35,18 @@ public:
     void addRoute(const std::string& path, Servlet::Ptr servlet);
     void addGlobalRoute(const std::string& path, Servlet::Ptr servlet);
 
-    void addFilterChain(const std::string& url_pattern, FilterChain::Ptr filter_chain);
-
 
     void delRoute(const std::string& path);
     void delGlobalRoute(const std::string& path);
 
 
     void handle(const HttpRequest::Ptr& req, HttpResponse::Ptr& resp);
+
+    void addExcludePath(const std::string& path);
+    void addExcludePath(const std::vector<std::string>& paths);
+
+    void delExcludePath(const std::string& path);
+    void delExcludePath(const std::vector<std::string>& paths);
 
 private:
     /**
@@ -57,17 +55,14 @@ private:
      */
     Servlet::Ptr findHandler(const std::string& path);
 
-    FilterChain::Ptr findFilterChain(const std::string& path);
+    bool isExcludePath(const std::string& path);
+
 
 private:
     std::vector<Route> m_glob_routes;
     std::vector<Route> m_routes;
 
-    //  /abc/def/*  filter3 + /abc/*
-    //  /abc/*      filter2 + /*
-    //  /def        filter4 + /*
-    //  /*          filter1
-    std::map<std::string, FilterChain::Ptr, InsertByLength> m_filter_chains;
+    std::vector<std::string> exclude_paths;
 };
 }   // namespace pico
 

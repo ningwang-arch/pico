@@ -13,6 +13,14 @@
 namespace pico {
 class FilterConfig;
 class FilterChain;
+
+struct InsertByLength
+{
+    bool operator()(const std::string& a, const std::string& b) const {
+        return a.size() >= b.size();
+    }
+};
+
 class Filter
 {
 public:
@@ -177,6 +185,9 @@ public:
         return ss.str();
     }
 };
+
+FilterChain::Ptr findFilterChain(const std::string& path);
+void addFilterChain(const std::string& url_pattern, FilterChain::Ptr filter_chain);
 
 }   // namespace pico
 

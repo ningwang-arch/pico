@@ -224,6 +224,10 @@ void Application::run_in_fiber() {
         auto handlers = server_conf.servlets;
         auto req_handler = server->getRequestHandler();
         for (auto handler_name : handlers) {
+            if (servlets.find(handler_name) == servlets.end()) {
+                LOG_ERROR("invalid servlet: %s", handler_name.c_str());
+                continue;
+            }
             if (servlets[handler_name].path.find("*") != std::string::npos) {
                 req_handler->addGlobalRoute(servlets[handler_name].path,
                                             servlets[handler_name].servlet);
@@ -232,9 +236,9 @@ void Application::run_in_fiber() {
                 req_handler->addRoute(servlets[handler_name].path, servlets[handler_name].servlet);
             }
         }
-
+        req_handler->addExcludePath(server_conf.exclude_paths);
         for (auto filter_chain : filter_chains) {
-            req_handler->addFilterChain(filter_chain.first, filter_chain.second);
+            addFilterChain(filter_chain.first, filter_chain.second);
         }
 
         m_servers[server_conf.type].push_back(server);

@@ -10,6 +10,9 @@ servers:
       - hello
       - set
       - get
+    # Do not filter the below paths
+    exclude_paths:
+      - /
   - addresses: ["127.0.0.1:12233"]
     type: http
     ssl: true

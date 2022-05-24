@@ -28,6 +28,7 @@ struct TcpServerOptions
     std::string key_file = "";
     bool keep_alive = false;
     std::vector<std::string> servlets;
+    std::vector<std::string> exclude_paths;
 
     bool isValid() const { return !addresses.empty(); }
 
@@ -67,6 +68,11 @@ public:
                 options.servlets.push_back(servlet.as<std::string>());
             }
         }
+        if (node["exclude_paths"].IsDefined()) {
+            for (auto path : node["exclude_paths"]) {
+                options.exclude_paths.push_back(path.as<std::string>());
+            }
+        }
         return options;
     }
 };
@@ -87,6 +93,7 @@ public:
         node["certicates"]["key"] = options.key_file;
         for (auto& addr : options.addresses) { node["addresses"].push_back(addr); }
         for (auto& servlet : options.servlets) { node["servlets"].push_back(servlet); }
+        for (auto& path : options.exclude_paths) { node["exclude_paths"].push_back(path); }
         std::stringstream ss;
         ss << node;
         return ss.str();

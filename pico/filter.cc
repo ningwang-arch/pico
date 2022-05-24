@@ -1,6 +1,15 @@
 #include "filter.h"
 
+#include <fnmatch.h>
+#include <mutex>
 namespace pico {
+
+//  /abc/def/*  filter3 + /abc/*
+//  /abc/*      filter2 + /*
+//  /def        filter4 + /*
+//  /*          filter1
+static std::map<std::string, FilterChain::Ptr, InsertByLength> g_filter_chains = {};
+
 FilterChain::FilterChain() {}
 
 FilterChain::FilterChain(const FilterChain& other) {
@@ -37,5 +46,30 @@ void FilterChain::addFilter(const FilterConfig::Ptr& filter_config) {
 
 
 FilterChain::~FilterChain() {}
+
+FilterChain::Ptr findFilterChain(const std::string& path) {
+    std::mutex m;
+    std::lock_guard<std::mutex> lock(m);
+
+    for (auto& filter_chain : g_filter_chains) {
+        if (fnmatch(filter_chain.first.c_str(), path.c_str(), 0) == 0) {
+            return filter_chain.second;
+        }
+    }
+    return nullptr;
+}
+
+void addFilterChain(const std::string& url_pattern, FilterChain::Ptr filter_chain) {
+    std::mutex m;
+    std::lock_guard<std::mutex> lock(m);
+    auto chain = findFilterChain(url_pattern);
+    if (chain) {
+        if (chain != filter_chain) {
+            auto filters = chain->getFilters();
+            for (auto& filter : filters) { filter_chain->addFilter(filter); }
+        }
+    }
+    g_filter_chains[url_pattern] = filter_chain;
+}
 
 }   // namespace pico

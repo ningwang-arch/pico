@@ -54,6 +54,7 @@ set(LIB_SRC
     pico/log/PatternLayout.cc
     pico/log/SimpleLayout.cc
     pico/log/TTCCLayout.cc
+    pico/mustache.cc
     pico/mutex.cc
     pico/scheduler.cc
     pico/session.cc
@@ -170,6 +171,11 @@ add_executable(test_date tests/test_date.cc)
 add_dependencies(test_date pico)
 force_redefine_file_macro_for_sources(test_date)
 target_link_libraries(test_date ${LIBS})
+
+add_executable(test_mustache tests/test_mustache.cc)
+add_dependencies(test_mustache pico)
+force_redefine_file_macro_for_sources(test_mustache)
+target_link_libraries(test_mustache ${LIBS})
 
 endif()
 

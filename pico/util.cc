@@ -243,6 +243,8 @@ std::string base64_decode(const char* data, size_t length) {
 std::string Json2Str(const Json::Value& json) {
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";
+    // change accuracy of double to 6 digits
+    builder.settings_["precision"] = 6;
     std::string str = Json::writeString(builder, json);
     return str;
 }

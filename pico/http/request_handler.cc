@@ -42,15 +42,32 @@ void RequestHandler::delGlobalRoute(const std::string& path) {
     }
 }
 
-void RequestHandler::addFilterChain(const std::string& url_pattern, FilterChain::Ptr filter_chain) {
-    auto chain = findFilterChain(url_pattern);
-    if (chain) {
-        if (chain != filter_chain) {
-            auto filters = chain->getFilters();
-            for (auto& filter : filters) { filter_chain->addFilter(filter); }
+void RequestHandler::addExcludePath(const std::string& path) {
+    exclude_paths.push_back(path);
+}
+
+void RequestHandler::addExcludePath(const std::vector<std::string>& paths) {
+    for (auto& path : paths) { addExcludePath(path); }
+}
+
+void RequestHandler::delExcludePath(const std::string& path) {
+    for (auto it = exclude_paths.begin(); it != exclude_paths.end(); ++it) {
+        if (*it == path) {
+            exclude_paths.erase(it);
+            return;
         }
     }
-    m_filter_chains[url_pattern] = filter_chain;
+}
+
+void RequestHandler::delExcludePath(const std::vector<std::string>& paths) {
+    for (auto& path : paths) { delExcludePath(path); }
+}
+
+bool RequestHandler::isExcludePath(const std::string& path) {
+    for (auto& exclude_path : exclude_paths) {
+        if (fnmatch(exclude_path.c_str(), path.c_str(), 0) == 0) { return true; }
+    }
+    return false;
 }
 
 Servlet::Ptr RequestHandler::findHandler(const std::string& path) {
@@ -63,23 +80,19 @@ Servlet::Ptr RequestHandler::findHandler(const std::string& path) {
     return Servlet::Ptr(new NotFoundServlet());
 }
 
-FilterChain::Ptr RequestHandler::findFilterChain(const std::string& path) {
-    for (auto& filter_chain : m_filter_chains) {
-        if (fnmatch(filter_chain.first.c_str(), path.c_str(), 0) == 0) {
-            return filter_chain.second;
-        }
-    }
-    return nullptr;
-}
 
 void RequestHandler::handle(const HttpRequest::Ptr& req, HttpResponse::Ptr& resp) {
     auto path = req->get_path();
     auto servlet = findHandler(path);
-    FilterChain::Ptr filter_chain(new FilterChain());
-    if (findFilterChain(path)) { filter_chain->setFilters(findFilterChain(path)->getFilters()); }
-
-    filter_chain->reuse();
-    filter_chain->setServlet(servlet);
-    filter_chain->doFilter(req, resp);
+    if (isExcludePath(path)) { servlet->service(req, resp); }
+    else {
+        FilterChain::Ptr filter_chain(new FilterChain());
+        if (findFilterChain(path)) {
+            filter_chain->setFilters(findFilterChain(path)->getFilters());
+        }
+        filter_chain->reuse();
+        filter_chain->setServlet(servlet);
+        filter_chain->doFilter(req, resp);
+    }
 }
 }   // namespace pico
