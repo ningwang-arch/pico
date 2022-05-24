@@ -58,7 +58,7 @@ void test() {
     std::cout << str << std::endl;
 }
 
-void test_without_partials(const std::string& filename) {
+void test_partials(const std::string& filename) {
     Json::Value root = load_tests("templates/" + filename);
     for (auto& test : root) {
         std::string name = test["name"].asString();
@@ -76,18 +76,17 @@ void test_without_partials(const std::string& filename) {
     std::cout << "test " << filename << " passed" << std::endl;
 }
 
-void test_partials() {}
 
 int main(int argc, char const* argv[]) {
     // test();
     pico::mustache::set_loader(loader);
-    std::string without_partials[] = {"comments.json",
-                                      "delimiters.json",
-                                      "interpolation.json",
-                                      "inverted.json",
-                                      "sections.json",
-                                      "partials.json"};
-    for (auto& filename : without_partials) { test_without_partials(filename); }
+    std::string partials[] = {"comments.json",
+                              "delimiters.json",
+                              "interpolation.json",
+                              "inverted.json",
+                              "sections.json",
+                              "partials.json"};
+    for (auto& filename : partials) { test_partials(filename); }
     // test_comments();
     return 0;
 }

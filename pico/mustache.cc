@@ -5,7 +5,7 @@
 
 namespace pico {
 namespace mustache {
-RenderedTemplate template_t::render() const {
+mustache::RenderedTemplate template_t::render() const {
     context ctx;
     std::vector<context*> stack;
     stack.push_back(&ctx);
@@ -15,7 +15,7 @@ RenderedTemplate template_t::render() const {
     return RenderedTemplate(std::move(out));
 }
 
-RenderedTemplate template_t::render(context& ctx) const {
+mustache::RenderedTemplate template_t::render(context& ctx) const {
     std::vector<context*> stack;
     stack.push_back(&ctx);
 
@@ -468,6 +468,21 @@ void template_t::parse() {
             fragment_after.first = k;
         }
     }
+}
+
+pico::ConfigVar<std::string>::Ptr mustache_template_dir = pico::Config::Lookup<std::string>(
+    "other.templates.dir", "./templates", "Mustache template directory");
+
+std::string default_loader(const std::string& filename) {
+    std::string path = mustache_template_dir->getValue();
+    if (!path.empty() && path[path.size() - 1] != '/') { path += '/'; }
+    path += filename;
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        LOG_WARN("Could not open template file: %s", path.c_str());
+        return std::string();
+    }
+    return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
 
 }   // namespace mustache

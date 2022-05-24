@@ -10,6 +10,7 @@ servers:
       - hello
       - set
       - get
+      - mustache
     # Do not filter the below paths
     exclude_paths:
       - /

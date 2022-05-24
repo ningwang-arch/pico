@@ -2,6 +2,7 @@
 #define __PICO_HTTP_HTTP_H__
 
 #include <functional>
+#include <json/json.h>
 #include <map>
 #include <memory>
 #include <ostream>
@@ -10,7 +11,14 @@
 #include <unistd.h>
 #include <vector>
 
+// #include "pico/mustache.h"
+
 namespace pico {
+
+namespace mustache {
+class RenderedTemplate;
+}   // namespace mustache
+
 /*Status Codes*/
 #define HTTP_STATUS_MAP(XX)                                                   \
     XX(100, CONTINUE, Continue)                                               \
@@ -247,6 +255,13 @@ public:
     void set_body(const std::string& body) { m_body = body; }
     void set_header(const std::string& key, const std::string& value);
     void set_reason(const std::string& reason) { m_reason = reason; }
+
+    void write(mustache::RenderedTemplate& tpl);
+    void write(const std::string& str);
+    void write(const char* str);
+    void write(const char* str, size_t len);
+    void write(const Json::Value& json);
+
 
     // delete
     void del_header(const std::string& key);

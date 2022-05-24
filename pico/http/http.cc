@@ -1,9 +1,10 @@
 #include "http.h"
 
+#include <iostream>
 #include <sstream>
 
 #include "../util.h"
-#include <iostream>
+#include "pico/mustache.h"
 
 namespace pico {
 HttpMethod http_method_from_string(const std::string& method) {
@@ -242,6 +243,36 @@ void HttpResponse::set_cookie(const std::string& key, const std::string& val, ti
     if (!domain.empty()) { ss << "; domain=" << domain; }
     if (secure) { ss << "; secure"; }
     m_cookies.push_back(ss.str());
+}
+
+void HttpResponse::write(mustache::RenderedTemplate& tpl) {
+    m_body = tpl.dump();
+    set_header("Content-Length", std::to_string(m_body.size()));
+    set_header("Content-Type", tpl.getContentType());
+}
+
+void HttpResponse::write(const std::string& body) {
+    m_body = body;
+    set_header("Content-Length", std::to_string(m_body.size()));
+    set_header("Content-Type", "text/plain");
+}
+
+void HttpResponse::write(const char* str) {
+    m_body = str;
+    set_header("Content-Length", std::to_string(m_body.size()));
+    set_header("Content-Type", "text/plain");
+}
+
+void HttpResponse::write(const char* str, size_t len) {
+    m_body.append(str, len);
+    set_header("Content-Length", std::to_string(m_body.size()));
+    set_header("Content-Type", "text/plain");
+}
+
+void HttpResponse::write(const Json::Value& json) {
+    m_body = Json2Str(json);
+    set_header("Content-Length", std::to_string(m_body.size()));
+    set_header("Content-Type", "application/json");
 }
 
 std::string HttpResponse::to_string() const {

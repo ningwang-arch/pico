@@ -3,6 +3,7 @@
 #include "pico/class_factory.h"
 #include "pico/config.h"
 #include "pico/filter.h"
+#include "pico/mustache.h"
 #include "pico/pico.h"
 #include "pico/session.h"
 #include <fstream>
@@ -49,6 +50,22 @@ public:
     }
 };
 
+class MustacheServlet : public Servlet
+{
+public:
+    void doGet(const request& req, response& res) override {
+        int a = std::stoi(req->get_param("a"));
+        int b = std::stoi(req->get_param("b"));
+
+        Json::Value json;
+        json["name"] = "pico";
+        json["a"] = a;
+        json["b"] = b;
+        json["ret"] = a + b;
+        auto tpl = mustache::load("test.tpl").render(json);
+        res->write(tpl);
+    }
+};
 
 class HelloFilter : public Filter
 {
@@ -85,6 +102,7 @@ private:
 REGISTER_CLASS(HelloServlet);
 REGISTER_CLASS(SessionSetServlet);
 REGISTER_CLASS(SessionGetServlet);
+REGISTER_CLASS(MustacheServlet);
 REGISTER_CLASS(HelloFilter);
 REGISTER_CLASS(TestFilter);
 

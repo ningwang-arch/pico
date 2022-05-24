@@ -6,3 +6,6 @@ servlets:
     class: SessionSetServlet
     path: /set
   - { name: get, path: /get, class: SessionGetServlet }
+  - name: mustache
+    class: MustacheServlet
+    path: /mustache

@@ -271,6 +271,49 @@ try{
 when some error occurs, you can get the error message by the exception.
 More usage about jwt module just same as java.
 
+### Mustache
+An example of mustache template engine.
+```html
+<!--test.tpl-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test</title>
+</head>
+<body>
+    <h1>Test</h1>
+    <p>This is a test of the <strong>{{ name }}</strong> template.</p>
+    <div>
+        {{ a}} + {{ b }} = {{ ret }}
+    </div>
+</body>
+</html>
+
+```
+Then you can use the following code to render the template.
+```c++
+Json::Value ctx;
+ctx["name"] = "mustache";
+ctx["a"] = 1;
+ctx["b"] = 2;
+ctx["ret"] = ctx["a"].asInt() + ctx["b"].asInt();
+pico::mustache::RenderedTemplate tpl= pico::mustache::load("test.tpl").render(ctx);
+// you can write the template to response directly, like this:
+res->write(tpl);
+
+// or if you just want to get the template string, you can use the following code:
+std::string tpl_str = tpl.dump();
+// or
+std::string tpl_str2= pico::mustache::load("test.tpl").render_string(ctx);
+```
+The default template directory is `${PWD}/templates`, but you can change it by add a conf in the config file `other.yml` like this:
+```yaml
+other:
+  templates:
+    dir: "templates"
+```
+More usage about mustache module you can see the files in the `templates/` directory.
+
 ###### Generate certificate
 
 ```

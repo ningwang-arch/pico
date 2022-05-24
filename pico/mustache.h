@@ -15,8 +15,6 @@
 namespace pico {
 namespace mustache {
 
-pico::ConfigVar<std::string>::Ptr mustache_template_dir = pico::Config::Lookup<std::string>(
-    "other.templates.dir", "./templates", "Mustache template directory");
 
 using context = Json::Value;
 
@@ -90,8 +88,8 @@ public:
         parse();
     }
 
-    RenderedTemplate render() const;
-    RenderedTemplate render(context& ctx) const;
+    mustache::RenderedTemplate render() const;
+    mustache::RenderedTemplate render(context& ctx) const;
     std::string render_string() const;
     std::string render_string(context& ctx) const;
 
@@ -124,17 +122,7 @@ inline template_t compile(const std::string& body) {
     return template_t(body);
 }
 
-inline std::string default_loader(const std::string& filename) {
-    std::string path = mustache_template_dir->getValue();
-    if (!path.empty() && path[path.size() - 1] != '/') { path += '/'; }
-    path += filename;
-    std::ifstream file(path);
-    if (!file.is_open()) {
-        LOG_WARN("Could not open template file: %s", path.c_str());
-        return std::string();
-    }
-    return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-}
+std::string default_loader(const std::string& filename);
 
 namespace detail {
 inline std::function<std::string(std::string)>& get_loader_ref() {
