@@ -29,6 +29,9 @@ public:
 
     virtual void doOptions(const request& req, response& res);
 
+public:
+    std::string name = "";
+
 private:
     void sendMethodNotAllowed(const request& req, response& res);
 };

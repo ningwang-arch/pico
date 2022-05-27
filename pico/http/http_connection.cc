@@ -2,6 +2,7 @@
 #include "../logging.h"
 
 #include "pico/config.h"
+#include "pico/util.h"
 
 namespace pico {
 
@@ -178,42 +179,48 @@ HttpResponse::Ptr HttpConnection::recvResponse() {
 
 HttpResponse::Ptr HttpConnection::doGet(const std::string& url,
                                         const std::map<std::string, std::string>& headers,
-                                        const std::string& body, uint64_t timeout) {
-    return doRequest(HttpMethod::GET, url, headers, body, timeout);
+                                        const std::string& body, const std::string& proxy,
+                                        uint64_t timeout) {
+    return doRequest(HttpMethod::GET, url, headers, body, proxy, timeout);
 }
 
 HttpResponse::Ptr HttpConnection::doPost(const std::string& url,
                                          const std::map<std::string, std::string>& headers,
-                                         const std::string& body, uint64_t timeout) {
-    return doRequest(HttpMethod::POST, url, headers, body, timeout);
+                                         const std::string& body, const std::string& proxy,
+                                         uint64_t timeout) {
+    return doRequest(HttpMethod::POST, url, headers, body, proxy, timeout);
 }
 
 HttpResponse::Ptr HttpConnection::doGet(const Uri::Ptr uri,
                                         const std::map<std::string, std::string>& headers,
-                                        const std::string& body, uint64_t timeout) {
-    return doRequest(HttpMethod::GET, uri, headers, body, timeout);
+                                        const std::string& body, const std::string& proxy,
+                                        uint64_t timeout) {
+    return doRequest(HttpMethod::GET, uri, headers, body, proxy, timeout);
 }
 
 HttpResponse::Ptr HttpConnection::doPost(const Uri::Ptr uri,
                                          const std::map<std::string, std::string>& headers,
-                                         const std::string& body, uint64_t timeout) {
-    return doRequest(HttpMethod::POST, uri, headers, body, timeout);
+                                         const std::string& body, const std::string& proxy,
+                                         uint64_t timeout) {
+    return doRequest(HttpMethod::POST, uri, headers, body, proxy, timeout);
 }
 
 HttpResponse::Ptr HttpConnection::doRequest(const HttpMethod& method, const std::string& url,
                                             const std::map<std::string, std::string>& headers,
-                                            const std::string& body, uint64_t timeout) {
+                                            const std::string& body, const std::string& proxy,
+                                            uint64_t timeout) {
     Uri::Ptr uri = Uri::Create(url);
     if (uri == nullptr) {
         LOG_ERROR("parse url error");
         return nullptr;
     }
-    return doRequest(method, uri, headers, body, timeout);
+    return doRequest(method, uri, headers, body, proxy, timeout);
 }
 
 HttpResponse::Ptr HttpConnection::doRequest(const HttpMethod& method, const Uri::Ptr uri,
                                             const std::map<std::string, std::string>& headers,
-                                            const std::string& body, uint64_t timeout) {
+                                            const std::string& body, const std::string& proxy,
+                                            uint64_t timeout) {
     HttpRequest::Ptr req(new HttpRequest());
     req->set_method(method);
     req->set_path(uri->getPath());
@@ -231,7 +238,10 @@ HttpResponse::Ptr HttpConnection::doRequest(const HttpMethod& method, const Uri:
     }
     if (req->get_header("Host") == "") { req->set_header("Host", uri->getHost()); }
 
-    return doRequest(req, uri, timeout);
+    if (proxy.empty()) { return doRequest(req, uri, timeout); }
+    else {
+        return doRequest(req, uri, proxy, timeout);
+    }
 }
 
 HttpResponse::Ptr HttpConnection::doRequest(const HttpRequest::Ptr req, const Uri::Ptr uri,
@@ -244,12 +254,13 @@ HttpResponse::Ptr HttpConnection::doRequest(const HttpRequest::Ptr req, const Ur
         LOG_ERROR("uri is null");
         return nullptr;
     }
+    bool is_ssl = uri->getScheme() == "https";
     Address::Ptr addr = uri->getAddress();
     if (addr == nullptr) {
         LOG_ERROR("parse url error");
         return nullptr;
     }
-    Socket::Ptr sock = Socket::CreateTcp(addr);
+    Socket::Ptr sock = is_ssl ? SSLSocket::CreateTcp(addr) : Socket::CreateTcp(addr);
     if (sock == nullptr) {
         LOG_ERROR("create socket error");
         return nullptr;
@@ -258,7 +269,6 @@ HttpResponse::Ptr HttpConnection::doRequest(const HttpRequest::Ptr req, const Ur
         LOG_ERROR("connect to %s:%d error", uri->getHost().c_str(), uri->getPort());
         return nullptr;
     }
-
     if (timeout == 0) { timeout = g_recvTimeout->getValue(); }
     sock->setRecvTimeout(timeout);
     HttpConnection::Ptr conn = std::make_shared<HttpConnection>(sock);
@@ -274,5 +284,68 @@ HttpResponse::Ptr HttpConnection::doRequest(const HttpRequest::Ptr req, const Ur
     return resp;
 }
 
+HttpResponse::Ptr HttpConnection::doRequest(const HttpRequest::Ptr req, const Uri::Ptr uri,
+                                            const std::string& proxy, uint64_t timeout) {
+    if (req == nullptr) {
+        LOG_ERROR("request is null");
+        return nullptr;
+    }
+    if (uri == nullptr) {
+        LOG_ERROR("uri is null");
+        return nullptr;
+    }
+    int pos = proxy.find(":");
+    if (pos == -1) {
+        LOG_ERROR("http_proxy format error");
+        return nullptr;
+    }
+    std::string host = proxy.substr(0, pos);
+    uint16_t port = std::stoi(proxy.substr(pos + 1));
+    auto addr = IPAddress::Create(host.data(), port);
+    if (addr == nullptr) {
+        LOG_ERROR("parse http_proxy error");
+        return nullptr;
+    }
+    Socket::Ptr sock = Socket::CreateTcp(addr);
+    if (sock == nullptr) {
+        LOG_ERROR("create socket error");
+        return nullptr;
+    }
+    if (!sock->connect(addr)) {
+        LOG_ERROR("connect to %s error", proxy.c_str());
+        return nullptr;
+    }
+    HttpRequest::Ptr conn_req = std::make_shared<HttpRequest>();
+    conn_req->set_method(HttpMethod::CONNECT);
+    conn_req->set_path(proxy);
+
+    if (timeout == 0) { timeout = g_recvTimeout->getValue(); }
+    sock->setRecvTimeout(timeout);
+    HttpConnection::Ptr conn = std::make_shared<HttpConnection>(sock);
+    if (!conn->sendRequest(conn_req)) {
+        LOG_ERROR("send request error");
+        return nullptr;
+    }
+    HttpResponse::Ptr resp = conn->recvResponse();
+    if (resp == nullptr) {
+        LOG_ERROR("recv response error");
+        return nullptr;
+    }
+    if (resp->get_status() != HttpStatus(200)) {
+        LOG_ERROR("connect to %s error", proxy.c_str());
+        return nullptr;
+    }
+    req->set_path(uri->toString());
+    if (!conn->sendRequest(req)) {
+        LOG_ERROR("send request error");
+        return nullptr;
+    }
+    auto resp2 = conn->recvResponse();
+    if (resp2 == nullptr) {
+        LOG_ERROR("recv response error");
+        return nullptr;
+    }
+    return resp2;
+}
 
 }   // namespace pico

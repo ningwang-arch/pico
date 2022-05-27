@@ -8,10 +8,11 @@
 #include "worker.h"
 
 #include "http/servlets/404_servlet.h"
-
-
+#include "server_manager.h"
 namespace pico {
 
+
+auto server_manager = ServerManager::getInstance();
 
 struct Route
 {
@@ -32,6 +33,7 @@ public:
             r.servlet = std::static_pointer_cast<Servlet>(
                 ClassFactory::Instance().Create(route["class"].as<std::string>()));
             if (r.servlet == nullptr) { r.servlet = std::make_shared<NotFoundServlet>(); }
+            r.servlet->name = route["class"].as<std::string>();
             routes.insert(std::make_pair(route["name"].as<std::string>(), r));
         }
         return routes;
@@ -48,7 +50,7 @@ public:
             YAML::Node route;
             route["name"] = i.first;
             route["path"] = i.second.path;
-            route["class"] = typeid(*i.second.servlet).name();
+            route["class"] = i.second.servlet->name;
             node.push_back(route);
         }
         std::stringstream ss;
@@ -157,7 +159,6 @@ void Application::run_in_fiber() {
 
     pico::WorkerMgr::getInstance()->init();
 
-    std::vector<TcpServer::Ptr> servers;
     for (auto& server_conf : server_confs) {
         std::vector<Address::Ptr> addresses;
         for (auto& addr : server_conf.addresses) {
@@ -223,6 +224,7 @@ void Application::run_in_fiber() {
 
         auto handlers = server_conf.servlets;
         auto req_handler = server->getRequestHandler();
+        req_handler->reset();
         for (auto handler_name : handlers) {
             if (servlets.find(handler_name) == servlets.end()) {
                 LOG_ERROR("invalid servlet: %s", handler_name.c_str());
@@ -242,10 +244,10 @@ void Application::run_in_fiber() {
         }
 
         m_servers[server_conf.type].push_back(server);
-        servers.push_back(server);
+        server_manager->addServer(server->getName(), server);
     };
 
-    for (auto server : servers) { server->start(); }
+    server_manager->startAll();
 };
 
 }   // namespace pico

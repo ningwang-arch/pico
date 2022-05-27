@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -35,6 +36,7 @@ public:
     void addRoute(const std::string& path, Servlet::Ptr servlet);
     void addGlobalRoute(const std::string& path, Servlet::Ptr servlet);
 
+    void reset();
 
     void delRoute(const std::string& path);
     void delGlobalRoute(const std::string& path);
@@ -47,6 +49,9 @@ public:
 
     void delExcludePath(const std::string& path);
     void delExcludePath(const std::vector<std::string>& paths);
+
+    void listAllRoutes(std::map<std::string, Servlet::Ptr>& routes);
+    void listAllGlobalRoutes(std::map<std::string, Servlet::Ptr>& routes);
 
 private:
     /**
@@ -63,6 +68,8 @@ private:
     std::vector<Route> m_routes;
 
     std::vector<std::string> exclude_paths;
+
+    std::mutex m_mutex;
 };
 }   // namespace pico
 

@@ -57,6 +57,7 @@ set(LIB_SRC
     pico/mustache.cc
     pico/mutex.cc
     pico/scheduler.cc
+    pico/server_manager.cc
     pico/session.cc
     pico/socket_stream.cc
     pico/socket.cc

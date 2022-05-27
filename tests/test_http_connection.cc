@@ -51,6 +51,21 @@ void test_do_io() {
     LOG_INFO("%s", resp->to_string().c_str());
 }
 
+// only support http proxy
+void test_proxy() {
+    std::map<std::string, std::string> proxies;
+    std::string proxy = "127.0.0.1:7890";
+    std::map<std::string, std::string> headers;
+    headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, "
+                            "like Gecko) Chrome/80.0.3987.132 Safari/537.36";
+    auto resp = pico::HttpConnection::doGet("https://www.google.com", headers, "", proxy);
+    if (!resp) {
+        LOG_INFO("recv failed");
+        return;
+    }
+    LOG_INFO("%s", resp->to_string().c_str());
+}
+
 void test_uri() {
     using pico::Uri;
     Uri::Ptr uri = Uri::Create("http://www.baidu.com/abc?a=1&b=2#c=3");
@@ -64,6 +79,7 @@ void test_uri() {
 int main(int argc, char const* argv[]) {
     // test();
     // test_do_io();
-    test_uri();
+    // test_uri();
+    test_proxy();
     return 0;
 }
