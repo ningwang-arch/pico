@@ -89,7 +89,7 @@ retry:
         pico::Timer::Ptr timer;
         std::weak_ptr<timer_info> wp(tinfo);
 
-        if (to != UINT64_C(-1)) {
+        if (to != ~0ull && to != 0) {
             timer = iom->addCondTimer(
                 to,
                 [fd, wp, iom, event]() {
@@ -292,6 +292,7 @@ int close(int fd) {
     pico::FdCtx::Ptr ctx = pico::FdMgr::getInstance()->getFdCtx(fd);
     if (ctx) {
         auto iom = pico::IOManager::GetThis();
+        if (!iom) { return close_f(fd); }
         iom->cancelAll(fd);
         pico::FdMgr::getInstance()->delFdCtx(fd);
     }

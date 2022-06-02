@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <json/json.h>
+#include <list>
 #include <mbedtls/base64.h>
 #include <mbedtls/md.h>
 #include <mbedtls/platform.h>
@@ -22,8 +23,14 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <openssl/ssl.h>
+#include <set>
+#include <typeindex>
+#include <unordered_map>
+
+#include <mysql/mysql.h>
 
 #include "fiber.h"
+#include "singleton.h"
 
 namespace pico {
 pid_t getThreadId();
@@ -97,8 +104,50 @@ std::string bn2raw(const BIGNUM* bn);
 
 std::unique_ptr<BIGNUM, decltype(&BN_free)> raw2bn(const std::string& raw);
 
+MYSQL_TIME time_t2mysql_time(std::time_t ts);
+
+std::time_t mysql_time2time_t(const MYSQL_TIME& time);
+
+int genRandom(int min, int max);
+
+
+std::string camel2underline(const std::string& camel);
+
+template<typename T>
+static bool isContainer(const std::vector<T>& value) {
+    return true;
+}
+
+template<typename T>
+static bool isContainer(const std::set<T>& value) {
+    return true;
+}
+
+template<typename T>
+static bool isContainer(const std::list<T>& value) {
+    return true;
+}
+
+template<typename T>
+static bool isContainer(const T& t) {
+    return false;
+}
+
+class RowBounds
+{
+public:
+    RowBounds() { limit_ = INT32_MAX; }
+    RowBounds(int offset, int limit)
+        : offset_(offset)
+        , limit_(limit) {}
+    int offset() const { return offset_; }
+    int limit() const { return limit_; }
+
+private:
+    int offset_;
+    int limit_;
+};
+
 }   // namespace pico
-
-
 
 #endif

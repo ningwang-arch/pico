@@ -137,7 +137,6 @@ void Fiber::yieldToReady() {
 void Fiber::yieldToHold() {
     Fiber::Ptr cur = GetThis();
     assert(cur->m_state == EXEC);
-    // cur->m_state = HOLD;
     cur->swapOut();
 }
 

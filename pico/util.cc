@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <stdarg.h>
 #include <sys/syscall.h>
@@ -398,6 +399,54 @@ std::unique_ptr<BIGNUM, decltype(&BN_free)> raw2bn(const std::string& raw) {
                   static_cast<int>(raw.size()),
                   nullptr),
         BN_free);
+}
+
+MYSQL_TIME time_t2mysql_time(std::time_t ts) {
+    struct tm* tm_time = localtime(&ts);
+    MYSQL_TIME mysql_time;
+    mysql_time.year = tm_time->tm_year + 1900;
+    mysql_time.month = tm_time->tm_mon + 1;
+    mysql_time.day = tm_time->tm_mday;
+    mysql_time.hour = tm_time->tm_hour;
+    mysql_time.minute = tm_time->tm_min;
+    mysql_time.second = tm_time->tm_sec;
+    mysql_time.second_part = 0;
+    mysql_time.time_type = MYSQL_TIMESTAMP_DATETIME;
+    return mysql_time;
+}
+
+std::time_t mysql_time2time_t(const MYSQL_TIME& time) {
+    struct tm tm_time = {0};
+    tm_time.tm_year = time.year - 1900;
+    tm_time.tm_mon = time.month - 1;
+    tm_time.tm_mday = time.day;
+    tm_time.tm_hour = time.hour;
+    tm_time.tm_min = time.minute;
+    tm_time.tm_sec = time.second;
+    tm_time.tm_isdst = -1;
+    return mktime(&tm_time);
+}
+
+int genRandom(int min, int max) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(min, max);
+    return dis(gen);
+}
+
+std::string camel2underline(const std::string& str) {
+    std::string res;
+    for (auto c : str) {
+        if (isupper(c)) {
+            res += '_';
+            res += tolower(c);
+        }
+        else {
+            res += c;
+        }
+    }
+
+    return res.at(0) == '_' ? res.substr(1) : res;
 }
 
 }   // namespace pico

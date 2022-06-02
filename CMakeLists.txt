@@ -3,9 +3,11 @@ project(pico)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(cmake/utils.cmake)
-# include(cmake/FindMySQL.cmake)
+include(cmake/FindMySQL.cmake)
 
 include_directories(.)
+
+set(SOURCE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pico)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -19,67 +21,44 @@ set(CMAKE_C_FLAGS
 option(BUILD_TEST "ON for complile test" OFF)
 
 
-set(LIB_SRC
-    pico/address.cc
-    pico/application.cc
-    pico/class_factory.cc
-    pico/config.cc
-    pico/daemon.cc
-    pico/date.cc
-    pico/env.cc
-    pico/fdmanager.cc
-    pico/fiber.cc
-    pico/filter.cc
-    pico/hook.cc
-    pico/http/http_connection.cc
-    pico/http/http_parser.cc
-    pico/http/http_server.cc
-    pico/http/http.cc
-    pico/http/http11_parser.cc
-    pico/http/httpclient_parser.cc
-    pico/http/request_handler.cc
-    pico/http/servlet.cc
-    pico/iomanager.cc
-    pico/jwt/jwt_creator.cc
-    pico/jwt/jwt_decoder.cc
-    pico/jwt/jwt_verifier.cc
-    pico/jwt/jwt.cc
-    pico/logging.cc
-    pico/log/LogAppender.cc
-    pico/log/LogEvent.cc
-    pico/log/Logger.cc
-    pico/log/LoggerManager.cc
-    pico/log/LogLevel.cc
-    pico/log/PatternConverter.cc
-    pico/log/PatternLayout.cc
-    pico/log/SimpleLayout.cc
-    pico/log/TTCCLayout.cc
-    pico/mustache.cc
-    pico/mutex.cc
-    pico/scheduler.cc
-    pico/server_manager.cc
-    pico/session.cc
-    pico/socket_stream.cc
-    pico/socket.cc
-    pico/tcp_server.cc
-    pico/thread.cc
-    pico/timer.cc
-    pico/uri.cc
-    pico/util.cc
-    pico/worker.cc)
+# find dependencies
+find_package(MySQL REQUIRED)
+if(MYSQL_FOUND)
+  include_directories(${MYSQL_INCLUDE_DIR})
+endif()
+
+find_package(OpenSSL REQUIRED)
+if(OPENSSL_FOUND)
+  include_directories(${OPENSSL_INCLUDE_DIR})
+  link_directories(${OPENSSL_LIBRARY_DIR})
+endif()
+
+find_package(yaml-cpp REQUIRED)
+include_directories(${YAML_INCLUDE_DIR})
+link_directories(${YAML_LIBRARY_DIR})
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+include_directories(${JSONCPP_INCLUDE_DIR})
+
+
+# find source files
+include_sub_directories_recursively(${SOURCE_FILES_DIR})
+
+file(GLOB_RECURSE LIB_SRC ${SOURCE_FILES_DIR}/*.cpp ${SOURCE_FILES_DIR}/*.cc ${SOURCE_FILES_DIR}/*.hpp ${SOURCE_FILES_DIR}/*.h)
+
 
 add_library(pico SHARED ${LIB_SRC})
-
 force_redefine_file_macro_for_sources(pico)
 
 set(LIBS
     pico
     dl
     pthread
-    jsoncpp
-    yaml-cpp
-    ssl
-    jsoncpp
+    ${JSONCPP_LIBRARIES}
+    ${YAML_CPP_LIBRARIES}
+    ${OPENSSL_LIBRARIES}
+    ${MYSQL_LIBRARIES}
     crypto
     )
 
@@ -88,95 +67,26 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 if(BUILD_TEST)
 
-add_executable(test_log tests/test_log.cc)
-add_dependencies(test_log pico)
-force_redefine_file_macro_for_sources(test_log)
-target_link_libraries(test_log ${LIBS})
 
-add_executable(test_thread tests/test_thread.cc)
-add_dependencies(test_thread pico)
-force_redefine_file_macro_for_sources(test_thread)
-target_link_libraries(test_thread ${LIBS})
-
-add_executable(test_fiber tests/test_fiber.cc)
-add_dependencies(test_fiber pico)
-force_redefine_file_macro_for_sources(test_fiber)
-target_link_libraries(test_fiber ${LIBS})
-
-add_executable(test_scheduler tests/test_scheduler.cc)
-add_dependencies(test_scheduler pico)
-force_redefine_file_macro_for_sources(test_scheduler)
-target_link_libraries(test_scheduler ${LIBS})
-
-add_executable(test_iomanager tests/test_iomanager.cc)
-add_dependencies(test_iomanager pico)
-force_redefine_file_macro_for_sources(test_iomanager)
-target_link_libraries(test_iomanager ${LIBS})
-
-add_executable(test_hook tests/test_hook.cc)
-add_dependencies(test_hook pico)
-force_redefine_file_macro_for_sources(test_hook)
-target_link_libraries(test_hook ${LIBS})
-
-add_executable(test_address tests/test_address.cc)
-add_dependencies(test_address pico)
-force_redefine_file_macro_for_sources(test_address)
-target_link_libraries(test_address ${LIBS})
-
-add_executable(test_socket tests/test_socket.cc)
-add_dependencies(test_socket pico)
-force_redefine_file_macro_for_sources(test_socket)
-target_link_libraries(test_socket ${LIBS})
-
-add_executable(test_tcp_server tests/test_tcp_server.cc)
-add_dependencies(test_tcp_server pico)
-force_redefine_file_macro_for_sources(test_tcp_server)
-target_link_libraries(test_tcp_server ${LIBS})
-
-add_executable(test_http tests/test_http.cc)
-add_dependencies(test_http pico)
-force_redefine_file_macro_for_sources(test_http)
-target_link_libraries(test_http ${LIBS})
-
-add_executable(test_http_parser tests/test_http_parser.cc)
-add_dependencies(test_http_parser pico)
-force_redefine_file_macro_for_sources(test_http_parser)
-target_link_libraries(test_http_parser ${LIBS})
-
-add_executable(test_http_connection tests/test_http_connection.cc)
-add_dependencies(test_http_connection pico)
-force_redefine_file_macro_for_sources(test_http_connection)
-target_link_libraries(test_http_connection ${LIBS})
-
-add_executable(test_http_server tests/test_http_server.cc)
-add_dependencies(test_http_server pico)
-force_redefine_file_macro_for_sources(test_http_server)
-target_link_libraries(test_http_server ${LIBS})
-
-add_executable(test_config tests/test_config.cc)
-add_dependencies(test_config pico)
-force_redefine_file_macro_for_sources(test_config)
-target_link_libraries(test_config ${LIBS})
-
-add_executable(test_register tests/test_register.cc)
-add_dependencies(test_register pico)
-force_redefine_file_macro_for_sources(test_register)
-target_link_libraries(test_register ${LIBS})
-
-add_executable(test_jwt tests/test_jwt.cc)
-add_dependencies(test_jwt pico)
-force_redefine_file_macro_for_sources(test_jwt)
-target_link_libraries(test_jwt ${LIBS})
-
-add_executable(test_date tests/test_date.cc)
-add_dependencies(test_date pico)
-force_redefine_file_macro_for_sources(test_date)
-target_link_libraries(test_date ${LIBS})
-
-add_executable(test_mustache tests/test_mustache.cc)
-add_dependencies(test_mustache pico)
-force_redefine_file_macro_for_sources(test_mustache)
-target_link_libraries(test_mustache ${LIBS})
+build_test_target(test_log "tests/test_log.cc" pico "${LIBS}")
+build_test_target(test_thread "tests/test_thread.cc" pico "${LIBS}")
+build_test_target(test_fiber "tests/test_fiber.cc" pico "${LIBS}")
+build_test_target(test_scheduler "tests/test_scheduler.cc" pico "${LIBS}")
+build_test_target(test_iomanager "tests/test_iomanager.cc" pico "${LIBS}")
+build_test_target(test_hook "tests/test_hook.cc" pico "${LIBS}")
+build_test_target(test_address "tests/test_address.cc" pico "${LIBS}")
+build_test_target(test_socket "tests/test_socket.cc" pico "${LIBS}")
+build_test_target(test_tcp_server "tests/test_tcp_server.cc" pico "${LIBS}")
+build_test_target(test_http "tests/test_http.cc" pico "${LIBS}")
+build_test_target(test_http_parser "tests/test_http_parser.cc" pico "${LIBS}")
+build_test_target(test_http_connection "tests/test_http_connection.cc" pico "${LIBS}")
+build_test_target(test_http_server "tests/test_http_server.cc" pico "${LIBS}")
+build_test_target(test_config "tests/test_config.cc" pico "${LIBS}")
+build_test_target(test_register "tests/test_register.cc" pico "${LIBS}")
+build_test_target(test_jwt "tests/test_jwt.cc" pico "${LIBS}")
+build_test_target(test_date "tests/test_date.cc" pico "${LIBS}")
+build_test_target(test_mustache "tests/test_mustache.cc" pico "${LIBS}")
+build_test_target(test_mapper "tests/test_mapper.cc" pico "${LIBS}")
 
 endif()
 

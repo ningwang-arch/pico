@@ -2,7 +2,6 @@
 - add worker (finished)
 - read log conf from file(finished)
 - add env support(finished)
-
 - add filter same as java servlet(finished)
 - add jwt support(on going)
 
@@ -10,4 +9,7 @@
 - add mustache support(finished)
 
 - add websocket support
-- Mapper support
+- Mapper support(finished)
+
+- update README.md
+- html-parser(optional)
