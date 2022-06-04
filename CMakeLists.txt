@@ -18,7 +18,7 @@ set(CMAKE_C_FLAGS
     "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
 )
 
-option(BUILD_TEST "ON for complile test" OFF)
+option(BUILD_TEST "ON for complile test" ON)
 
 
 # find dependencies
@@ -31,6 +31,11 @@ find_package(OpenSSL REQUIRED)
 if(OPENSSL_FOUND)
   include_directories(${OPENSSL_INCLUDE_DIR})
   link_directories(${OPENSSL_LIBRARY_DIR})
+endif()
+
+find_package(ZLIB REQUIRED)
+if(ZLIB_FOUND)
+    include_directories(${ZLIB_INCLUDE_DIR})
 endif()
 
 find_package(yaml-cpp REQUIRED)
@@ -55,6 +60,7 @@ set(LIBS
     pico
     dl
     pthread
+    ${ZLIB_LIBRARIES}
     ${JSONCPP_LIBRARIES}
     ${YAML_CPP_LIBRARIES}
     ${OPENSSL_LIBRARIES}
@@ -66,7 +72,6 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 if(BUILD_TEST)
-
 
 build_test_target(test_log "tests/test_log.cc" pico "${LIBS}")
 build_test_target(test_thread "tests/test_thread.cc" pico "${LIBS}")

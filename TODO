@@ -13,3 +13,5 @@
 
 - update README.md
 - html-parser(optional)
+
+- compress(finished, only gzip and deflate supported)

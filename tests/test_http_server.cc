@@ -1,6 +1,7 @@
 
 #include "pico/application.h"
 #include "pico/class_factory.h"
+#include "pico/compression.h"
 #include "pico/config.h"
 #include "pico/filter.h"
 #include "pico/mustache.h"
@@ -110,6 +111,7 @@ REGISTER_CLASS(TestFilter);
 
 int main(int argc, char* argv[]) {
     pico::Application app;
+    pico::compression::set_compression_enabled(true);
     if (app.init(argc, argv)) { app.run(); }
 
 

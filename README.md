@@ -11,6 +11,7 @@ Pico is a C++ framework for creating web applications. It is designed to be easy
 - Http/1.1 support
 - Filter and servlet similar to Java
 - JWT authentication
+- Mapper support similar to Java
 
 ### Still to do
 
@@ -21,6 +22,7 @@ Pico is a C++ framework for creating web applications. It is designed to be easy
 - [jsoncpp](https://github.com/open-source-parsers/jsoncpp)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 - [openssl](https://www.openssl.org/)
+- [zlib](http://www.zlib.net/)
 
 ### Note
 
@@ -47,6 +49,10 @@ Some examples are available in the tests/ directory.
 
 ```c++
 #include "pico/pico.h"
+#include "pico/application.h"
+
+#include <random>
+#include <time.h>
 
 using request = pico::HttpRequest::Ptr;
 using response = pico::HttpResponse::Ptr;
@@ -62,28 +68,31 @@ public:
 
 REGISTER_CLASS(HelloWorld);
 
-void run(){
-    pico::Config::LoadFromFile("web.yml");
-
-    pico::HttpServer::Ptr server(new pico::HttpServer(true));
-
-    pico::Address::Ptr addr = pico::Address::LookupAnyIPAddress("0.0.0.0:8080");
-    if (!addr) {
-        LOG_INFO("Could not find any IP address");
-        return;
-    }
-    server->bind(addr);
-
-    server->start();
-}
-
 int main(int argc, const char* argv[]){
-    pico::IOManager iom(2);
-    iom.scheduler(run);
-    return 0;
+    srand(time(NULL));
+
+    pico::Application app;
+    if (app.init(argc, argv)) { return app.run(); }
 }
 
 ```
+Then define this servlet in the servlets.yml file:
+```yml
+servlets:
+  - class: HelloWorld
+    path: /hello
+    name: HelloWorld
+```
+Add this to the server.yml file:
+```yml
+servers:
+  - addresses: ["address"]
+    ...
+    servlets:
+      - HelloWorld
+```
+Just build and run the server. Then you can visit http://localhost:8080/hello to see the result.
+
 
 #### Request Handle
 
@@ -313,6 +322,20 @@ other:
     dir: "templates"
 ```
 More usage about mustache module you can see the files in the `templates/` directory.
+
+
+### Mapper
+Similar to java, you can use the mapper to map the data to the object.
+Simple usage can find in the `tests/test_mapper.cc`.
+More usage about mapper module just same as java.
+
+### Compress
+If you want to enable the compress feature, you can use the following code to enable the compress feature.
+```c++
+pico::compression::set_compression_enabled(true);
+```
+Currently, the compress feature is only support gzip and deflate.
+Just write the code in the `main.cc` file.
 
 ###### Generate certificate
 
