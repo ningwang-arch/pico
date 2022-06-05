@@ -9,19 +9,19 @@
 #include <utility>
 #include <vector>
 
-#include "alias_helper.hpp"
+#include "../builder/sql_builder.h"
+#include "../entity/criteria.hpp"
+#include "../entity/entity_column.hpp"
+#include "../entity/entity_table.h"
+#include "../helper/alias_helper.hpp"
+#include "../helper/base_helper.hpp"
+#include "../helper/entity_helper.hpp"
 #include "constants.h"
 #include "criterion.h"
 #include "entity_enum.h"
 #include "entity_table_map.h"
 #include "entity_wrapper.h"
 #include "join_entity_table.h"
-#include "mapper/builder/sql_builder.h"
-#include "mapper/entity/criteria.hpp"
-#include "mapper/entity/entity_column.hpp"
-#include "mapper/entity/entity_table.h"
-#include "mapper/helper/base_helper.hpp"
-#include "mapper/helper/entity_helper.hpp"
 #include "object.hpp"
 #include "order_by.h"
 

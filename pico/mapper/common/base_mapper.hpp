@@ -6,12 +6,12 @@
 #include <string>
 #include <vector>
 
-#include "base.hpp"
-#include "criteria.hpp"
-#include "entity_column.hpp"
-#include "helper/query_helper.hpp"
-#include "mapper_exception.h"
-#include "object.hpp"
+#include "../entity/base.hpp"
+#include "../entity/criteria.hpp"
+#include "../entity/entity_column.hpp"
+#include "../entity/object.hpp"
+#include "../helper/query_helper.hpp"
+#include "../mapper_exception.h"
 
 namespace pico {
 template<typename T>

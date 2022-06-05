@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
+#include "../entity/constants.h"
 #include "../entity/criteria.hpp"
 #include "../entity/criterion.h"
-#include "mapper/entity/constants.h"
-#include "mapper/entity/object.hpp"
+#include "../entity/object.hpp"
 
 namespace pico {
 class BaseHelper

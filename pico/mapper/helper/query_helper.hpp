@@ -9,14 +9,14 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base.hpp"
-#include "connection.h"
-#include "connection_pool.h"
-#include "entity_column.hpp"
+#include "../entity/base.hpp"
+#include "../entity/entity_column.hpp"
+#include "../entity/iterable.hpp"
+#include "../sql/connection.h"
+#include "../sql/connection_pool.h"
+#include "../sql/sql_option.h"
 #include "entity_helper.hpp"
-#include "iterable.hpp"
-#include "logging.h"
-#include "sql_option.h"
+#include "pico/logging.h"
 
 
 namespace pico {
