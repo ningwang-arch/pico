@@ -1,7 +1,7 @@
 #include "session.h"
 
 #include "config.h"
-
+#include "util.h"
 
 namespace pico {
 
@@ -108,7 +108,7 @@ std::string Session::getCookie(const request& req) {
 }
 
 std::string Session::craftExpiresTimestamp() {
-    return std::to_string(time(nullptr) + session_timeout->getValue());
+    return pico::Time2Str(time(nullptr) + session_timeout->getValue());
 }
 
 std::string Session::craftSecureCookieString(const std::string& sid) {
