@@ -7,9 +7,10 @@
 #include <vector>
 
 
-#include "criteria.hpp"
-#include "entity/base.hpp"
+#include "../entity/base.hpp"
+#include "../entity/criteria.hpp"
 #include "util.h"
+#include "base_mapper.hpp"
 
 namespace pico {
 template<typename T>
