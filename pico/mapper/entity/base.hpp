@@ -137,7 +137,8 @@ public:
                 property.second.getTableAlias() == m_table.getAlias() &&
                 property.second.getColumnType() != ColumnType::Id) {
                 if (selective && property.second.isNull()) { continue; }
-                sql_builder->VALUES(property.second.getCloumn(), Constants::PLACEHOLDER);
+                sql_builder->VALUES("`" + property.second.getCloumn() + "`",
+                                    Constants::PLACEHOLDER);
                 insert_criteria->andEqualTo(property.second.getProperty(),
                                             property.second.getEntityFieldValue());
             }
