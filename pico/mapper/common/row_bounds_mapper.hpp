@@ -9,8 +9,8 @@
 
 #include "../entity/base.hpp"
 #include "../entity/criteria.hpp"
-#include "util.h"
 #include "base_mapper.hpp"
+#include "util.h"
 
 namespace pico {
 template<typename T>
