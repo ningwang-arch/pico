@@ -44,6 +44,13 @@ public:
         return results.empty() ? T{} : results.front();
     }
 
+    T selectOne(const Base<T>& record) {
+        auto results = select(record);
+        if (results.size() > 1) {
+            throw MapperException("select results have more than one record");
+        }
+        return results.empty() ? T{} : results.front();
+    }
     std::vector<T> selectAll() {
         Base<T> base;
         return select(base);
