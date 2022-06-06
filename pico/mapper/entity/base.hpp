@@ -209,8 +209,9 @@ public:
 
         if (m_limit_pair.second != INT32_MIN) {
             buildLimit(sql_builder);
-            ored_values.emplace_back(m_limit_pair.first);
             ored_values.emplace_back(m_limit_pair.second);
+            ored_values.emplace_back(m_limit_pair.first);
+
         }
         return std::make_pair(sql_builder->to_string(), ored_values);
     }
