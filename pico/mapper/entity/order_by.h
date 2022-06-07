@@ -19,11 +19,10 @@ public:
     typedef std::unordered_map<std::string, EntityColumn> ColumnMap;
 
     OrderBy() = default;
-    explicit OrderBy(ColumnMap property_map) {
-        m_property_map = std::make_shared<ColumnMap>(property_map);
+    explicit OrderBy(ColumnMap* property_map) {
+        m_property_map = property_map;
     }
 
-    explicit OrderBy(std::shared_ptr<ColumnMap> property_map) { m_property_map = property_map; }
 
     template<typename T, typename Entity>
     std::shared_ptr<OrderBy> desc(T Entity::*property) {
@@ -51,7 +50,7 @@ private:
     }
 
 private:
-    std::shared_ptr<ColumnMap> m_property_map;
+    ColumnMap* m_property_map;
     std::vector<std::string> m_order_by_list;
 };
 
