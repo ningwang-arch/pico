@@ -47,8 +47,6 @@ enum class JoinType
     Null,
     OneToOne,
     OneToMany,
-    ManyToOne,
-    ManyToMany
 };
 
 }   // namespace pico

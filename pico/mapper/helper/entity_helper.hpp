@@ -101,6 +101,17 @@ private:
             return pair.first == u;
         }
 
+        template<typename T>
+        static bool isMatchProperty(std::pair<std::time_t T::*, EntityColumn> pair,
+                                    std::time_t T::*u) {
+            return pair.first == u;
+        }
+
+        template<typename T>
+        static bool isMatchProperty(std::pair<uint64_t T::*, EntityColumn> pair, uint64_t T::*u) {
+            return pair.first == u;
+        }
+
         template<typename Entity, typename R, typename T>
         static auto getEntityPropertyPtr(Entity* entity,
                                          const std::pair<R T::*, EntityColumn>& pair)

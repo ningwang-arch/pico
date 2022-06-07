@@ -19,9 +19,7 @@ public:
     typedef std::unordered_map<std::string, EntityColumn> ColumnMap;
 
     OrderBy() = default;
-    explicit OrderBy(ColumnMap* property_map) {
-        m_property_map = property_map;
-    }
+    explicit OrderBy(ColumnMap* property_map) { m_property_map = property_map; }
 
 
     template<typename T, typename Entity>
