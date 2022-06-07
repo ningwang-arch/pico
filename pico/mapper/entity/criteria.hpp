@@ -288,7 +288,7 @@ private:
 
     template<typename T, typename Entity>
     std::string condition(T Entity::*property_ptr, const std::string& comp_sql) {
-        auto property = EntityHelper::getProrperty(property_ptr);
+        auto property = EntityHelper::getProperty(property_ptr);
         return column(property) + " " + comp_sql;
     }
 

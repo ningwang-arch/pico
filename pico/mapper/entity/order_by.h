@@ -26,14 +26,14 @@ public:
 
     template<typename T, typename Entity>
     std::shared_ptr<OrderBy> desc(T Entity::*property) {
-        m_order_by_list.emplace_back(column(EntityHelper::getProrperty(property)) + " " +
+        m_order_by_list.emplace_back(column(EntityHelper::getProperty(property)) + " " +
                                      Constants::DESC);
         return shared_from_this();
     }
 
     template<typename T, typename Entity>
     std::shared_ptr<OrderBy> asc(T Entity::*property) {
-        m_order_by_list.emplace_back(column(EntityHelper::getProrperty(property)) + " " +
+        m_order_by_list.emplace_back(column(EntityHelper::getProperty(property)) + " " +
                                      Constants::ASC);
         return shared_from_this();
     }

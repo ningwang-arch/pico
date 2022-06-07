@@ -30,10 +30,10 @@ public:
     }
 
     template<typename T, typename Entity>
-    static std::string getProrperty(T Entity::*member) {
+    static std::string getProperty(T Entity::*member) {
         auto entity = std::make_shared<Entity>();
         auto reflection_info = EntityWrapper<Entity>().getReflectionInfo(entity.get());
-        return getProrperty(reflection_info, member);
+        return getProperty(reflection_info, member);
     }
 
     template<typename Entity>
@@ -192,7 +192,7 @@ private:
     };
 
     template<typename... Args, typename T>
-    static std::string getProrperty(const std::tuple<Args...>& tuple, T t) {
+    static std::string getProperty(const std::tuple<Args...>& tuple, T t) {
         std::string property;
         ResultGetter<decltype(tuple), sizeof...(Args)>::getProperty(tuple, t, property);
         return property;

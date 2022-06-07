@@ -162,7 +162,7 @@ private:
     template<typename Entity, typename Ret>
     void getJoinPropertyAndTableAlias(Ret Entity::*join_column, std::string& join_property,
                                       std::string& join_table_alias) {
-        join_property = EntityHelper::getProrperty(join_column);
+        join_property = EntityHelper::getProperty(join_column);
         join_table_alias = AliasHelper::getAliasFromType<Entity>();
     }
 
