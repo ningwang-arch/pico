@@ -76,7 +76,7 @@ public:
     template<typename T>
     typename std::enable_if<std::is_same<int, T>::value, int>::type getValue() const {
         if (!isNull()) { return m_buff.int_value; }
-        throw std::runtime_error("Object is null");
+        return 0;
     }
 
     // std::string
@@ -84,7 +84,7 @@ public:
     typename std::enable_if<std::is_same<std::string, T>::value, std::string>::type
     getValue() const {
         if (!isNull()) { return m_buff.str_value.data(); }
-        throw std::runtime_error("Object is null");
+        return std::string{};
     }
 
     // std::time_t
@@ -92,7 +92,7 @@ public:
     typename std::enable_if<std::is_same<std::time_t, T>::value, std::time_t>::type
     getValue() const {
         if (!isNull()) { return mysql_time2time_t(m_buff.time_value); }
-        throw std::runtime_error("Object is null");
+        return 0;
     }
 
     void* getValuePtr() const {
