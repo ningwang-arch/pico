@@ -37,7 +37,7 @@ public:
 
         std::unordered_map<int, int> id_index_map;
         Base<Entity> tmp;
-        std::unordered_map<std::string, EntityColumn> col_map = tmp.getColumnAliasMap();
+        std::map<std::string, EntityColumn> col_map = tmp.getColumnAliasMap();
         std::vector<EntityColumn> join_cols = tmp.getJoinEntityColumns();
         std::shared_ptr<EntityColumn> key_col = tmp.getKeyEntityColumn();
         auto container_iter =

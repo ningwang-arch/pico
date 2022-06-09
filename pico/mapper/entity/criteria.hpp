@@ -1,10 +1,10 @@
 #ifndef __PICO_MAPPER_ENTITY_CRITERIA_H__
 #define __PICO_MAPPER_ENTITY_CRITERIA_H__
 
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "../helper/entity_helper.hpp"
@@ -17,7 +17,7 @@ namespace pico {
 class Criteria
 {
 public:
-    typedef std::unordered_map<std::string, EntityColumn> ColumnMap;
+    typedef std::map<std::string, EntityColumn> ColumnMap;
 
     explicit Criteria(ColumnMap* property_map, EntityTable* table)
         : m_property_map(property_map)

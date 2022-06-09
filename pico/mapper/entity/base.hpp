@@ -3,9 +3,9 @@
 
 #include <cstdint>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -216,11 +216,11 @@ public:
         return std::make_pair(sql_builder->to_string(), ored_values);
     }
 
-    std::unordered_map<std::string, EntityColumn> getColumnAliasMap() {
-        std::unordered_map<std::string, EntityColumn> res;
+    std::map<std::string, EntityColumn> getColumnAliasMap() {
+        std::map<std::string, EntityColumn> res;
         for (auto& pm : m_property_map) {
             if (pm.second.getJoinType() != JoinType::OneToMany) {
-                res.insert({pm.second.getAlias(), pm.second});
+                res.insert(std::make_pair(pm.second.getAlias(), pm.second));
             }
         }
         return res;
@@ -281,11 +281,11 @@ private:
 
 private:
     std::vector<std::shared_ptr<Criteria>> m_ored_criteria;
-    std::unordered_map<std::string, EntityColumn> m_property_map;
+    std::map<std::string, EntityColumn> m_property_map;
     std::shared_ptr<Entity> m_entity_class = std::make_shared<Entity>();
     EntityTable m_table;
-    std::unordered_map<std::string, JoinEntityTable> m_join_table_map;
-    std::unordered_map<std::string, EntityColumn> m_entity_property_map;
+    std::map<std::string, JoinEntityTable> m_join_table_map;
+    std::map<std::string, EntityColumn> m_entity_property_map;
 
     std::shared_ptr<EntityColumn> m_primary_key_col = nullptr;
     std::vector<EntityColumn> m_join_col;

@@ -2,10 +2,10 @@
 #define __PICO_MAPPER_HELPER_ALIAS_HELPER_H__
 
 
+#include <map>
 #include <set>
 #include <string>
 #include <typeindex>
-#include <unordered_map>
 
 #include "../../singleton.h"
 #include "../../util.h"
@@ -39,7 +39,7 @@ private:
     }
 
 private:
-    std::unordered_map<std::type_index, std::string> _alias_map;
+    std::map<std::type_index, std::string> _alias_map;
     std::set<std::string> _alias_set;
 };
 

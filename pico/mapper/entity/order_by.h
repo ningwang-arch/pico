@@ -1,10 +1,10 @@
 #ifndef __PICO_MAPPER_ENTITY_ORDER_BY_H__
 #define __PICO_MAPPER_ENTITY_ORDER_BY_H__
 
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "../helper/entity_helper.hpp"
@@ -16,7 +16,7 @@ class OrderBy : public std::enable_shared_from_this<OrderBy>
 {
 public:
     typedef std::shared_ptr<OrderBy> Ptr;
-    typedef std::unordered_map<std::string, EntityColumn> ColumnMap;
+    typedef std::map<std::string, EntityColumn> ColumnMap;
 
     OrderBy() = default;
     explicit OrderBy(ColumnMap* property_map) { m_property_map = property_map; }

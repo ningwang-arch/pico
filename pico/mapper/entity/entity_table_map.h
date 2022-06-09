@@ -1,9 +1,9 @@
 #ifndef __PICO_MAPPER_ENTITY_ENTITY_TABLE_MAP_H__
 #define __PICO_MAPPER_ENTITY_ENTITY_TABLE_MAP_H__
 
+#include <map>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace pico {
@@ -16,8 +16,8 @@ public:
     std::vector<EntityTable>& getEntityTables() { return m_tables; }
     void setEntityTables(const std::vector<EntityTable>& tables) { m_tables = tables; }
 
-    std::unordered_map<std::string, EntityColumn>& getPropertyMap() { return m_property_map; }
-    void setPropertyMap(const std::unordered_map<std::string, EntityColumn>& property_map) {
+    std::map<std::string, EntityColumn>& getPropertyMap() { return m_property_map; }
+    void setPropertyMap(const std::map<std::string, EntityColumn>& property_map) {
         m_property_map = property_map;
     }
 
@@ -29,7 +29,7 @@ public:
 
 private:
     std::vector<EntityTable> m_tables;
-    std::unordered_map<std::string, EntityColumn> m_property_map;
+    std::map<std::string, EntityColumn> m_property_map;
     std::string m_key_property;
     std::set<std::string> m_key_columns;
 };
