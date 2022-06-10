@@ -92,6 +92,8 @@ build_test_target(test_jwt "tests/test_jwt.cc" pico "${LIBS}")
 build_test_target(test_date "tests/test_date.cc" pico "${LIBS}")
 build_test_target(test_mustache "tests/test_mustache.cc" pico "${LIBS}")
 build_test_target(test_mapper "tests/test_mapper.cc" pico "${LIBS}")
+build_test_target(test_ws_server "tests/test_ws_server.cc" pico "${LIBS}")
+build_test_target(test_ws_client "tests/test_ws_client.cc" pico "${LIBS}")
 
 endif()
 

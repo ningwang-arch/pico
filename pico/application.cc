@@ -32,7 +32,6 @@ public:
             r.path = route["path"].as<std::string>();
             r.servlet = std::static_pointer_cast<Servlet>(
                 ClassFactory::Instance().Create(route["class"].as<std::string>()));
-            if (r.servlet == nullptr) { r.servlet = std::make_shared<NotFoundServlet>(); }
             r.servlet->name = route["class"].as<std::string>();
             routes.insert(std::make_pair(route["name"].as<std::string>(), r));
         }
@@ -47,6 +46,7 @@ public:
     std::string operator()(const std::unordered_map<std::string, Route>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
         for (auto& i : v) {
+            if (!i.second.servlet) { continue; }
             YAML::Node route;
             route["name"] = i.first;
             route["path"] = i.second.path;

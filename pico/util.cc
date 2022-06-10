@@ -198,7 +198,7 @@ void listDir(const std::string& path, std::vector<std::string>& files, const std
     closedir(dir);
 }
 
-std::string base64_encode(const char* data, size_t length) {
+std::string base64_encode(const char* data, size_t length, bool strict) {
     auto input = reinterpret_cast<const unsigned char*>(data);
     const auto pl = 4 * ((length + 2) / 3);
     auto output = reinterpret_cast<char*>(
@@ -209,25 +209,32 @@ std::string base64_encode(const char* data, size_t length) {
     }
     std::string str = reinterpret_cast<char*>(output);
     // delete '=' padding
-    str.erase(std::remove(str.begin(), str.end(), '='), str.end());
-    // replace '/' with '_', '+' with '-'
-    std::replace(str.begin(), str.end(), '/', '_');
-    std::replace(str.begin(), str.end(), '+', '-');
+    if (strict) {
+        str.erase(std::remove(str.begin(), str.end(), '='), str.end());
+        // replace '/' with '_', '+' with '-'
+        std::replace(str.begin(), str.end(), '/', '_');
+        std::replace(str.begin(), str.end(), '+', '-');
+    }
     free(output);
     return str;
 }
 
-std::string base64_decode(const char* data, size_t length) {
-    std::string input = data;
-    // add '=' padding
-    if (length % 4 != 0) {
-        size_t pad = 4 - length % 4;
-        for (size_t i = 0; i < pad; i++) { input += '='; }
-    }
-    // replace '-' with '+', '_' with '/'
-    std::replace(input.begin(), input.end(), '-', '+');
-    std::replace(input.begin(), input.end(), '_', '/');
+std::string base64_encode(const std::string& str, bool strict) {
+    return base64_encode(str.c_str(), str.length(), strict);
+}
 
+std::string base64_decode(const char* data, size_t length, bool strict) {
+    std::string input = data;
+    if (strict) {
+        // add '=' padding
+        if (length % 4 != 0) {
+            size_t pad = 4 - length % 4;
+            for (size_t i = 0; i < pad; i++) { input += '='; }
+        }
+        // replace '-' with '+', '_' with '/'
+        std::replace(input.begin(), input.end(), '-', '+');
+        std::replace(input.begin(), input.end(), '_', '/');
+    }
     const auto pl = 3 * input.size() / 4;
     auto output = reinterpret_cast<unsigned char*>(calloc(pl + 1, 1));
     const auto ol =
@@ -239,6 +246,10 @@ std::string base64_decode(const char* data, size_t length) {
     // std::string str = reinterpret_cast<char*>(output);
     // free(output);
     return reinterpret_cast<char*>(output);
+}
+
+std::string base64_decode(const std::string& str, bool strict) {
+    return base64_decode(str.c_str(), str.length(), strict);
 }
 
 std::string Json2Str(const Json::Value& json) {
@@ -434,6 +445,12 @@ int genRandom(int min, int max) {
     return dis(gen);
 }
 
+std::string genRandomString(int len, std::string chars) {
+    std::string str;
+    for (int i = 0; i < len; i++) { str += chars[genRandom(0, chars.size() - 1)]; }
+    return str;
+}
+
 std::string camel2underline(const std::string& str) {
     std::string res;
     for (auto c : str) {
@@ -447,6 +464,32 @@ std::string camel2underline(const std::string& str) {
     }
 
     return res.at(0) == '_' ? res.substr(1) : res;
+}
+
+std::string sha1sum(const std::string& str) {
+    return sha1sum(str.data(), str.size());
+}
+
+std::string sha1sum(const void* data, size_t len) {
+    SHA_CTX ctx;
+    SHA1_Init(&ctx);
+    SHA1_Update(&ctx, data, len);
+    unsigned char digest[SHA_DIGEST_LENGTH];
+    SHA1_Final(digest, &ctx);
+    std::string res(SHA_DIGEST_LENGTH, '\0');
+    for (int i = 0; i < SHA_DIGEST_LENGTH; ++i) { res[i] = digest[i]; }
+    return res;
+}
+
+std::size_t find(const std::string& str, const std::string& substr, bool is_case_sensitive) {
+    if (is_case_sensitive) { return str.find(substr); }
+    else {
+        return std::find_if(
+                   str.begin(),
+                   str.end(),
+                   [&substr](char c) { return std::tolower(c) == std::tolower(substr[0]); }) -
+               str.begin();
+    }
 }
 
 }   // namespace pico

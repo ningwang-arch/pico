@@ -8,7 +8,7 @@ Pico is a C++ framework for creating web applications. It is designed to be easy
 
 - Easy Routing
 - Uses Morden C++11
-- Http/1.1 support
+- Http/1.1 and websocket support
 - Filter and servlet similar to Java
 - JWT authentication
 - Mapper support similar to Java

@@ -8,10 +8,13 @@
 - enable exclude filter in server conf(finished)
 - add mustache support(finished)
 
-- add websocket support
+- add websocket support(finished)
 - Mapper support(finished)
 
-- update README.md
+- update README.md(finished)
 - html-parser(optional)
 
 - compress(finished, only gzip and deflate supported)
+
+- add support for http2
+- add websocket to config

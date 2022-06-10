@@ -36,6 +36,7 @@ const char* http_status_to_string(HttpStatus status) {
 
 HttpRequest::HttpRequest(std::string version, bool is_close)
     : m_is_close(is_close)
+    , m_websocket(false)
     , m_method(HttpMethod::GET)
     , m_path("/")
     , m_version(version)
@@ -189,9 +190,9 @@ std::string HttpRequest::to_string() const {
     std::stringstream ss;
     ss << http_method_to_string(m_method) << " " << m_path << (m_query.empty() ? "" : "?")
        << m_query << (m_fragment.empty() ? "" : "#") << m_fragment << " " << m_version << "\r\n";
-    ss << "connection: " << (m_is_close ? "close" : "keep-alive") << "\r\n";
+    if (!m_websocket) { ss << "connection: " << (m_is_close ? "close" : "keep-alive") << "\r\n"; }
     for (auto& i : m_headers) {
-        if (strcasecmp(i.first.c_str(), "connection") == 0) { continue; }
+        if (!m_websocket && strcasecmp(i.first.c_str(), "connection") == 0) { continue; }
         ss << i.first << ": " << i.second << "\r\n";
     }
 
@@ -205,7 +206,8 @@ std::string HttpRequest::to_string() const {
 HttpResponse::HttpResponse(std::string version, bool is_close)
     : m_version(std::move(version))
     , m_status(HttpStatus::OK)
-    , m_is_close(is_close) {}
+    , m_is_close(is_close)
+    , m_websocket(false) {}
 
 std::string HttpResponse::get_header(const std::string& key, const std::string& def) {
     auto it = m_headers.find(key);
@@ -280,11 +282,11 @@ std::string HttpResponse::to_string() const {
     ss << m_version << " " << (uint32_t)m_status << " "
        << (m_reason.empty() ? http_status_to_string(m_status) : m_reason) << "\r\n";
     for (auto& i : m_headers) {
-        if (strcasecmp(i.first.c_str(), "connection") == 0) { continue; }
+        if (!m_websocket && strcasecmp(i.first.c_str(), "connection") == 0) { continue; }
         ss << i.first << ": " << i.second << "\r\n";
     }
     for (auto& i : m_cookies) { ss << "Set-Cookie: " << i << "\r\n"; }
-    ss << "connection: " << (m_is_close ? "close" : "keep-alive") << "\r\n";
+    if (!m_websocket) { ss << "connection: " << (m_is_close ? "close" : "keep-alive") << "\r\n"; }
     if (!m_body.empty()) { ss << "content-length: " << m_body.size() << "\r\n\r\n" << m_body; }
     else {
         ss << "\r\n";

@@ -212,6 +212,9 @@ public:
     bool is_close() const { return m_is_close; }
     void set_close(bool is_close) { m_is_close = is_close; }
 
+    bool is_websocket() const { return m_websocket; }
+    void set_websocket(bool is_websocket) { m_websocket = is_websocket; }
+
     std::string to_string() const;
 
     void init();
@@ -222,6 +225,7 @@ public:
 
 private:
     bool m_is_close;
+    bool m_websocket;
     HttpMethod m_method;
     std::string m_path;
     std::string m_query;
@@ -262,6 +266,8 @@ public:
     void write(const char* str, size_t len);
     void write(const Json::Value& json);
 
+    bool is_websocket() const { return m_websocket; }
+    void set_websocket(bool is_websocket) { m_websocket = is_websocket; }
 
     // delete
     void del_header(const std::string& key);
@@ -287,6 +293,7 @@ private:
     MapType m_headers;
     std::string m_body;
     bool m_is_close;
+    bool m_websocket;
     std::string m_reason;
 
     std::vector<std::string> m_cookies;

@@ -2,15 +2,11 @@
 #define __PICO_UTIL_H__
 
 #include <boost/lexical_cast.hpp>
+#include <byteswap.h>
 #include <dirent.h>
-#include <map>
-#include <pthread.h>
-#include <string.h>
-#include <string>
-#include <vector>
-
 #include <json/json.h>
 #include <list>
+#include <map>
 #include <mbedtls/base64.h>
 #include <mbedtls/md.h>
 #include <mbedtls/platform.h>
@@ -23,9 +19,13 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <openssl/ssl.h>
+#include <pthread.h>
 #include <set>
+#include <string.h>
+#include <string>
 #include <typeindex>
 #include <unordered_map>
+#include <vector>
 
 #include <mysql/mysql.h>
 
@@ -72,9 +72,11 @@ T getValueFromMap(const std::map<std::string, std::string>& map, const std::stri
 }
 
 
-std::string base64_encode(const char* data, size_t data_len);
+std::string base64_encode(const char* data, size_t data_len, bool strict = true);
+std::string base64_encode(const std::string& data, bool strict = true);
 
-std::string base64_decode(const char* encoded_data, size_t encoded_data_len);
+std::string base64_decode(const char* encoded_data, size_t encoded_data_len, bool strict = true);
+std::string base64_decode(const std::string& encoded_data, bool strict = true);
 
 std::string Json2Str(const Json::Value& json);
 
@@ -110,6 +112,8 @@ std::time_t mysql_time2time_t(const MYSQL_TIME& time);
 
 int genRandom(int min, int max);
 
+std::string genRandomString(
+    int len, std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
 std::string camel2underline(const std::string& camel);
 
@@ -147,6 +151,57 @@ private:
     int offset_;
     int limit_;
 };
+
+std::string sha1sum(const std::string& str);
+
+std::string sha1sum(const void* data, size_t len);
+
+template<class T>
+typename std::enable_if<sizeof(T) == sizeof(uint64_t), T>::type byteswap(T value) {
+    return (T)bswap_64((uint64_t)value);
+}
+
+
+template<class T>
+typename std::enable_if<sizeof(T) == sizeof(uint32_t), T>::type byteswap(T value) {
+    return (T)bswap_32((uint32_t)value);
+}
+
+template<class T>
+typename std::enable_if<sizeof(T) == sizeof(uint16_t), T>::type byteswap(T value) {
+    return (T)bswap_16((uint16_t)value);
+}
+
+#if BYTE_ORDER == BIG_ENDIAN
+#    define PICO_BYTE_ORDER PICO_BIG_ENDIAN
+#else
+#    define PICO_BYTE_ORDER PICO_LITTLE_ENDIAN
+#endif
+
+#if PICO_BYTE_ORDER == PICO_BIG_ENDIAN
+template<class T>
+T byteswapOnLittleEndian(T t) {
+    return t;
+}
+
+template<class T>
+T byteswapOnBigEndian(T t) {
+    return byteswap(t);
+}
+#else
+
+template<class T>
+T byteswapOnLittleEndian(T t) {
+    return byteswap(t);
+}
+
+template<class T>
+T byteswapOnBigEndian(T t) {
+    return t;
+}
+#endif
+
+std::size_t find(const std::string& str, const std::string& substr, bool is_case_sensitive = false);
 
 }   // namespace pico
 

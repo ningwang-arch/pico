@@ -111,6 +111,7 @@ void RequestHandler::listAllGlobalRoutes(std::map<std::string, Servlet::Ptr>& ro
 void RequestHandler::handle(const HttpRequest::Ptr& req, HttpResponse::Ptr& resp) {
     auto path = req->get_path();
     auto servlet = findHandler(path);
+    if (servlet == nullptr) { servlet = Servlet::Ptr(new NotFoundServlet()); }
     if (isExcludePath(path)) { servlet->service(req, resp); }
     else {
         FilterChain::Ptr filter_chain(new FilterChain());

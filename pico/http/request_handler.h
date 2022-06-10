@@ -20,7 +20,6 @@ class RequestHandler
 {
 public:
     typedef std::shared_ptr<RequestHandler> Ptr;
-    typedef std::function<void(const HttpRequest::Ptr&, HttpResponse::Ptr&)> Handler;
 
     struct Route
     {
