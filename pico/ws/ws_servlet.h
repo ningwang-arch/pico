@@ -16,15 +16,18 @@ class WsServlet
 public:
     typedef std::shared_ptr<WsServlet> Ptr;
 
-    virtual void onConnect(const pico::WsConnection::Ptr& req){};
+
+    virtual bool onConnect(const pico::HttpRequest::Ptr& req) { return true; };
 
     virtual void onMessage(const pico::WsConnection::Ptr& conn, pico::WsFrameMessage::Ptr& msg) = 0;
 
     virtual void onDisconnect(const pico::WsConnection::Ptr& conn){};
 
+    virtual void onError(const pico::WsConnection::Ptr& conn){};
+
 
 public:
-    std::string m_name;
+    std::string name;
 };
 
 }   // namespace pico

@@ -18,6 +18,7 @@ public:
 
     void addServlet(const std::string& path, WsServlet::Ptr servlet, bool global = false);
 
+
     void reset();
 
 

@@ -9,3 +9,8 @@ servlets:
   - name: mustache
     class: MustacheServlet
     path: /mustache
+
+ws_servlets:
+  - name: hello
+    class: WsHelloServlet
+    path: /

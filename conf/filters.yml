@@ -1,3 +1,4 @@
+# only works on http server
 filters:
   - name: "filter1"
     class: HelloFilter

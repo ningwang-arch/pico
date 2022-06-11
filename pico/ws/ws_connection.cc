@@ -110,7 +110,7 @@ WsFrameMessage::Ptr WsRecvMessage(SocketStream* stream, bool is_client) {
         }
         else if (header.opcode == WsFrameHeader::BINARY || header.opcode == WsFrameHeader::TEXT ||
                  header.opcode == WsFrameHeader::CONTINUATION) {
-            if (is_client && !header.mask) { break; }
+            if (!is_client && !header.mask) { break; }
 
             uint64_t length;
             if (header.payload_len == 126) {
@@ -154,7 +154,7 @@ WsFrameMessage::Ptr WsRecvMessage(SocketStream* stream, bool is_client) {
     } while (true);
 
     stream->close();
-    return std::make_shared<WsFrameMessage>(WsFrameHeader::CLOSE, std::move(data));
+    return std::make_shared<WsFrameMessage>(WsFrameHeader::ERROR, std::move(data));
 }
 
 int32_t WsSendMessage(SocketStream* stream, const WsFrameMessage::Ptr& message, bool is_client,

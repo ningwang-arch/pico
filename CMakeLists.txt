@@ -52,7 +52,6 @@ include_sub_directories_recursively(${SOURCE_FILES_DIR})
 
 file(GLOB_RECURSE LIB_SRC ${SOURCE_FILES_DIR}/*.cpp ${SOURCE_FILES_DIR}/*.cc ${SOURCE_FILES_DIR}/*.hpp ${SOURCE_FILES_DIR}/*.h)
 
-
 add_library(pico SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(pico)
 

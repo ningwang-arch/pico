@@ -11,7 +11,7 @@ servers:
       - set
       - get
       - mustache
-    # Do not filter the below paths
+    # Do not filter the below paths, this config is only for http server
     exclude_paths:
       - /
   - addresses: ["127.0.0.1:12233"]
@@ -23,3 +23,9 @@ servers:
     certificates:
       file: conf/cert.pem
       key: conf/key.pem
+  - addresses: ["127.0.0.1:8000"]
+    type: ws
+    # currently only support ragular ws, ws over tls is not supported
+    name: ws_server
+    servlets:
+      - hello

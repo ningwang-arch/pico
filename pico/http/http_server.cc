@@ -63,7 +63,6 @@ void HttpServer::handleClient(Socket::Ptr& sock) {
                 resp->set_body(compression::compress(resp->get_body(), compression::DEFLATE));
             }
         }
-
         conn->sendResponse(resp);
         if (!m_is_KeepAlive || req->is_close()) { break; }
     } while (true);

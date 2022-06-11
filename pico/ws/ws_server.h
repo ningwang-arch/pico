@@ -13,8 +13,7 @@ class WsServer : public TcpServer
 public:
     typedef std::shared_ptr<WsServer> Ptr;
 
-    WsServer(bool keepalive = false, IOManager* worker = IOManager::GetThis(),
-             IOManager* acceptor = IOManager::GetThis());
+    WsServer(IOManager* worker = IOManager::GetThis(), IOManager* acceptor = IOManager::GetThis());
 
     WsServletDispatcher::Ptr getServletDispatcher() { return m_servlet_dispatcher; }
 

@@ -44,7 +44,8 @@ struct WsFrameHeader
         BINARY = 0x2,
         CLOSE = 0x8,
         PING = 0x9,
-        PONG = 0xA
+        PONG = 0xA,
+        ERROR = 0xF
     };
 
     uint32_t opcode : 4;

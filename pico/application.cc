@@ -9,6 +9,10 @@
 
 #include "http/servlets/404_servlet.h"
 #include "server_manager.h"
+
+#include "ws/ws_server.h"
+#include "ws/ws_servlet.h"
+
 namespace pico {
 
 
@@ -19,7 +23,6 @@ struct Route
     std::string path;
     Servlet::Ptr servlet;
 };
-
 template<>
 class LexicalCast<std::string, std::unordered_map<std::string, Route>>
 {
@@ -61,9 +64,58 @@ public:
 };
 
 
+struct WsRoute
+{
+    std::string path;
+    WsServlet::Ptr servlet;
+};
+template<>
+class LexicalCast<std::string, std::map<std::string, WsRoute>>
+{
+public:
+    std::map<std::string, WsRoute> operator()(const std::string& str) const {
+        std::map<std::string, WsRoute> servlets;
+        YAML::Node node = YAML::Load(str);
+        for (auto servlet : node) {
+            WsRoute r;
+            r.path = servlet["path"].as<std::string>();
+            r.servlet = std::static_pointer_cast<WsServlet>(
+                ClassFactory::Instance().Create(servlet["class"].as<std::string>()));
+            if (!r.servlet) { continue; }
+            r.servlet->name = servlet["class"].as<std::string>();
+            servlets.insert(std::make_pair(servlet["name"].as<std::string>(), r));
+        }
+        return servlets;
+    }
+};
+
+template<>
+class LexicalCast<std::map<std::string, WsRoute>, std::string>
+{
+public:
+    std::string operator()(const std::map<std::string, WsRoute>& v) {
+        YAML::Node node(YAML::NodeType::Sequence);
+        for (auto& i : v) {
+            if (!i.second.servlet) { continue; }
+            YAML::Node servlet;
+            servlet["name"] = i.first;
+            servlet["path"] = i.second.path;
+            servlet["class"] = i.second.servlet->name;
+            node.push_back(servlet);
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
 static ConfigVar<std::unordered_map<std::string, Route>>::Ptr g_servlets =
     Config::Lookup<std::unordered_map<std::string, Route>>(
         "servlets", std::unordered_map<std::string, Route>(), "servlets");
+
+static ConfigVar<std::map<std::string, WsRoute>>::Ptr g_ws_servlets =
+    Config::Lookup<std::map<std::string, WsRoute>>("ws_servlets", std::map<std::string, WsRoute>(),
+                                                   "ws_servlets");
 
 static pico::ConfigVar<std::vector<TcpServerOptions>>::Ptr g_servers_conf =
     pico::Config::Lookup("servers", std::vector<TcpServerOptions>(), "http server config");
@@ -127,6 +179,7 @@ int Application::main(int argc, char* argv[]) {
 void Application::run_in_fiber() {
     auto server_confs = g_servers_conf->getValue();
     auto servlets = g_servlets->getValue();
+    auto ws_servlets = g_ws_servlets->getValue();
     auto filters = g_filters_conf->getValue();
 
     std::unordered_map<std::string, FilterChain::Ptr> filter_chains;
@@ -210,42 +263,75 @@ void Application::run_in_fiber() {
             }
         }
 
-        HttpServer::Ptr server(new HttpServer(server_conf.keep_alive, worker, acceptor));
-        if (!server_conf.name.empty()) { server->setName(server_conf.name); }
-        std::vector<Address::Ptr> fails;
-        if (!server->bind(addresses, fails, server_conf.ssl)) {
-            for (auto i : fails) { LOG_ERROR("bind to %s failed", i->to_string().c_str()); }
-            exit(-1);
-        }
-        if (server_conf.ssl) {
-            if (!server->loadCertificate(server_conf.cert_file, server_conf.key_file)) {
-                LOG_ERROR("load certficate failed");
+        if (server_conf.type == "http") {
+            HttpServer::Ptr server(new HttpServer(server_conf.keep_alive, worker, acceptor));
+            if (!server_conf.name.empty()) { server->setName(server_conf.name); }
+            std::vector<Address::Ptr> fails;
+            if (!server->bind(addresses, fails, server_conf.ssl)) {
+                for (auto i : fails) { LOG_ERROR("bind to %s failed", i->to_string().c_str()); }
+                exit(-1);
             }
-        }
+            if (server_conf.ssl) {
+                if (!server->loadCertificate(server_conf.cert_file, server_conf.key_file)) {
+                    LOG_ERROR("load certficate failed");
+                }
+            }
 
-        auto handlers = server_conf.servlets;
-        auto req_handler = server->getRequestHandler();
-        req_handler->reset();
-        for (auto handler_name : handlers) {
-            if (servlets.find(handler_name) == servlets.end()) {
-                LOG_ERROR("invalid servlet: %s", handler_name.c_str());
-                continue;
+            auto handlers = server_conf.servlets;
+            auto req_handler = server->getRequestHandler();
+            req_handler->reset();
+            for (auto handler_name : handlers) {
+                if (servlets.find(handler_name) == servlets.end()) {
+                    LOG_ERROR("invalid servlet: %s", handler_name.c_str());
+                    continue;
+                }
+                if (servlets[handler_name].path.find("*") != std::string::npos) {
+                    req_handler->addGlobalRoute(servlets[handler_name].path,
+                                                servlets[handler_name].servlet);
+                }
+                else {
+                    req_handler->addRoute(servlets[handler_name].path,
+                                          servlets[handler_name].servlet);
+                }
             }
-            if (servlets[handler_name].path.find("*") != std::string::npos) {
-                req_handler->addGlobalRoute(servlets[handler_name].path,
-                                            servlets[handler_name].servlet);
+            req_handler->addExcludePath(server_conf.exclude_paths);
+            for (auto filter_chain : filter_chains) {
+                addFilterChain(filter_chain.first, filter_chain.second);
             }
-            else {
-                req_handler->addRoute(servlets[handler_name].path, servlets[handler_name].servlet);
-            }
-        }
-        req_handler->addExcludePath(server_conf.exclude_paths);
-        for (auto filter_chain : filter_chains) {
-            addFilterChain(filter_chain.first, filter_chain.second);
-        }
 
-        m_servers[server_conf.type].push_back(server);
-        server_manager->addServer(server->getName(), server);
+            m_servers[server_conf.type].push_back(server);
+            server_manager->addServer(server->getName(), server);
+        }
+        else if (server_conf.type == "ws") {
+            WsServer::Ptr server(new WsServer(worker, acceptor));
+            if (!server_conf.name.empty()) { server->setName(server_conf.name); }
+            std::vector<Address::Ptr> fails;
+            if (!server->bind(addresses, fails, server_conf.ssl)) {
+                for (auto i : fails) { LOG_ERROR("bind to %s failed", i->to_string().c_str()); }
+                exit(-1);
+            }
+
+            auto handlers = server_conf.servlets;
+            auto req_handler = server->getServletDispatcher();
+            req_handler->reset();
+            for (auto handler_name : handlers) {
+                if (ws_servlets.find(handler_name) == ws_servlets.end()) {
+                    LOG_ERROR("invalid servlet: %s", handler_name.c_str());
+                    continue;
+                }
+                if (ws_servlets[handler_name].path.find("*") != std::string::npos) {
+                    req_handler->addServlet(
+                        ws_servlets[handler_name].path, ws_servlets[handler_name].servlet, true);
+                }
+                else {
+                    req_handler->addServlet(ws_servlets[handler_name].path,
+                                            ws_servlets[handler_name].servlet);
+                }
+            }
+
+            m_servers[server_conf.type].push_back(server);
+            server_manager->addServer(server->getName(), server);
+        }
     };
 
     server_manager->startAll();

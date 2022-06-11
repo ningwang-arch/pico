@@ -7,6 +7,7 @@
 #include "pico/mustache.h"
 #include "pico/pico.h"
 #include "pico/session.h"
+#include "pico/ws/ws_servlet.h"
 #include <fstream>
 
 namespace pico {
@@ -100,12 +101,29 @@ private:
     std::map<std::string, std::string> m_init_params;
 };
 
+class WsHelloServlet : public WsServlet
+{
+public:
+    bool onConnect(const HttpRequest::Ptr& req) override {
+        std::cout << req->to_string() << std::endl;
+        std::cout << "WsHelloServlet::onConnect" << std::endl;
+        return true;
+    }
+    void onMessage(const WsConnection::Ptr& conn, WsFrameMessage::Ptr& msg) override {
+        conn->sendMessage(msg);
+    }
+    void onDisconnect(const WsConnection::Ptr& conn) override {
+        std::cout << "WsHelloServlet::onDisconnect" << std::endl;
+    }
+};
+
 REGISTER_CLASS(HelloServlet);
 REGISTER_CLASS(SessionSetServlet);
 REGISTER_CLASS(SessionGetServlet);
 REGISTER_CLASS(MustacheServlet);
 REGISTER_CLASS(HelloFilter);
 REGISTER_CLASS(TestFilter);
+REGISTER_CLASS(WsHelloServlet);
 
 }   // namespace pico
 
