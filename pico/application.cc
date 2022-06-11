@@ -32,6 +32,7 @@ public:
             r.path = route["path"].as<std::string>();
             r.servlet = std::static_pointer_cast<Servlet>(
                 ClassFactory::Instance().Create(route["class"].as<std::string>()));
+            if (!r.servlet) { continue; }
             r.servlet->name = route["class"].as<std::string>();
             routes.insert(std::make_pair(route["name"].as<std::string>(), r));
         }
@@ -74,7 +75,7 @@ static ConfigVar<std::vector<FilterConfs>>::Ptr g_filters_conf =
 Application* Application::s_instance = nullptr;
 
 Application::Application() {
-    // if (s_instance) { throw std::runtime_error("Application already exists"); }
+    if (s_instance) { throw std::runtime_error("Application already exists"); }
     s_instance = this;
 }
 

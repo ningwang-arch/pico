@@ -103,7 +103,8 @@ void SQLStmt::selectSQL(std::string& builder) {
     else {
         sqlClause(builder, "SELECT", _select, "", "", ", ");
     }
-    sqlClause(builder, "FROM", _tables, "", "", ",");
+    // https://www.cnblogs.com/wang3680/p/4461276.html
+    sqlClause(builder, "FROM", _tables, "(", ")", ",");
     joins(builder);
     sqlClause(builder, "WHERE", _where, "(", ")", " AND ");
     sqlClause(builder, "GROUP BY", _groupBy, "", "", ", ");
