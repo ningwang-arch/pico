@@ -311,6 +311,12 @@ void Application::run_in_fiber() {
                 exit(-1);
             }
 
+            if (server_conf.ssl) {
+                if (!server->loadCertificate(server_conf.cert_file, server_conf.key_file)) {
+                    LOG_ERROR("load certficate failed");
+                }
+            }
+
             auto handlers = server_conf.servlets;
             auto req_handler = server->getServletDispatcher();
             req_handler->reset();

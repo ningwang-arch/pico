@@ -575,6 +575,7 @@ bool SSLSocket::init(int sock) {
         m_ssl.reset(SSL_new(m_ctx.get()), SSL_free);
         SSL_set_fd(m_ssl.get(), m_sockfd);
         v = (SSL_accept(m_ssl.get()) == 1);
+        if (!v) { ERR_print_errors_fp(stderr); }
     }
     return v;
 }

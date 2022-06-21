@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "../logging.h"
+#include "../socket.h"
 
 namespace pico {
 WsRequest::Ptr WsRequest::create(const std::string& url, uint64_t timeout,
@@ -22,7 +23,8 @@ WsRequest::Ptr WsRequest::create(const Uri::Ptr& uri, uint64_t timeout,
         LOG_ERROR("create addr failed");
         return nullptr;
     }
-    Socket::Ptr sock = Socket::CreateTcp(addr);
+    bool is_ssl = uri->getScheme() == "https";
+    Socket::Ptr sock = is_ssl ? SSLSocket::CreateTcp(addr) : Socket::CreateTcp(addr);
     if (sock == nullptr) {
         LOG_ERROR("create socket failed");
         return nullptr;

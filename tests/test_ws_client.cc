@@ -5,7 +5,7 @@
 #include "pico/ws/ws_request.h"
 
 void run() {
-    auto conn = pico::WsRequest::create("http://127.0.0.1:8080/", 1000);
+    auto conn = pico::WsRequest::create("https://127.0.0.1:8000/", 2000);
     if (!conn) { return; }
 
     while (true) {
@@ -16,7 +16,7 @@ void run() {
         auto msg = conn->recvMessage();
         if (!msg) { std::cout << errno << " " << strerror(errno) << std::endl; }
         std::cout << msg->get_data() << std::endl;
-        sleep(5);
+        sleep(1);
     }
 }
 

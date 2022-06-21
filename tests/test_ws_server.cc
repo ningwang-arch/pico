@@ -5,8 +5,9 @@
 class WsServlet : public pico::WsServlet
 {
 public:
-    virtual void onConnect(const pico::HttpRequest::Ptr& req) override {
+    virtual bool onConnect(const pico::HttpRequest::Ptr& req) override {
         LOG_INFO("WsServlet::onConnect");
+        return true;
     }
 
     virtual void onMessage(const pico::WsConnection::Ptr& conn,

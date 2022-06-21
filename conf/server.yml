@@ -14,7 +14,7 @@ servers:
     # Do not filter the below paths, this config is only for http server
     exclude_paths:
       - /
-  - addresses: ["127.0.0.1:12233"]
+  - addresses: ["127.0.0.1:9000"]
     type: http
     ssl: true
     name: server_1
@@ -25,7 +25,16 @@ servers:
       key: conf/key.pem
   - addresses: ["127.0.0.1:8000"]
     type: ws
-    # currently only support ragular ws, ws over tls is not supported
+    ssl: true
     name: ws_server
+    servlets:
+      - hello
+    certificates:
+      file: conf/cert.pem
+      key: conf/key.pem
+  - addresses: ["127.0.0.1:7777"]
+    type: ws
+    ssl: false
+    name: ws_server_1
     servlets:
       - hello

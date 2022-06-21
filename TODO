@@ -19,4 +19,6 @@
 - add support for http2
 - add websocket to config(finished)
 
-- add ws with ssl support(maybe to do)
+- add ws with ssl support(finished)
+
+- add sqlite and postgresql support for mapper
