@@ -1,9 +1,8 @@
-#include "connection.h"
+#include "mysql_conn.h"
 
-#include "pico/logging.h"
+
 
 namespace pico {
-
 namespace {
 struct MySQLThreadIniter
 {
@@ -12,9 +11,10 @@ struct MySQLThreadIniter
 };
 }   // namespace
 
-void Connection::clear() {
-    if (!_result) { ::mysql_free_result(_result); }
-    if (!_stmt) { ::mysql_stmt_free_result(_stmt); }
+
+void MySQLConnection::clear() {
+    if (_result) { ::mysql_free_result(_result); }
+    if (_stmt) { ::mysql_stmt_free_result(_stmt); }
 
     _records.clear();
 
@@ -22,24 +22,24 @@ void Connection::clear() {
     _result_binder.reset();
 }
 
-void Connection::close() {
+void MySQLConnection::close() {
     if (_conn) { ::mysql_close(_conn); }
     _conn = nullptr;
 }
 
-bool Connection::ping() {
+bool MySQLConnection::ping() {
     return ::mysql_ping(_conn) == 0;
 }
 
-int Connection::getLastAffectedRows() {
+int MySQLConnection::getLastAffectedRows() {
     return (int)::mysql_affected_rows(_conn);
 }
 
-int Connection::getLastInsertId() {
+int MySQLConnection::getLastInsertId() {
     return (int)::mysql_insert_id(_conn);
 }
 
-bool Connection::connect() {
+bool MySQLConnection::connect() {
     static thread_local MySQLThreadIniter initer;
 
     _conn = ::mysql_init(nullptr);
@@ -73,7 +73,17 @@ bool Connection::connect() {
     return true;
 }
 
-bool Connection::begin() {
+bool MySQLConnection::next() {
+    if (mysql_stmt_fetch(_stmt) != 0) {
+        // print error message
+        LOG_ERROR("mysql_stmt_fetch failed: %s", mysql_stmt_error(_stmt));
+        clear();
+        return false;
+    }
+    return true;
+}
+
+bool MySQLConnection::begin() {
     if (::mysql_real_query(_conn, "BEGIN", 5) != 0) {
         LOG_ERROR("mysql_real_query failed: %s", mysql_error(_conn));
         return false;
@@ -81,7 +91,7 @@ bool Connection::begin() {
     return true;
 }
 
-bool Connection::commit() {
+bool MySQLConnection::commit() {
     if (::mysql_real_query(_conn, "COMMIT", 6) != 0) {
         LOG_ERROR("mysql_real_query failed: %s", mysql_error(_conn));
         return false;
@@ -89,7 +99,7 @@ bool Connection::commit() {
     return true;
 }
 
-bool Connection::rollback() {
+bool MySQLConnection::rollback() {
     if (::mysql_real_query(_conn, "ROLLBACK", 8) != 0) {
         LOG_ERROR("mysql_real_query failed: %s", mysql_error(_conn));
         return false;
@@ -97,7 +107,7 @@ bool Connection::rollback() {
     return true;
 }
 
-bool Connection::execute() {
+bool MySQLConnection::execute() {
     if (::mysql_stmt_bind_param(_stmt, &_prepare_binder->getBindBuffer()[0]) != 0) {
         LOG_ERROR("mysql_stmt_bind_param failed: %s", mysql_stmt_error(_stmt));
         return false;
@@ -126,7 +136,7 @@ bool Connection::execute() {
     return true;
 }
 
-bool Connection::prepare(const std::string& sql) {
+bool MySQLConnection::prepare(const std::string& sql) {
     _stmt = ::mysql_stmt_init(_conn);
     if (!_stmt) {
         LOG_ERROR("mysql_stmt_init failed: %s", mysql_error(_conn));
@@ -138,6 +148,15 @@ bool Connection::prepare(const std::string& sql) {
     }
     _prepare_binder = std::make_shared<PrepareBinder>(::mysql_stmt_param_count(_stmt));
     return true;
+}
+
+MySQLConnection::~MySQLConnection() {
+    if (_stmt) { mysql_stmt_close(_stmt); }
+    if (_conn) { mysql_close(_conn); }
+    if (_result) { mysql_free_result(_result); }
+    _stmt = nullptr;
+    _conn = nullptr;
+    _result = nullptr;
 }
 
 }   // namespace pico

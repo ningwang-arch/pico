@@ -31,9 +31,11 @@ public:
     static void select(const std::string& sql, const Iterable& args, std::vector<Entity>& results,
                        std::string sql_conf = "") {
         auto conn = getConnection(sql_conf);
-        if (!conn) return;
+        if (!conn) {
+            LOG_ERROR("getConnection failed");
+            return;
+        }
         if (!prepare(conn, sql, args)) { return; }
-
 
         std::unordered_map<int, int> id_index_map;
         Base<Entity> tmp;
@@ -44,9 +46,7 @@ public:
             std::find_if(join_cols.begin(), join_cols.end(), [](EntityColumn& entity_col) {
                 return entity_col.container();
             });
-        int cnt = 0;
         while (conn->next()) {
-            cnt++;
             int id = 0;
             std::set<std::string> null_join_property_set;
             for (size_t i = 0; i < conn->getRecords().size(); i++) {
@@ -129,7 +129,10 @@ private:
     static bool prepare(const std::shared_ptr<Connection>& conn, const std::string& sql,
                         const Iterable& args) {
 
-        if (!conn->prepare(sql)) { return false; }
+        if (!conn->prepare(sql)) {
+            std::cout << "prepare failed" << std::endl;
+            return false;
+        }
         for (size_t i = 0; i < args.size(); i++) { conn->bindValue((int)i, args[i]); }
         return conn->execute();
     }

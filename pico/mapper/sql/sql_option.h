@@ -9,6 +9,7 @@
 namespace pico {
 struct SQLOption
 {
+    std::string type = "";
     std::string host = "";
     int port = 0;
     std::string user = "";
@@ -28,14 +29,15 @@ public:
         YAML::Node node = YAML::Load(str);
         for (auto i : node) {
             SQLOption option;
-            option.host = i["host"].as<std::string>();
-            option.port = i["port"].as<int>();
-            option.user = i["user"].as<std::string>();
-            option.password = i["password"].as<std::string>();
-            option.database = i["database"].as<std::string>();
-            option.charset = i["charset"].as<std::string>();
-            option.connect_timeout = i["connect_timeout"].as<int>();
-            option.reconnect_time = i["reconnect_time"].as<int>();
+            option.type = i["type"].as<std::string>(option.type);
+            option.host = i["host"].as<std::string>(option.host);
+            option.port = i["port"].as<int>(option.port);
+            option.user = i["user"].as<std::string>(option.user);
+            option.password = i["password"].as<std::string>(option.password);
+            option.database = i["database"].as<std::string>(option.database);
+            option.charset = i["charset"].as<std::string>(option.charset);
+            option.connect_timeout = i["connect_timeout"].as<int>(option.connect_timeout);
+            option.reconnect_time = i["reconnect_time"].as<int>(option.reconnect_time);
             ret.insert(std::make_pair(i["name"].as<std::string>(), option));
         }
         return ret;
@@ -51,6 +53,7 @@ public:
         for (auto& i : v) {
             YAML::Node option;
             option["name"] = i.first;
+            option["type"] = i.second.type;
             option["host"] = i.second.host;
             option["port"] = i.second.port;
             option["user"] = i.second.user;

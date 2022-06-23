@@ -165,12 +165,12 @@ int main(int argc, char* argv[]) {
     pico::EnvManager::getInstance()->init(argc, argv);
     pico::Config::LoadFromConfDir(pico::EnvManager::getInstance()->getConfigPath());
     // test_insert();
-    // test_select();
+    test_select();
     // test_update();
     // test_delete();
     // test_select_with_cond();
     // test_one2one();
     // test_one2many();
-    test_iommanager();
+    // test_iommanager();
     return 0;
 }

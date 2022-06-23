@@ -1,6 +1,8 @@
 #include "connection_pool.h"
 
 #include "../../logging.h"
+#include "mysql_conn.h"
+#include "sqlite_conn.h"
 
 namespace pico {
 static ConfigVar<std::unordered_map<std::string, SQLOption>>::Ptr g_sql_options =
@@ -19,14 +21,19 @@ void ConnectionPool::initInternal() {
 }
 
 Connection* ConnectionPool::createConnection() {
-    auto conn = new Connection();
-    conn->setOption(_option);
-    if (conn->connect()) {
+    std::string type = _option.type;
+
+    Connection* conn = nullptr;
+
+    if (type == "mysql") { conn = new MySQLConnection(); }
+    if (type == "sqlite") { conn = new SQLiteConnection(); }
+
+    if (conn) {
+        conn->setOption(_option);
+        conn->connect();
         ++_open_conn_num;
-        return conn;
     }
-    delete conn;
-    return nullptr;
+    return conn;
 }
 
 void ConnectionPool::releaseConnection(Connection* conn) {
@@ -71,7 +78,6 @@ std::shared_ptr<Connection> ConnectionPool::getConnection() {
     return popConnection();
 }
 ConnectionManager::ConnectionManager() {
-    mysql_library_init(0, nullptr, nullptr);
     auto options = g_sql_options->getValue();
     for (auto& option : options) {
         auto pool = std::make_shared<ConnectionPool>();
@@ -85,10 +91,6 @@ std::shared_ptr<Connection> ConnectionManager::getConnection(const std::string& 
     auto it = _pools.find(name);
     if (it == _pools.end()) { return nullptr; }
     return it->second->getConnection();
-}
-
-ConnectionManager::~ConnectionManager() {
-    mysql_library_end();
 }
 
 }   // namespace pico

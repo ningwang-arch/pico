@@ -31,15 +31,6 @@ public:
 
     void initInternal();
 
-    ~ConnectionPool() {
-        while (!_conns.empty()) {
-            Connection* conn = _conns.front();
-            _conns.pop();
-            delete conn;
-        }
-        _open_conn_num = 0;
-    }
-
 private:
     Connection* createConnection();
     void releaseConnection(Connection* conn);
@@ -68,8 +59,6 @@ public:
     ConnectionManager();
 
     std::shared_ptr<Connection> getConnection(const std::string& name);
-
-    ~ConnectionManager();
 
 private:
     std::unordered_map<std::string, std::shared_ptr<ConnectionPool>> _pools;

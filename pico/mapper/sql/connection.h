@@ -3,7 +3,7 @@
 
 #include <chrono>
 #include <memory>
-#include <mysql/mysql.h>
+
 #include <string>
 #include <vector>
 
@@ -16,62 +16,45 @@ namespace pico {
 class Connection
 {
 public:
-    void setOption(const SQLOption& option) { _option = option; }
+    virtual void setOption(const SQLOption& option) { _option = option; }
 
-    void close();
+    virtual void close() = 0;
 
-    bool ping();
+    virtual bool ping() = 0;
 
-    int getLastAffectedRows();
+    virtual int getLastAffectedRows() = 0;
 
-    int getLastInsertId();
+    virtual int getLastInsertId() = 0;
 
-    bool connect();
+    virtual bool connect() = 0;
 
 
-    bool begin();
-    bool commit();
-    bool rollback();
+    virtual bool begin() = 0;
+    virtual bool commit() = 0;
+    virtual bool rollback() = 0;
 
-    bool execute();
+    virtual bool execute() = 0;
 
-    void bindValue(int index, const Object& value) { _prepare_binder->bindValue(index, value); }
+    virtual void bindValue(int index, const Object& value) = 0;
 
-    bool prepare(const std::string& sql);
+    virtual bool prepare(const std::string& sql) = 0;
 
-    bool next() {
-        if (mysql_stmt_fetch(_stmt) != 0) {
-            clear();
-            return false;
-        }
-        return true;
-    }
+    virtual bool next() = 0;
 
-    Object value(int index) { return _result_binder->value(index); }
+    virtual Object value(int index) = 0;
 
-    const std::vector<std::string>& getRecords() { return _records; }
+    virtual const std::vector<std::string>& getRecords() { return _records; }
 
-    ~Connection() {
-        if (_stmt) { mysql_stmt_close(_stmt); }
-        if (_conn) { mysql_close(_conn); }
-        _stmt = nullptr;
-        _conn = nullptr;
-    }
+    virtual ~Connection() = default;
 
-private:
-    void clear();
+protected:
+    virtual void clear() = 0;
 
-private:
-    MYSQL* _conn = nullptr;
-    MYSQL_STMT* _stmt = nullptr;
-    MYSQL_RES* _result = nullptr;
-
+protected:
+    // store column names
     std::vector<std::string> _records;
 
     SQLOption _option;
-
-    std::shared_ptr<PrepareBinder> _prepare_binder;
-    std::shared_ptr<ResultBinder> _result_binder;
 };
 
 }   // namespace pico
