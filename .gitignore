@@ -1,4 +1,5 @@
 .cache/*
+.cmake/*
 .vscode/*
 build/*
 lib/*

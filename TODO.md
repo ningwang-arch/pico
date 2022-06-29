@@ -12,7 +12,7 @@
 - [x] Mapper support
   <br>
 - [x] update README.md
-- [ ] html-parser(optional)
+- [x] [html-parser](https://github.com/ningwang-arch/html-parser.git)
   <br>
 - [x] compress
   <br>
