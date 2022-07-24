@@ -40,11 +40,11 @@ void HttpServer::handleClient(Socket::Ptr& sock) {
         }
 
 
-        LOG_INFO("server [%s] recv request from %s, %s %s",
-                 this->getName().c_str(),
-                 sock->getPeerAddress()->to_string().c_str(),
-                 http_method_to_string(req->get_method()),
-                 req->get_path().c_str());
+        // LOG_INFO("server [%s] recv request from %s, %s %s",
+        //          this->getName().c_str(),
+        //          sock->getPeerAddress()->to_string().c_str(),
+        //          http_method_to_string(req->get_method()),
+        //          req->get_path().c_str());
 
         HttpResponse::Ptr resp(
             new HttpResponse(req->get_version(), req->is_close() || !m_is_KeepAlive));
@@ -64,7 +64,9 @@ void HttpServer::handleClient(Socket::Ptr& sock) {
             }
         }
         conn->sendResponse(resp);
-        if (!m_is_KeepAlive || req->is_close()) { break; }
+        if (!m_is_KeepAlive || req->is_close()) {
+            break;
+        }
     } while (true);
     conn->close();
 }

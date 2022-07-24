@@ -22,3 +22,7 @@
 - [x] add ws with ssl support
   <br>
 - [x] add sqlite support for mapper
+  <br>
+
+- [ ] add url match like /api/user/{id}
+  <br>
