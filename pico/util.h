@@ -2,6 +2,7 @@
 #define __PICO_UTIL_H__
 
 #include <boost/lexical_cast.hpp>
+#include <boost/variant.hpp>
 #include <byteswap.h>
 #include <dirent.h>
 #include <json/json.h>
@@ -20,6 +21,7 @@
 #include <openssl/rsa.h>
 #include <openssl/ssl.h>
 #include <pthread.h>
+#include <regex>
 #include <set>
 #include <string.h>
 #include <string>
@@ -33,6 +35,9 @@
 #include "singleton.h"
 
 namespace pico {
+
+typedef boost::variant<int, double, uint, std::string> Variant;
+
 pid_t getThreadId();
 
 uint32_t getFiberId();
@@ -67,7 +72,9 @@ template<class T>
 T getValueFromMap(const std::map<std::string, std::string>& map, const std::string& key,
                   const T& default_value = T()) {
     auto it = map.find(key);
-    if (it != map.end()) { return boost::lexical_cast<T>(it->second); }
+    if (it != map.end()) {
+        return boost::lexical_cast<T>(it->second);
+    }
     return default_value;
 }
 
@@ -202,6 +209,25 @@ T byteswapOnBigEndian(T t) {
 #endif
 
 std::size_t find(const std::string& str, const std::string& substr, bool is_case_sensitive = false);
+
+
+/**
+ * @brief fuzzy_match
+ * @param str ---> /user/123/abc
+ * @param pattern ---> /user/<int>/<string>
+ * @return true if match
+ */
+
+bool fuzzy_match(const std::string& str, const std::string& pattern);
+
+/**
+ * @brief split_variant
+ * @param str --> /user/1/abc
+ * @param pattern --> /user/<int>/<string>
+ * @return {1, "abc"}
+ */
+
+std::vector<Variant> split_variant(const std::string& str, const std::string& pattern);
 
 }   // namespace pico
 

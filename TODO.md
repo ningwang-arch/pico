@@ -24,5 +24,5 @@
 - [x] add sqlite support for mapper
   <br>
 
-- [ ] add url match like /api/user/{id}
+- [x] add url match like /api/user/<int>/<string> (incomplete implementation)
   <br>

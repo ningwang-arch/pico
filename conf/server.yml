@@ -11,6 +11,7 @@ servers:
       - set
       - get
       - mustache
+      - fuzzy
     # Do not filter the below paths, this config is only for http server
     exclude_paths:
       - /

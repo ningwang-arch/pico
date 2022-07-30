@@ -56,7 +56,9 @@ void RequestHandler::addExcludePath(const std::string& path) {
 void RequestHandler::addExcludePath(const std::vector<std::string>& paths) {
     std::mutex m;
     std::lock_guard<std::mutex> lock(m);
-    for (auto& path : paths) { addExcludePath(path); }
+    for (auto& path : paths) {
+        addExcludePath(path);
+    }
 }
 
 void RequestHandler::delExcludePath(const std::string& path) {
@@ -71,22 +73,26 @@ void RequestHandler::delExcludePath(const std::string& path) {
 
 void RequestHandler::delExcludePath(const std::vector<std::string>& paths) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    for (auto& path : paths) { delExcludePath(path); }
+    for (auto& path : paths) {
+        delExcludePath(path);
+    }
 }
 
 bool RequestHandler::isExcludePath(const std::string& path) {
     for (auto& exclude_path : exclude_paths) {
-        if (fnmatch(exclude_path.c_str(), path.c_str(), 0) == 0) { return true; }
+        if (fnmatch(exclude_path.c_str(), path.c_str(), 0) == 0) {
+            return true;
+        }
     }
     return false;
 }
 
 Servlet::Ptr RequestHandler::findHandler(const std::string& path) {
     for (auto& route : m_routes) {
-        if (route.path == path) { return route.servlet; }
-    }
-    for (auto& route : m_glob_routes) {
-        if (fnmatch(route.path.c_str(), path.c_str(), 0) == 0) { return route.servlet; }
+        if (route.path == path || (fnmatch(route.path.c_str(), path.c_str(), 0) == 0) ||
+            fuzzy_match(path, route.path)) {
+            return route.servlet;
+        }
     }
     return Servlet::Ptr(new NotFoundServlet());
 }
@@ -100,19 +106,27 @@ void RequestHandler::reset() {
 
 void RequestHandler::listAllRoutes(std::map<std::string, Servlet::Ptr>& routes) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    for (auto& route : m_routes) { routes[route.path] = route.servlet; }
+    for (auto& route : m_routes) {
+        routes[route.path] = route.servlet;
+    }
 }
 
 void RequestHandler::listAllGlobalRoutes(std::map<std::string, Servlet::Ptr>& routes) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    for (auto& route : m_glob_routes) { routes[route.path] = route.servlet; }
+    for (auto& route : m_glob_routes) {
+        routes[route.path] = route.servlet;
+    }
 }
 
 void RequestHandler::handle(const HttpRequest::Ptr& req, HttpResponse::Ptr& resp) {
     auto path = req->get_path();
     auto servlet = findHandler(path);
-    if (servlet == nullptr) { servlet = Servlet::Ptr(new NotFoundServlet()); }
-    if (isExcludePath(path)) { servlet->service(req, resp); }
+    if (servlet == nullptr) {
+        servlet = Servlet::Ptr(new NotFoundServlet());
+    }
+    if (isExcludePath(path)) {
+        servlet->service(req, resp);
+    }
     else {
         FilterChain::Ptr filter_chain(new FilterChain());
         if (findFilterChain(path)) {

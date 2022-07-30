@@ -9,6 +9,9 @@ servlets:
   - name: mustache
     class: MustacheServlet
     path: /mustache
+  - name: fuzzy
+    class: FuzzyMatchServlet
+    path: /fuzzy/<int>
 
 ws_servlets:
   - name: hello

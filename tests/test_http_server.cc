@@ -52,6 +52,26 @@ public:
     }
 };
 
+
+
+class FuzzyMatchServlet : public Servlet
+{
+public:
+    void doGet(const request& req, response& res) override {
+        res->set_status(HttpStatus::OK);
+        res->set_header("Content-Type", "text/plain");
+
+        std::string uri = req->get_path();
+        std::string pattern = "/fuzzy/<int>";
+
+        auto variant = split_variant(uri, pattern);
+
+        int id = boost::get<int>(variant[0]);
+
+        res->set_body(std::to_string(id));
+    }
+};
+
 class MustacheServlet : public Servlet
 {
 public:
@@ -124,13 +144,18 @@ REGISTER_CLASS(MustacheServlet);
 REGISTER_CLASS(HelloFilter);
 REGISTER_CLASS(TestFilter);
 REGISTER_CLASS(WsHelloServlet);
+REGISTER_CLASS(FuzzyMatchServlet);
 
 }   // namespace pico
 
+
 int main(int argc, char* argv[]) {
     pico::Application app;
+
     pico::compression::set_compression_enabled(true);
-    if (app.init(argc, argv)) { app.run(); }
+    if (app.init(argc, argv)) {
+        app.run();
+    }
 
 
     return 0;

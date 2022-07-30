@@ -58,9 +58,13 @@ std::string StringUtil::Format(const char* fmt, ...) {
 std::string StringUtil::Formatv(const char* fmt, va_list ap) {
     char* buf = nullptr;
     auto len = vasprintf(&buf, fmt, ap);
-    if (len == -1) { return ""; }
+    if (len == -1) {
+        return "";
+    }
     std::string ret(buf, len);
-    if (buf) { free(buf); }
+    if (buf) {
+        free(buf);
+    }
     return ret;
 }
 
@@ -101,7 +105,9 @@ std::string StringUtil::UrlEncode(const std::string& str, bool space_as_plus) {
                 ss->reserve(str.size() * 1.2);
                 ss->append(str.c_str(), c - str.c_str());
             }
-            if (*c == ' ' && space_as_plus) { ss->append(1, '+'); }
+            if (*c == ' ' && space_as_plus) {
+                ss->append(1, '+');
+            }
             else {
                 ss->append(1, '%');
                 ss->append(1, hexdigits[(uint8_t)*c >> 4]);
@@ -112,7 +118,9 @@ std::string StringUtil::UrlEncode(const std::string& str, bool space_as_plus) {
             ss->append(1, *c);
         }
     }
-    if (!ss) { return str; }
+    if (!ss) {
+        return str;
+    }
     else {
         std::string rt = *ss;
         delete ss;
@@ -143,7 +151,9 @@ std::string StringUtil::UrlDecode(const std::string& str, bool space_as_plus) {
             ss->append(1, *c);
         }
     }
-    if (!ss) { return str; }
+    if (!ss) {
+        return str;
+    }
     else {
         std::string rt = *ss;
         delete ss;
@@ -153,31 +163,43 @@ std::string StringUtil::UrlDecode(const std::string& str, bool space_as_plus) {
 
 std::string StringUtil::Trim(const std::string& str, const std::string& delimit) {
     auto begin = str.find_first_not_of(delimit);
-    if (begin == std::string::npos) { return ""; }
+    if (begin == std::string::npos) {
+        return "";
+    }
     auto end = str.find_last_not_of(delimit);
     return str.substr(begin, end - begin + 1);
 }
 
 std::string StringUtil::TrimLeft(const std::string& str, const std::string& delimit) {
     auto begin = str.find_first_not_of(delimit);
-    if (begin == std::string::npos) { return ""; }
+    if (begin == std::string::npos) {
+        return "";
+    }
     return str.substr(begin);
 }
 
 std::string StringUtil::TrimRight(const std::string& str, const std::string& delimit) {
     auto end = str.find_last_not_of(delimit);
-    if (end == std::string::npos) { return ""; }
+    if (end == std::string::npos) {
+        return "";
+    }
     return str.substr(0, end);
 }
 
 void listDir(const std::string& path, std::vector<std::string>& files, const std::string& suffix) {
-    if (access(path.c_str(), 0) != 0) { return; }
+    if (access(path.c_str(), 0) != 0) {
+        return;
+    }
     DIR* dir = opendir(path.c_str());
-    if (dir == nullptr) { return; }
+    if (dir == nullptr) {
+        return;
+    }
     struct dirent* dp = nullptr;
     while ((dp = readdir(dir)) != nullptr) {
         if (dp->d_type == DT_DIR) {
-            if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, "..")) { continue; }
+            if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, "..")) {
+                continue;
+            }
             listDir(path + dp->d_name, files, suffix);
         }
         else if (dp->d_type == DT_REG) {
@@ -187,7 +209,9 @@ void listDir(const std::string& path, std::vector<std::string>& files, const std
                 // files.push_back(filename);
             }
             else {
-                if (filename.size() < suffix.size()) { continue; }
+                if (filename.size() < suffix.size()) {
+                    continue;
+                }
                 if (filename.substr(filename.length() - suffix.size()) == suffix) {
                     files.push_back(path + "/" + filename);
                     // files.push_back(filename);
@@ -229,7 +253,9 @@ std::string base64_decode(const char* data, size_t length, bool strict) {
         // add '=' padding
         if (length % 4 != 0) {
             size_t pad = 4 - length % 4;
-            for (size_t i = 0; i < pad; i++) { input += '='; }
+            for (size_t i = 0; i < pad; i++) {
+                input += '=';
+            }
         }
         // replace '-' with '+', '_' with '/'
         std::replace(input.begin(), input.end(), '-', '+');
@@ -280,34 +306,43 @@ bool Str2Json(const std::string& str, Json::Value& json) {
 void split(const std::string& str, std::vector<std::string>& tokens, const std::string delim) {
     tokens.clear();
 
-    char* buffer = new char[str.size() + 1];
-    std::strcpy(buffer, str.c_str());
-
-    char* tmp;
-    char* p = strtok_r(buffer, delim.c_str(), &tmp);   // 第一次分割
-    do {
-        tokens.push_back(p);   // 如果 p 为 nullptr，则将整个字符串作为结果
-    } while ((p = strtok_r(nullptr, delim.c_str(), &tmp)) != nullptr);
-    // strtok_r 为 strtok 的线程安全版本。
+    char* dup = strdup(str.c_str());
+    char* saveptr = nullptr;
+    char* token = strtok_r(dup, delim.c_str(), &saveptr);
+    while (token != nullptr) {
+        tokens.push_back(token);
+        token = strtok_r(nullptr, delim.c_str(), &saveptr);
+    }
+    free(dup);
 }
 
 std::string extract_pubkey_from_cert(const std::string& certstr, const std::string& pw) {
     std::unique_ptr<BIO, decltype(&BIO_free_all)> certbio(
         BIO_new_mem_buf(certstr.data(), static_cast<int>(certstr.size())), BIO_free_all);
     std::unique_ptr<BIO, decltype(&BIO_free_all)> keybio(BIO_new(BIO_s_mem()), BIO_free_all);
-    if (!certbio || !keybio) { return {}; }
+    if (!certbio || !keybio) {
+        return {};
+    }
 
     std::unique_ptr<X509, decltype(&X509_free)> cert(
         PEM_read_bio_X509(certbio.get(), nullptr, nullptr, const_cast<char*>(pw.c_str())),
         X509_free);
-    if (!cert) { return {}; }
+    if (!cert) {
+        return {};
+    }
     std::unique_ptr<EVP_PKEY, decltype(&EVP_PKEY_free)> key(X509_get_pubkey(cert.get()),
                                                             EVP_PKEY_free);
-    if (!key) { return {}; }
-    if (PEM_write_bio_PUBKEY(keybio.get(), key.get()) == 0) { return {}; }
+    if (!key) {
+        return {};
+    }
+    if (PEM_write_bio_PUBKEY(keybio.get(), key.get()) == 0) {
+        return {};
+    }
     char* ptr = nullptr;
     auto len = BIO_get_mem_data(keybio.get(), &ptr);
-    if (len <= 0 || ptr == nullptr) { return {}; }
+    if (len <= 0 || ptr == nullptr) {
+        return {};
+    }
     return {ptr, static_cast<size_t>(len)};
 }
 
@@ -315,16 +350,24 @@ std::string extract_pubkey_from_cert(const std::string& certstr, const std::stri
 std::shared_ptr<EVP_PKEY> load_public_key_from_string(const std::string& key,
                                                       const std::string& password) {
     std::unique_ptr<BIO, decltype(&BIO_free_all)> pubkey_bio(BIO_new(BIO_s_mem()), BIO_free_all);
-    if (!pubkey_bio) { return nullptr; }
+    if (!pubkey_bio) {
+        return nullptr;
+    }
     if (key.substr(0, 27) == "-----BEGIN CERTIFICATE-----") {
         auto epkey = extract_pubkey_from_cert(key, password);
-        if (epkey.empty()) { return nullptr; }
+        if (epkey.empty()) {
+            return nullptr;
+        }
         const int len = static_cast<int>(epkey.size());
-        if (BIO_write(pubkey_bio.get(), epkey.data(), len) != len) { return nullptr; }
+        if (BIO_write(pubkey_bio.get(), epkey.data(), len) != len) {
+            return nullptr;
+        }
     }
     else {
         const int len = static_cast<int>(key.size());
-        if (BIO_write(pubkey_bio.get(), key.data(), len) != len) { return nullptr; }
+        if (BIO_write(pubkey_bio.get(), key.data(), len) != len) {
+            return nullptr;
+        }
     }
 
     std::shared_ptr<EVP_PKEY> pkey(
@@ -334,7 +377,9 @@ std::shared_ptr<EVP_PKEY> load_public_key_from_string(const std::string& key,
             nullptr,
             (void*)password.data()),   // NOLINT(google-readability-casting) requires `const_cast`
         EVP_PKEY_free);
-    if (!pkey) { return nullptr; }
+    if (!pkey) {
+        return nullptr;
+    }
     return pkey;
 }
 
@@ -343,14 +388,20 @@ std::shared_ptr<EVP_PKEY> load_public_key_from_string(const std::string& key,
 std::shared_ptr<EVP_PKEY> load_private_key_from_string(const std::string& key,
                                                        const std::string& password) {
     std::unique_ptr<BIO, decltype(&BIO_free_all)> privkey_bio(BIO_new(BIO_s_mem()), BIO_free_all);
-    if (!privkey_bio) { return nullptr; }
+    if (!privkey_bio) {
+        return nullptr;
+    }
     const int len = static_cast<int>(key.size());
-    if (BIO_write(privkey_bio.get(), key.data(), len) != len) { return nullptr; }
+    if (BIO_write(privkey_bio.get(), key.data(), len) != len) {
+        return nullptr;
+    }
     std::shared_ptr<EVP_PKEY> pkey(
         PEM_read_bio_PrivateKey(
             privkey_bio.get(), nullptr, nullptr, const_cast<char*>(password.c_str())),
         EVP_PKEY_free);
-    if (!pkey) { return nullptr; }
+    if (!pkey) {
+        return nullptr;
+    }
     return pkey;
 }
 
@@ -359,16 +410,22 @@ std::shared_ptr<EVP_PKEY> load_private_key_from_string(const std::string& key,
 std::shared_ptr<EVP_PKEY> load_public_ec_key_from_string(const std::string& key,
                                                          const std::string& password) {
     std::unique_ptr<BIO, decltype(&BIO_free_all)> pubkey_bio(BIO_new(BIO_s_mem()), BIO_free_all);
-    if (!pubkey_bio) { return nullptr; }
+    if (!pubkey_bio) {
+        return nullptr;
+    }
     if (key.substr(0, 27) == "-----BEGIN CERTIFICATE-----") {
         auto epkey = extract_pubkey_from_cert(key, password);
         if (epkey.empty()) return nullptr;
         const int len = static_cast<int>(epkey.size());
-        if (BIO_write(pubkey_bio.get(), epkey.data(), len) != len) { return nullptr; }
+        if (BIO_write(pubkey_bio.get(), epkey.data(), len) != len) {
+            return nullptr;
+        }
     }
     else {
         const int len = static_cast<int>(key.size());
-        if (BIO_write(pubkey_bio.get(), key.data(), len) != len) { return nullptr; }
+        if (BIO_write(pubkey_bio.get(), key.data(), len) != len) {
+            return nullptr;
+        }
     }
 
     std::shared_ptr<EVP_PKEY> pkey(
@@ -378,21 +435,29 @@ std::shared_ptr<EVP_PKEY> load_public_ec_key_from_string(const std::string& key,
             nullptr,
             (void*)password.data()),   // NOLINT(google-readability-casting) requires `const_cast`
         EVP_PKEY_free);
-    if (!pkey) { return nullptr; }
+    if (!pkey) {
+        return nullptr;
+    }
     return pkey;
 }
 
 std::shared_ptr<EVP_PKEY> load_private_ec_key_from_string(const std::string& key,
                                                           const std::string& password) {
     std::unique_ptr<BIO, decltype(&BIO_free_all)> privkey_bio(BIO_new(BIO_s_mem()), BIO_free_all);
-    if (!privkey_bio) { return nullptr; }
+    if (!privkey_bio) {
+        return nullptr;
+    }
     const int len = static_cast<int>(key.size());
-    if (BIO_write(privkey_bio.get(), key.data(), len) != len) { return nullptr; }
+    if (BIO_write(privkey_bio.get(), key.data(), len) != len) {
+        return nullptr;
+    }
     std::shared_ptr<EVP_PKEY> pkey(
         PEM_read_bio_PrivateKey(
             privkey_bio.get(), nullptr, nullptr, const_cast<char*>(password.c_str())),
         EVP_PKEY_free);
-    if (!pkey) { return nullptr; }
+    if (!pkey) {
+        return nullptr;
+    }
     return pkey;
 }
 
@@ -447,7 +512,9 @@ int genRandom(int min, int max) {
 
 std::string genRandomString(int len, std::string chars) {
     std::string str;
-    for (int i = 0; i < len; i++) { str += chars[genRandom(0, chars.size() - 1)]; }
+    for (int i = 0; i < len; i++) {
+        str += chars[genRandom(0, chars.size() - 1)];
+    }
     return str;
 }
 
@@ -477,12 +544,16 @@ std::string sha1sum(const void* data, size_t len) {
     unsigned char digest[SHA_DIGEST_LENGTH];
     SHA1_Final(digest, &ctx);
     std::string res(SHA_DIGEST_LENGTH, '\0');
-    for (int i = 0; i < SHA_DIGEST_LENGTH; ++i) { res[i] = digest[i]; }
+    for (int i = 0; i < SHA_DIGEST_LENGTH; ++i) {
+        res[i] = digest[i];
+    }
     return res;
 }
 
 std::size_t find(const std::string& str, const std::string& substr, bool is_case_sensitive) {
-    if (is_case_sensitive) { return str.find(substr); }
+    if (is_case_sensitive) {
+        return str.find(substr);
+    }
     else {
         return std::find_if(
                    str.begin(),
@@ -490,6 +561,135 @@ std::size_t find(const std::string& str, const std::string& substr, bool is_case
                    [&substr](char c) { return std::tolower(c) == std::tolower(substr[0]); }) -
                str.begin();
     }
+}
+
+bool is_uint(const std::string& str) {
+    if (str.empty()) {
+        return false;
+    }
+    for (auto c : str) {
+        if (!isdigit(c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool is_sign_int(const std::string& str) {
+    if (str.empty()) {
+        return false;
+    }
+    if (str.at(0) == '-' || str.at(0) == '+') {
+        return is_uint(str.substr(1));
+    }
+    return is_uint(str);
+}
+
+
+bool is_double(const std::string& str) {
+    if (str.empty()) {
+        return false;
+    }
+
+    std::regex reg("^[+-]?[0-9]*\\.?[0-9]+([eE][+-]?[0-9]+)?$");
+    return std::regex_match(str, reg);
+}
+
+bool is_string(const std::string& str) {
+    if (str.empty()) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * str ---- /uri/1/abc
+ * pattern ---- /uri/<int>/<string>
+ *
+ * int uint string double
+ *
+ */
+bool fuzzy_match(const std::string& str, const std::string& pattern) {
+    if (pattern.empty()) {
+        return true;
+    }
+    if (str.empty()) {
+        return false;
+    }
+
+    std::vector<std::string> str_parts;
+    split(str, str_parts, "/");
+    std::vector<std::string> pattern_parts;
+    split(pattern, pattern_parts, "/");
+    if (str_parts.size() != pattern_parts.size()) {
+        return false;
+    }
+
+    for (int i = 0; i < (int)str_parts.size(); i++) {
+        if (pattern_parts[i].at(0) == '<' &&
+            pattern_parts[i].at(pattern_parts[i].size() - 1) == '>') {
+            // double int uint string
+            std::string type = pattern_parts[i].substr(1, pattern_parts[i].size() - 2);
+            if (type == "int") {
+                if (!is_sign_int(str_parts[i])) {
+                    return false;
+                }
+            }
+            else if (type == "uint") {
+                if (!is_uint(str_parts[i])) {
+                    return false;
+                }
+            }
+            else if (type == "string") {
+                if (!is_string(str_parts[i])) {
+                    return false;
+                }
+            }
+            else if (type == "double") {
+                if (!is_double(str_parts[i])) {
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        else if (str_parts[i] != pattern_parts[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+std::vector<Variant> split_variant(const std::string& str, const std::string& pattern) {
+    if (!fuzzy_match(str, pattern)) {
+        return {};
+    }
+    std::vector<Variant> res;
+    std::vector<std::string> str_parts;
+    split(str, str_parts, "/");
+    std::vector<std::string> pattern_parts;
+    split(pattern, pattern_parts, "/");
+
+    for (int i = 0; i < (int)str_parts.size(); i++) {
+        if (pattern_parts[i].at(0) == '<' &&
+            pattern_parts[i].at(pattern_parts[i].size() - 1) == '>') {
+            // double int uint string
+            std::string type = pattern_parts[i].substr(1, pattern_parts[i].size() - 2);
+            if (type == "int" || type == "uint") {
+                res.push_back(Variant(std::stoi(str_parts[i])));
+            }
+            else if (type == "string") {
+                res.push_back(Variant(str_parts[i]));
+            }
+            else if (type == "double") {
+                res.push_back(Variant(std::stod(str_parts[i])));
+            }
+            else {}
+        }
+    }
+    return res;
 }
 
 }   // namespace pico
