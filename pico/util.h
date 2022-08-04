@@ -31,12 +31,12 @@
 
 #include <mysql/mysql.h>
 
+
 #include "fiber.h"
 #include "singleton.h"
+#include <iostream>
 
 namespace pico {
-
-typedef boost::variant<int, double, uint, std::string> Variant;
 
 pid_t getThreadId();
 
@@ -220,14 +220,97 @@ std::size_t find(const std::string& str, const std::string& substr, bool is_case
 
 bool fuzzy_match(const std::string& str, const std::string& pattern);
 
-/**
- * @brief split_variant
- * @param str --> /user/1/abc
- * @param pattern --> /user/<int>/<string>
- * @return {1, "abc"}
- */
 
-std::vector<Variant> split_variant(const std::string& str, const std::string& pattern);
+unsigned find_closing_tag_runtime(const char* s, unsigned p);
+
+uint64_t get_parameter_tag_runtime(const char* s, unsigned p = 0);
+
+bool is_parameter_tag_compatible(uint64_t a, uint64_t b);
+
+template<typename T>
+struct parameter_tag
+{ static const int value = 0; };
+#define PICO_INTERNAL_PARAMETER_TAG(t, i) \
+    template<>                            \
+    struct parameter_tag<t>               \
+    { static const int value = i; }
+PICO_INTERNAL_PARAMETER_TAG(int, 1);
+PICO_INTERNAL_PARAMETER_TAG(char, 1);
+PICO_INTERNAL_PARAMETER_TAG(short, 1);
+PICO_INTERNAL_PARAMETER_TAG(long, 1);
+PICO_INTERNAL_PARAMETER_TAG(long long, 1);
+PICO_INTERNAL_PARAMETER_TAG(unsigned int, 2);
+PICO_INTERNAL_PARAMETER_TAG(unsigned char, 2);
+PICO_INTERNAL_PARAMETER_TAG(unsigned short, 2);
+PICO_INTERNAL_PARAMETER_TAG(unsigned long, 2);
+PICO_INTERNAL_PARAMETER_TAG(unsigned long long, 2);
+PICO_INTERNAL_PARAMETER_TAG(double, 3);
+PICO_INTERNAL_PARAMETER_TAG(std::string, 4);
+#undef PICO_INTERNAL_PARAMETER_TAG
+template<typename... Args>
+struct compute_parameter_tag_from_args_list;
+
+template<>
+struct compute_parameter_tag_from_args_list<>
+{ static const int value = 0; };
+
+template<typename Arg, typename... Args>
+struct compute_parameter_tag_from_args_list<Arg, Args...>
+{
+
+    static const int sub_value = compute_parameter_tag_from_args_list<Args...>::value;
+    static const int value =
+        parameter_tag<typename std::decay<Arg>::type>::value
+            ? sub_value * 6 + parameter_tag<typename std::decay<Arg>::type>::value
+            : sub_value;
+};
+
+
+template<typename T>
+struct function_traits;
+
+template<typename T>
+struct function_traits : public function_traits<decltype(&T::operator())>
+{
+    using parent_t = function_traits<decltype(&T::operator())>;
+    static const size_t arity = parent_t::arity;
+    using result_type = typename parent_t::result_type;
+    template<size_t i>
+    using arg = typename parent_t::template arg<i>;
+};
+
+template<typename ClassType, typename R, typename... Args>
+struct function_traits<R (ClassType::*)(Args...) const>
+{
+    static const size_t arity = sizeof...(Args);
+
+    typedef R result_type;
+
+    template<size_t i>
+    using arg = typename std::tuple_element<i, std::tuple<Args...>>::type;
+};
+
+template<typename ClassType, typename R, typename... Args>
+struct function_traits<R (ClassType::*)(Args...)>
+{
+    static const size_t arity = sizeof...(Args);
+
+    typedef R result_type;
+
+    template<size_t i>
+    using arg = typename std::tuple_element<i, std::tuple<Args...>>::type;
+};
+
+template<typename R, typename... Args>
+struct function_traits<std::function<R(Args...)>>
+{
+    static const size_t arity = sizeof...(Args);
+
+    typedef R result_type;
+
+    template<size_t i>
+    using arg = typename std::tuple_element<i, std::tuple<Args...>>::type;
+};
 
 }   // namespace pico
 

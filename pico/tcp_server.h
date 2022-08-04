@@ -91,9 +91,15 @@ public:
         node["acceptor"] = options.acceptor;
         node["certicates"]["file"] = options.cert_file;
         node["certicates"]["key"] = options.key_file;
-        for (auto& addr : options.addresses) { node["addresses"].push_back(addr); }
-        for (auto& servlet : options.servlets) { node["servlets"].push_back(servlet); }
-        for (auto& path : options.exclude_paths) { node["exclude_paths"].push_back(path); }
+        for (auto& addr : options.addresses) {
+            node["addresses"].push_back(addr);
+        }
+        for (auto& servlet : options.servlets) {
+            node["servlets"].push_back(servlet);
+        }
+        for (auto& path : options.exclude_paths) {
+            node["exclude_paths"].push_back(path);
+        }
         std::stringstream ss;
         ss << node;
         return ss.str();
@@ -130,6 +136,8 @@ public:
 
     virtual std::string to_string();
 
+    virtual void setIsHttp(bool is_http) { m_is_http = is_http; }
+
     virtual bool loadCertificate(const std::string& cert_file, const std::string& key_file);
 
 protected:
@@ -148,6 +156,10 @@ private:
     uint64_t m_recvTimeout;
 
     bool m_is_stop;
+
+    bool m_is_ssl = false;
+
+    bool m_is_http = false;
 };
 
 }   // namespace pico

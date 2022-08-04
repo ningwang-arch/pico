@@ -14,6 +14,10 @@ class LoggerManager;
 class LogEvent;
 class LogAppender;
 
+bool is_log_enabled();
+
+void set_log_enabled(bool enabled);
+
 class Logger : public std::enable_shared_from_this<Logger>
 {
     friend class LoggerManager;
@@ -25,14 +29,7 @@ public:
     Logger(const std::string& name = "root");
 
     void log(LogLevel::Level level, LogEvent::Ptr event);
-    void log(LogLevel::Level level, std::string& message);
 
-
-    void debug(const std::string& message);
-    void info(const std::string& message);
-    void warn(const std::string& message);
-    void error(const std::string& message);
-    void fatal(const std::string& message);
 
     void addAppender(std::shared_ptr<LogAppender> appender);
     void removeAppender(std::shared_ptr<LogAppender> appender);

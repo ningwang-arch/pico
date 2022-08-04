@@ -35,7 +35,9 @@ public:
             r.path = route["path"].as<std::string>();
             r.servlet = std::static_pointer_cast<Servlet>(
                 ClassFactory::Instance().Create(route["class"].as<std::string>()));
-            if (!r.servlet) { continue; }
+            if (!r.servlet) {
+                continue;
+            }
             r.servlet->name = route["class"].as<std::string>();
             routes.insert(std::make_pair(route["name"].as<std::string>(), r));
         }
@@ -50,7 +52,9 @@ public:
     std::string operator()(const std::unordered_map<std::string, Route>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
         for (auto& i : v) {
-            if (!i.second.servlet) { continue; }
+            if (!i.second.servlet) {
+                continue;
+            }
             YAML::Node route;
             route["name"] = i.first;
             route["path"] = i.second.path;
@@ -81,7 +85,9 @@ public:
             r.path = servlet["path"].as<std::string>();
             r.servlet = std::static_pointer_cast<WsServlet>(
                 ClassFactory::Instance().Create(servlet["class"].as<std::string>()));
-            if (!r.servlet) { continue; }
+            if (!r.servlet) {
+                continue;
+            }
             r.servlet->name = servlet["class"].as<std::string>();
             servlets.insert(std::make_pair(servlet["name"].as<std::string>(), r));
         }
@@ -96,7 +102,9 @@ public:
     std::string operator()(const std::map<std::string, WsRoute>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
         for (auto& i : v) {
-            if (!i.second.servlet) { continue; }
+            if (!i.second.servlet) {
+                continue;
+            }
             YAML::Node servlet;
             servlet["name"] = i.first;
             servlet["path"] = i.second.path;
@@ -127,7 +135,9 @@ static ConfigVar<std::vector<FilterConfs>>::Ptr g_filters_conf =
 Application* Application::s_instance = nullptr;
 
 Application::Application() {
-    if (s_instance) { throw std::runtime_error("Application already exists"); }
+    if (s_instance) {
+        throw std::runtime_error("Application already exists");
+    }
     s_instance = this;
 }
 
@@ -139,7 +149,9 @@ bool Application::init(int argc, char* argv[]) {
     pico::EnvManager::getInstance()->addHelp("c,conf", "conf path [default: ./conf]");
     pico::EnvManager::getInstance()->addHelp("h,help", "print help");
 
-    if (!pico::EnvManager::getInstance()->init(argc, argv)) { return false; }
+    if (!pico::EnvManager::getInstance()->init(argc, argv)) {
+        return false;
+    }
 
     if (pico::EnvManager::getInstance()->has("h")) {
         pico::EnvManager::getInstance()->printHelp();
@@ -147,7 +159,9 @@ bool Application::init(int argc, char* argv[]) {
     }
 
     std::string conf_path = pico::EnvManager::getInstance()->getConfigPath();
-    if (conf_path.empty()) { conf_path = "./conf"; }
+    if (conf_path.empty()) {
+        conf_path = "./conf";
+    }
 
     pico::Config::LoadFromConfDir(conf_path);
 
@@ -189,7 +203,9 @@ void Application::run_in_fiber() {
         std::string filter_class = fc.cls_name;
         Filter::Ptr filter =
             std::static_pointer_cast<Filter>(ClassFactory::Instance().Create(filter_class));
-        if (!filter) { continue; }
+        if (!filter) {
+            continue;
+        }
         std::string desc = fc.description;
         auto init_params = fc.init_params;
 
@@ -233,7 +249,9 @@ void Application::run_in_fiber() {
             if (Address::getInterfaceAddresses(addrs, host.c_str())) {
                 for (auto item : addrs) {
                     auto ipaddr = std::dynamic_pointer_cast<IPAddress>(item);
-                    if (ipaddr) { ipaddr->setPort(port); }
+                    if (ipaddr) {
+                        ipaddr->setPort(port);
+                    }
                     addresses.push_back(ipaddr);
                 }
                 continue;
@@ -265,10 +283,14 @@ void Application::run_in_fiber() {
 
         if (server_conf.type == "http") {
             HttpServer::Ptr server(new HttpServer(server_conf.keep_alive, worker, acceptor));
-            if (!server_conf.name.empty()) { server->setName(server_conf.name); }
+            if (!server_conf.name.empty()) {
+                server->setName(server_conf.name);
+            }
             std::vector<Address::Ptr> fails;
             if (!server->bind(addresses, fails, server_conf.ssl)) {
-                for (auto i : fails) { LOG_ERROR("bind to %s failed", i->to_string().c_str()); }
+                for (auto i : fails) {
+                    LOG_ERROR("bind to %s failed", i->to_string().c_str());
+                }
                 exit(-1);
             }
             if (server_conf.ssl) {
@@ -304,10 +326,15 @@ void Application::run_in_fiber() {
         }
         else if (server_conf.type == "ws") {
             WsServer::Ptr server(new WsServer(worker, acceptor));
-            if (!server_conf.name.empty()) { server->setName(server_conf.name); }
+            server->setIsHttp(false);
+            if (!server_conf.name.empty()) {
+                server->setName(server_conf.name);
+            }
             std::vector<Address::Ptr> fails;
             if (!server->bind(addresses, fails, server_conf.ssl)) {
-                for (auto i : fails) { LOG_ERROR("bind to %s failed", i->to_string().c_str()); }
+                for (auto i : fails) {
+                    LOG_ERROR("bind to %s failed", i->to_string().c_str());
+                }
                 exit(-1);
             }
 

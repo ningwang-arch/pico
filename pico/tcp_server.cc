@@ -14,7 +14,9 @@ TcpServer::TcpServer(IOManager* worker, IOManager* acceptor)
     , m_is_stop(true) {}
 
 TcpServer::~TcpServer() {
-    for (auto& sock : m_sockets) { sock->close(); }
+    for (auto& sock : m_sockets) {
+        sock->close();
+    }
 
     m_sockets.clear();
 }
@@ -29,6 +31,7 @@ bool TcpServer::bind(Address::Ptr& addr, bool ssl) {
 
 
 bool TcpServer::bind(std::vector<Address::Ptr>& addrs, std::vector<Address::Ptr>& fails, bool ssl) {
+    m_is_ssl = ssl;
     for (auto&& addr : addrs) {
         Socket::Ptr sock = ssl ? SSLSocket::CreateTcp(addr) : Socket::CreateTcp(addr);
         if (!sock->bind(addr)) {
@@ -73,10 +76,17 @@ void TcpServer::handleClient(Socket::Ptr& sock) {
 }
 
 bool TcpServer::start() {
-    if (!m_is_stop) { return true; }
+    if (!m_is_stop) {
+        return true;
+    }
     m_is_stop = false;
     for (auto& sock : m_sockets) {
-        LOG_INFO("server is listening on %s", sock->to_string().c_str());
+        LOG_INFO(
+            "server [%s] is listening on %s",
+            m_name.c_str(),
+            ((m_is_http ? (m_is_ssl ? "https://" : "http://") : (m_is_ssl ? "wss://" : "ws://")) +
+             sock->getLocalAddress()->to_string())
+                .c_str());
     }
     for (auto&& sock : m_sockets) {
         m_acceptor->schedule(std::bind(&TcpServer::startAccept, shared_from_this(), sock));
@@ -108,7 +118,9 @@ std::string TcpServer::to_string() {
 bool TcpServer::loadCertificate(const std::string& cert_file, const std::string& key_file) {
     for (auto&& sock : m_sockets) {
         auto ssl_sock = std::dynamic_pointer_cast<SSLSocket>(sock);
-        if (!ssl_sock) { continue; }
+        if (!ssl_sock) {
+            continue;
+        }
         if (!ssl_sock->loadCertificate(cert_file, key_file)) {
             LOG_ERROR("loadCertificate failed");
             return false;

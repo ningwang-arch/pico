@@ -2,7 +2,7 @@ servers:
   - addresses: ["127.0.0.1:8080", "127.0.0.1:11223"]
     type: http
     ssl: false
-    name: server
+    name: pico
     worker: worker
     keep_alive: false
     acceptor: acceptor

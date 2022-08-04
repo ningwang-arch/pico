@@ -1,13 +1,6 @@
 
-#include "pico/application.h"
-#include "pico/class_factory.h"
-#include "pico/compression.h"
-#include "pico/config.h"
-#include "pico/filter.h"
-#include "pico/mustache.h"
 #include "pico/pico.h"
-#include "pico/session.h"
-#include "pico/ws/ws_servlet.h"
+
 #include <fstream>
 
 namespace pico {
@@ -61,14 +54,38 @@ public:
         res->set_status(HttpStatus::OK);
         res->set_header("Content-Type", "text/plain");
 
-        std::string uri = req->get_path();
         std::string pattern = "/fuzzy/<int>";
 
-        auto variant = split_variant(uri, pattern);
+        auto func = [](int i) { return std::to_string(i); };
 
-        int id = boost::get<int>(variant[0]);
+        pico::handle(req, res, pattern, func);
 
-        res->set_body(std::to_string(id));
+        // function_call(req,res,pattern,lambda_function_handler);
+        /**
+         * example:
+         * req:
+         * GET /fuzzy/123 HTTP/1.1
+         * Host: localhost:8080
+         *
+         * pattern: /fuzzy/<int>
+         *
+         * lambda_function_handler:
+         * [&](int id) {
+         *   res->set_body(std::to_string(id));
+         * }
+         *
+         *
+         * function_call(req,res,"fuzzy/<int>",[&](int id) {
+         *  res->set_body(std::to_string(id));
+         * });
+         *
+         */
+
+        // auto variant = split_variant(uri, pattern);
+
+        // int id = boost::get<int>(variant[0]);
+
+        // res->set_body(std::to_string(id));
     }
 };
 
@@ -153,6 +170,7 @@ int main(int argc, char* argv[]) {
     pico::Application app;
 
     pico::compression::set_compression_enabled(true);
+    // pico::set_log_enabled(false);
     if (app.init(argc, argv)) {
         app.run();
     }

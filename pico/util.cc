@@ -662,34 +662,39 @@ bool fuzzy_match(const std::string& str, const std::string& pattern) {
 }
 
 
-std::vector<Variant> split_variant(const std::string& str, const std::string& pattern) {
-    if (!fuzzy_match(str, pattern)) {
-        return {};
-    }
-    std::vector<Variant> res;
-    std::vector<std::string> str_parts;
-    split(str, str_parts, "/");
-    std::vector<std::string> pattern_parts;
-    split(pattern, pattern_parts, "/");
 
-    for (int i = 0; i < (int)str_parts.size(); i++) {
-        if (pattern_parts[i].at(0) == '<' &&
-            pattern_parts[i].at(pattern_parts[i].size() - 1) == '>') {
-            // double int uint string
-            std::string type = pattern_parts[i].substr(1, pattern_parts[i].size() - 2);
-            if (type == "int" || type == "uint") {
-                res.push_back(Variant(std::stoi(str_parts[i])));
-            }
-            else if (type == "string") {
-                res.push_back(Variant(str_parts[i]));
-            }
-            else if (type == "double") {
-                res.push_back(Variant(std::stod(str_parts[i])));
-            }
-            else {}
-        }
-    }
-    return res;
+unsigned find_closing_tag_runtime(const char* s, unsigned p) {
+    return s[p] == 0     ? throw std::runtime_error("unmatched tag <")
+           : s[p] == '>' ? p
+                         : find_closing_tag_runtime(s, p + 1);
+}
+
+uint64_t get_parameter_tag_runtime(const char* s, unsigned p) {
+    return s[p] == 0 ? 0
+           : s[p] == '<'
+               ? (std::strncmp(s + p, "<int>", 5) == 0
+                      ? get_parameter_tag_runtime(s, find_closing_tag_runtime(s, p)) * 6 + 1
+                  : std::strncmp(s + p, "<uint>", 6) == 0
+                      ? get_parameter_tag_runtime(s, find_closing_tag_runtime(s, p)) * 6 + 2
+                  : (std::strncmp(s + p, "<float>", 7) == 0 ||
+                     std::strncmp(s + p, "<double>", 8) == 0)
+                      ? get_parameter_tag_runtime(s, find_closing_tag_runtime(s, p)) * 6 + 3
+                  : (std::strncmp(s + p, "<str>", 5) == 0 ||
+                     std::strncmp(s + p, "<string>", 8) == 0)
+                      ? get_parameter_tag_runtime(s, find_closing_tag_runtime(s, p)) * 6 + 4
+                      : throw std::runtime_error("invalid parameter type"))
+               : get_parameter_tag_runtime(s, p + 1);
+}
+
+bool is_parameter_tag_compatible(uint64_t a, uint64_t b) {
+    if (a == 0) return b == 0;
+    if (b == 0) return a == 0;
+    uint64_t sa = a % 6;
+    uint64_t sb = b % 6;
+    if (sa == 5) sa = 4;
+    if (sb == 5) sb = 4;
+    if (sa != sb) return false;
+    return is_parameter_tag_compatible(a / 6, b / 6);
 }
 
 }   // namespace pico

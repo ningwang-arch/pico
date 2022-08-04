@@ -1,35 +1,48 @@
 #include "pico/util.h"
 
+#include "pico/common.h"
+#include "pico/http/http.h"
+
 #include <iostream>
 
-class var_visitor : public boost::static_visitor<void>
-{
-public:
-    template<typename T>
-    void operator()(T& i) const {
-        std::cout << typeid(T).name() << std::endl;
-        std::cout << i << std::endl;
-    }
-};
 
 void test() {
-    std::string str = "/user/1/abc";
+    pico::HttpRequest::Ptr req = std::make_shared<pico::HttpRequest>();
+    pico::HttpResponse::Ptr res = std::make_shared<pico::HttpResponse>();
+
+    req->set_path("/user/1/abc");
+
     std::string pattern = "/user/<int>/<string>";
 
-    bool ret = pico::fuzzy_match(str, pattern);
+    // req res int string
+    // auto func =
+    //     [](const pico::HttpRequest::Ptr& req, pico::HttpResponse::Ptr& res, int i, std::string s)
+    //     {
+    //         res->set_body("abc");
+    //     };
 
-    std::cout << "ret:" << ret << std::endl;
+    // req int string
+    // auto func = [](const pico::HttpRequest::Ptr& req, int i, std::string s) { return "abc"; };
 
-    auto variant = pico::split_variant(str, pattern);
-    for (auto& v : variant) {
-        boost::apply_visitor(var_visitor(), v);
-    }
+    // res int string
+    auto func = [](pico::HttpResponse::Ptr& res, int i, std::string s) { res->set_body("abc"); };
+
+    // // int string
+    // auto func = [&](int i, std::string s) {
+    //     std::cout << i << " " << s << std::endl;
+    //     return "abc";
+    // };
+
+    pico::handle(req, res, pattern, func);
+
+    std::cout << res->to_string() << std::endl;
 }
+
+
 
 int main() {
 
     test();
-
 
 
 
