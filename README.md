@@ -12,10 +12,11 @@ Pico is a C++ framework for creating web applications. It is designed to be easy
 - Filter and servlet similar to Java
 - JWT authentication
 - Mapper support similar to Java
+- Serialization support
 
 ### Still to do
 
-- WebSocket support
+- Http/2 support
 
 ### Dependencies
 
