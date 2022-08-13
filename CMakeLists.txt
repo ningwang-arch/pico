@@ -96,6 +96,7 @@ if(BUILD_TEST)
   build_test_target(test_ws_client "tests/test_ws_client.cc" pico "${LIBS}")
   build_test_target(test_sqlite3 "tests/test_sqlite3.cc" pico "${LIBS}")
   build_test_target(test_fuzzy_match "tests/test_fuzzy_match.cc" pico "${LIBS}")
+  build_test_target(test_serialize "tests/test_serialize.cc" pico "${LIBS}")
 endif()
 
 add_executable(main pico/main.cc)

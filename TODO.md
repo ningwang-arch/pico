@@ -29,3 +29,6 @@
 
 - [ ] add load balance support
   <br>
+
+- [x] enable object serialize to json, json to object
+  <br>
