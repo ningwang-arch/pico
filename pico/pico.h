@@ -16,6 +16,8 @@
 #include "mustache.h"
 #include "mutex.h"
 #include "noncopyable.h"
+#include "redis.hpp"
+#include "reflection.hpp"
 #include "scheduler.h"
 #include "serialize.hpp"
 #include "server_manager.h"

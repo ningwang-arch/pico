@@ -11,7 +11,7 @@ public:
 
     Logger::Ptr getRootLogger();
 
-    void addLogger(std::string& name, Logger::Ptr logger);
+    void addLogger(const std::string& name, Logger::Ptr logger);
 
     Logger::Ptr getLogger(const std::string& name);
 

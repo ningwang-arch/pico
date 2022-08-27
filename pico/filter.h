@@ -39,7 +39,8 @@ class FilterConfig
 {
 public:
     typedef std::shared_ptr<FilterConfig> Ptr;
-    FilterConfig() { m_filter = nullptr; }
+    FilterConfig()
+        : m_filter(nullptr) {}
 
     ~FilterConfig() {
         if (m_filter) {
@@ -117,16 +118,18 @@ public:
     std::string toString() {
         std::stringstream ss;
         ss << "FilterChain: ";
-        for (auto& filter : m_filters) { ss << filter->toString() << " "; }
+        for (auto& filter : m_filters) {
+            ss << filter->toString() << " ";
+        }
         return ss.str();
     }
 
 private:
-    int m_index = 0;
-    int m_size = 0;
-
     std::vector<FilterConfig::Ptr> m_filters;
     Servlet::Ptr m_servlet;
+
+    int m_index = 0;
+    int m_size = 0;
 };
 
 struct FilterConfs
@@ -156,7 +159,9 @@ public:
         conf.cls_name = node["class"].as<std::string>();
         conf.description = node["description"].as<std::string>();
         if (node["path"].IsDefined()) {
-            for (auto path : node["path"]) { conf.url_patterns.push_back(path.as<std::string>()); }
+            for (auto path : node["path"]) {
+                conf.url_patterns.push_back(path.as<std::string>());
+            }
         }
         if (node["init_params"].IsDefined()) {
             for (auto param : node["init_params"]) {
@@ -178,8 +183,12 @@ public:
         node["name"] = conf.name;
         node["class"] = conf.cls_name;
         node["description"] = conf.description;
-        for (auto& path : conf.url_patterns) { node["path"].push_back(path); }
-        for (auto& param : conf.init_params) { node["init_params"][param.first] = param.second; }
+        for (auto& path : conf.url_patterns) {
+            node["path"].push_back(path);
+        }
+        for (auto& param : conf.init_params) {
+            node["init_params"][param.first] = param.second;
+        }
 
         ss << node;
         return ss.str();

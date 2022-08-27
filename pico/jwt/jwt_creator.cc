@@ -10,7 +10,9 @@ builder::Ptr builder::withHeader(const Json::Value& value) {
     if (!value.isNull()) {
         auto members = value.getMemberNames();
         for (auto member : members) {
-            if (value[member].isNull()) { builder::m_header.removeMember(member); }
+            if (value[member].isNull()) {
+                builder::m_header.removeMember(member);
+            }
             else {
                 builder::m_header[member] = value[member];
             }
@@ -36,21 +38,23 @@ builder::Ptr builder::withSubject(const std::string& subject) {
 
 builder::Ptr builder::withAudience(const std::vector<std::string>& audience) {
     Json::Value value = Json::arrayValue;
-    for (auto aud : audience) { value.append(aud); }
+    for (auto aud : audience) {
+        value.append(aud);
+    }
     builder::addClaim("aud", value);
     return builder::shared_from_this();
 }
-builder::Ptr builder::withExpiresAt(Date expiresAt, const std::string format) {
+builder::Ptr builder::withExpiresAt(Date expiresAt, const std::string& format) {
     expiresAt.setFomat(format);
     builder::addClaim("exp", expiresAt.to_string());
     return builder::shared_from_this();
 }
-builder::Ptr builder::withNotBefore(Date notBefore, const std::string format) {
+builder::Ptr builder::withNotBefore(Date notBefore, const std::string& format) {
     notBefore.setFomat(format);
     builder::addClaim("nbf", notBefore.to_string());
     return builder::shared_from_this();
 }
-builder::Ptr builder::withIssuedAt(Date issuedAt, const std::string format) {
+builder::Ptr builder::withIssuedAt(Date issuedAt, const std::string& format) {
     issuedAt.setFomat(format);
     builder::addClaim("iat", issuedAt.to_string());
     return builder::shared_from_this();
@@ -64,7 +68,9 @@ builder::Ptr builder::withPayload(const Json::Value& value) {
     if (!value.isNull()) {
         auto members = value.getMemberNames();
         for (auto member : members) {
-            if (value[member].isNull()) { builder::m_payload.removeMember(member); }
+            if (value[member].isNull()) {
+                builder::m_payload.removeMember(member);
+            }
             else {
                 builder::m_payload[member] = value[member];
             }
@@ -74,10 +80,14 @@ builder::Ptr builder::withPayload(const Json::Value& value) {
 }
 
 std::string builder::sign(Algorithm::Ptr algorithm) {
-    if (!algorithm) { throw std::runtime_error("algorithm is null"); }
+    if (!algorithm) {
+        throw std::runtime_error("algorithm is null");
+    }
     else {
         builder::m_header["alg"] = algorithm->getName();
-        if (!builder::m_header.isMember("typ")) { builder::m_header["typ"] = "JWT"; }
+        if (!builder::m_header.isMember("typ")) {
+            builder::m_header["typ"] = "JWT";
+        }
 
         return std::make_shared<JWTCreator>(algorithm, builder::m_header, builder::m_payload)
             ->sign();
@@ -101,7 +111,9 @@ std::string JWTCreator::sign() {
 }
 
 void builder::addClaim(std::string name, Json::Value value) {
-    if (value.isNull()) { builder::m_payload.removeMember(name); }
+    if (value.isNull()) {
+        builder::m_payload.removeMember(name);
+    }
     else {
         builder::m_payload[name] = value;
     }

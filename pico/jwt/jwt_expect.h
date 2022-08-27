@@ -10,7 +10,7 @@ namespace pico {
 class VerificationException : public std::exception
 {
 public:
-    VerificationException(const std::string& message)
+    explicit VerificationException(const std::string& message)
         : m_message(message) {}
     virtual ~VerificationException() {}
     virtual const char* what() const noexcept { return m_message.c_str(); }

@@ -170,8 +170,8 @@ class HMACAlgorithm : public Algorithm
 public:
     typedef std::shared_ptr<HMACAlgorithm> Ptr;
 
-    HMACAlgorithm(const EVP_MD* (*md)(), const std::string& key, std::string name,
-                  std::string description)
+    HMACAlgorithm(const EVP_MD* (*md)(), const std::string& key, const std::string& name,
+                  const std::string& description)
         : Algorithm(name, description)
         , m_key(key)
         , m_md(md) {}
@@ -201,7 +201,7 @@ public:
 
     RSAAlgorithm(const std::string& public_key, const std::string& private_key,
                  const std::string& public_key_password, const std::string& private_key_password,
-                 const EVP_MD* (*md)(), std::string name, std::string description)
+                 const EVP_MD* (*md)(), const std::string& name, const std::string& description)
         : Algorithm(name, description)
         , m_md(md) {
         if (!private_key.empty()) {
@@ -218,13 +218,19 @@ public:
     std::string sign(const std::string& str) override {
         std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)> ctx(EVP_MD_CTX_create(),
                                                                     EVP_MD_CTX_free);
-        if (!ctx) { return {}; }
-        if (!EVP_SignInit(ctx.get(), m_md())) { return {}; }
+        if (!ctx) {
+            return {};
+        }
+        if (!EVP_SignInit(ctx.get(), m_md())) {
+            return {};
+        }
 
         std::string res(EVP_PKEY_size(m_key.get()), '\0');
         unsigned int len = 0;
 
-        if (!EVP_SignUpdate(ctx.get(), str.data(), str.size())) { return {}; }
+        if (!EVP_SignUpdate(ctx.get(), str.data(), str.size())) {
+            return {};
+        }
         if (EVP_SignFinal(ctx.get(), (unsigned char*)res.data(), &len, m_key.get()) == 0) {
             return {};
         }
@@ -246,17 +252,22 @@ public:
 
     ECDSAAlgorithm(const std::string& public_key, const std::string& private_key,
                    const std::string& public_key_password, const std::string& private_key_password,
-                   const EVP_MD* (*md)(), std::string name, std::string description, size_t siglen)
+                   const EVP_MD* (*md)(), const std::string& name, const std::string& description,
+                   size_t siglen)
         : Algorithm(name, description)
         , m_md(md)
         , m_signature_length(siglen) {
         if (!private_key.empty()) {
             m_key = load_private_key_from_string(private_key, private_key_password);
-            if (!check_key(m_key.get())) { throw std::runtime_error("Invalid private key"); }
+            if (!check_key(m_key.get())) {
+                throw std::runtime_error("Invalid private key");
+            }
         }
         else if (!public_key.empty()) {
             m_key = load_public_key_from_string(public_key, public_key_password);
-            if (!check_key(m_key.get())) { throw std::runtime_error("Invalid public key"); }
+            if (!check_key(m_key.get())) {
+                throw std::runtime_error("Invalid public key");
+            }
         }
         else {
             throw std::runtime_error("No key provided");
@@ -266,14 +277,24 @@ public:
     std::string sign(const std::string& str) override {
         std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)> ctx(EVP_MD_CTX_create(),
                                                                     EVP_MD_CTX_free);
-        if (!ctx) { return {}; }
-        if (!EVP_DigestSignInit(ctx.get(), nullptr, m_md(), nullptr, m_key.get())) { return {}; }
-        if (!EVP_DigestUpdate(ctx.get(), str.data(), str.size())) { return {}; }
+        if (!ctx) {
+            return {};
+        }
+        if (!EVP_DigestSignInit(ctx.get(), nullptr, m_md(), nullptr, m_key.get())) {
+            return {};
+        }
+        if (!EVP_DigestUpdate(ctx.get(), str.data(), str.size())) {
+            return {};
+        }
 
         size_t len = 0;
-        if (!EVP_DigestSignFinal(ctx.get(), nullptr, &len)) { return {}; }
+        if (!EVP_DigestSignFinal(ctx.get(), nullptr, &len)) {
+            return {};
+        }
         std::string res(len, '\0');
-        if (!EVP_DigestSignFinal(ctx.get(), (unsigned char*)res.data(), &len)) { return {}; }
+        if (!EVP_DigestSignFinal(ctx.get(), (unsigned char*)res.data(), &len)) {
+            return {};
+        }
 
         res.resize(len);
         return der_to_p1363_signature(res);
@@ -283,7 +304,9 @@ private:
     static bool check_key(EVP_PKEY* pkey) {
         std::unique_ptr<EC_KEY, decltype(&EC_KEY_free)> eckey(EVP_PKEY_get1_EC_KEY(pkey),
                                                               EC_KEY_free);
-        if (!eckey) { return false; }
+        if (!eckey) {
+            return false;
+        }
         if (EC_KEY_check_key(eckey.get()) == 0) return false;
         return true;
     }
@@ -293,7 +316,9 @@ private:
             reinterpret_cast<const unsigned char*>(der_signature.data());
         std::unique_ptr<ECDSA_SIG, decltype(&ECDSA_SIG_free)> sig(
             d2i_ECDSA_SIG(nullptr, &possl_signature, der_signature.length()), ECDSA_SIG_free);
-        if (!sig) { return {}; }
+        if (!sig) {
+            return {};
+        }
 
         const BIGNUM* r;
         const BIGNUM* s;
@@ -316,16 +341,22 @@ private:
         ECDSA_SIG* psig;
 
         std::unique_ptr<ECDSA_SIG, decltype(&ECDSA_SIG_free)> sig(ECDSA_SIG_new(), ECDSA_SIG_free);
-        if (!sig) { return {}; }
+        if (!sig) {
+            return {};
+        }
         ECDSA_SIG_set0(sig.get(), r.release(), s.release());
         psig = sig.get();
 
         int length = i2d_ECDSA_SIG(psig, nullptr);
-        if (length < 0) { return {}; }
+        if (length < 0) {
+            return {};
+        }
         std::string der_signature(length, '\0');
         unsigned char* psbuffer = (unsigned char*)der_signature.data();
         length = i2d_ECDSA_SIG(psig, &psbuffer);
-        if (length < 0) { return {}; }
+        if (length < 0) {
+            return {};
+        }
         der_signature.resize(length);
         return der_signature;
     }

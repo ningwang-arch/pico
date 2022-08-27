@@ -46,7 +46,7 @@ void Logger::setLayout(std::shared_ptr<Layout> layout) {
     MutexType::Lock lock(m_mutex);
     m_layout = layout;
     for (auto& i : m_appenders) {
-        MutexType::Lock lock(i->m_mutex);
+        MutexType::Lock lock_(i->m_mutex);
         if (!i->m_hasLayout) {
             i->layout_ = layout;
         }

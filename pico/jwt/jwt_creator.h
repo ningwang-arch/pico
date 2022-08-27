@@ -39,9 +39,9 @@ public:
         Builder::Ptr withIssuer(const std::string& issuer);
         Builder::Ptr withSubject(const std::string& subject);
         Builder::Ptr withAudience(const std::vector<std::string>& audience);
-        Builder::Ptr withExpiresAt(Date expiresAt, const std::string format = "%Y-%m-%d %H:%M:%S");
-        Builder::Ptr withNotBefore(Date notBefore, const std::string format = "%Y-%m-%d %H:%M:%S");
-        Builder::Ptr withIssuedAt(Date issuedAt, const std::string format = "%Y-%m-%d %H:%M:%S");
+        Builder::Ptr withExpiresAt(Date expiresAt, const std::string& format = "%Y-%m-%d %H:%M:%S");
+        Builder::Ptr withNotBefore(Date notBefore, const std::string& format = "%Y-%m-%d %H:%M:%S");
+        Builder::Ptr withIssuedAt(Date issuedAt, const std::string& format = "%Y-%m-%d %H:%M:%S");
         Builder::Ptr withJWTId(const std::string& jwtId);
 
         template<typename T>
@@ -55,7 +55,9 @@ public:
         Builder::Ptr withClaim(std::string name, std::vector<T> value) {
             assert(!name.empty());
             Json::Value array = Json::arrayValue;
-            for (auto& i : value) { array.append(i); }
+            for (auto& i : value) {
+                array.append(i);
+            }
             m_payload[name] = array;
             return shared_from_this();
         }

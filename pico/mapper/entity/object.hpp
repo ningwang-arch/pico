@@ -75,7 +75,9 @@ public:
     // int
     template<typename T>
     typename std::enable_if<std::is_same<int, T>::value, int>::type getValue() const {
-        if (!isNull()) { return m_buff.int_value; }
+        if (!isNull()) {
+            return m_buff.int_value;
+        }
         return 0;
     }
 
@@ -83,7 +85,9 @@ public:
     template<typename T>
     typename std::enable_if<std::is_same<std::string, T>::value, std::string>::type
     getValue() const {
-        if (!isNull()) { return m_buff.str_value.data(); }
+        if (!isNull()) {
+            return m_buff.str_value.data();
+        }
         return std::string{};
     }
 
@@ -91,14 +95,22 @@ public:
     template<typename T>
     typename std::enable_if<std::is_same<std::time_t, T>::value, std::time_t>::type
     getValue() const {
-        if (!isNull()) { return mysql_time2time_t(m_buff.time_value); }
+        if (!isNull()) {
+            return mysql_time2time_t(m_buff.time_value);
+        }
         return 0;
     }
 
     void* getValuePtr() const {
-        if (_type == typeid(int)) { return (void*)&m_buff.int_value; }
-        if (_type == typeid(std::string)) { return (void*)m_buff.str_value.data(); }
-        if (_type == typeid(std::time_t)) { return (void*)&m_buff.time_value; }
+        if (_type == typeid(int)) {
+            return (void*)&m_buff.int_value;
+        }
+        if (_type == typeid(std::string)) {
+            return (void*)m_buff.str_value.data();
+        }
+        if (_type == typeid(std::time_t)) {
+            return (void*)&m_buff.time_value;
+        }
         return nullptr;
     }
 

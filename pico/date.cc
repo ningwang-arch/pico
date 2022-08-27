@@ -7,17 +7,20 @@
 
 namespace pico {
 
-Date::Date() {
-    m_tm = {};
+Date::Date()
+    : m_tm({}) {
     time_t t = time(NULL);
     m_tm = *localtime(&t);
 }
 
-Date::Date(const std::string& date, std::string format) {
-    // init tm
-    m_tm = {};
-    if (date.empty()) { Date(); }
-    if (format.empty()) { format = "%Y-%m-%d %H:%M:%S"; }
+Date::Date(const std::string& date, std::string format)
+    : m_tm({}) {
+    if (date.empty()) {
+        Date();
+    }
+    if (format.empty()) {
+        format = "%Y-%m-%d %H:%M:%S";
+    }
     strptime(date.data(), format.data(), &m_tm);
 }
 
@@ -28,12 +31,12 @@ Date::Date(time_t timestamp) {
 
 std::string Date::now(const std::string& format) {
     time_t t = time(NULL);
-    return Time2Str(t, format.data());
+    return Time2Str(t, format);
 }
 
 std::string Date::to_string() {
     time_t t = mktime(&m_tm);
-    return Time2Str(t, m_format.data());
+    return Time2Str(t, m_format);
 }
 
 bool Date::isAfter(Date& other) {

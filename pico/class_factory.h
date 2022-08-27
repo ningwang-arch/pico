@@ -4,10 +4,10 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <utility>
-
 
 namespace pico {
 
@@ -28,6 +28,11 @@ private:
     static ClassMap& getClassMap() {
         static ClassMap classMap;
         return classMap;
+    }
+
+    static std::mutex& getMutex() {
+        static std::mutex mutex;
+        return mutex;
     }
 };
 

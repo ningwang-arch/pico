@@ -46,7 +46,7 @@ private:
     int _max_conn_num = 20;
     int _idle_timeout = 60;
 
-    int _open_conn_num;
+    int _open_conn_num = 0;
 
     std::once_flag _once_flag;
 

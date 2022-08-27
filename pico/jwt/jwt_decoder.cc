@@ -8,7 +8,9 @@ JWTDecoder::JWTDecoder(const std::string& jwt)
     : m_jwt(jwt) {
     std::vector<std::string> parts;
     split(jwt, parts, ".");
-    if (parts.size() != 3) { throw std::runtime_error("invalid jwt"); }
+    if (parts.size() != 3) {
+        throw std::runtime_error("invalid jwt");
+    }
     if (!Str2Json(base64_decode(parts[0].data(), parts[0].size()), m_header) ||
         !Str2Json(base64_decode(parts[1].data(), parts[1].size()), m_payload)) {
         throw std::runtime_error("invalid jwt");
@@ -52,15 +54,15 @@ std::string JWTDecoder::getSubject() {
     return getPayloadValueAs<std::string>("sub", "");
 }
 
-Date JWTDecoder::getExpiration(const std::string format) {
+Date JWTDecoder::getExpiration(const std::string& format) {
     return Date(getPayloadValueAs<std::string>("exp", ""), format);
 }
 
-Date JWTDecoder::getNotBefore(const std::string format) {
+Date JWTDecoder::getNotBefore(const std::string& format) {
     return Date(getPayloadValueAs<std::string>("nbf", ""), format);
 }
 
-Date JWTDecoder::getIssuedAt(const std::string format) {
+Date JWTDecoder::getIssuedAt(const std::string& format) {
     return Date(getPayloadValueAs<std::string>("iat", ""), format);
 }
 

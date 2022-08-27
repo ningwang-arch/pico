@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
     pico::Application app;
 
     pico::compression::set_compression_enabled(true);
-    // pico::set_log_enabled(false);
+    pico::set_log_enabled(false);
     if (app.init(argc, argv)) {
         app.run();
     }

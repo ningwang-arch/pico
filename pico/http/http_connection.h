@@ -15,7 +15,7 @@ class HttpConnection : public SocketStream
 {
 public:
     typedef std::shared_ptr<HttpConnection> Ptr;
-    HttpConnection(Socket::Ptr sock, bool owner = true);
+    explicit HttpConnection(Socket::Ptr sock, bool owner = true);
 
     HttpRequest::Ptr recvRequest();
     int sendResponse(HttpResponse::Ptr resp);

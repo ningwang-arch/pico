@@ -38,7 +38,7 @@ const char* http_status_to_string(HttpStatus status) {
     }
 }
 
-HttpRequest::HttpRequest(std::string version, bool is_close)
+HttpRequest::HttpRequest(const std::string& version, bool is_close)
     : m_is_close(is_close)
     , m_websocket(false)
     , m_method(HttpMethod::GET)

@@ -102,48 +102,67 @@ WsFrameMessage::Ptr WsRecvMessage(SocketStream* stream, bool is_client) {
     do {
         WsFrameHeader header;
 
-        if (stream->readFixSize(&header, sizeof(header)) <= 0) { break; }
+        if (stream->readFixSize(&header, sizeof(header)) <= 0) {
+            break;
+        }
         if (header.opcode == WsFrameHeader::PING) {
-            if (WsPong(stream) <= 0) { break; }
+            if (WsPong(stream) <= 0) {
+                break;
+            }
         }
-        else if (header.opcode == WsFrameHeader::PONG) {
-        }
+        else if (header.opcode == WsFrameHeader::PONG) {}
         else if (header.opcode == WsFrameHeader::BINARY || header.opcode == WsFrameHeader::TEXT ||
                  header.opcode == WsFrameHeader::CONTINUATION) {
-            if (!is_client && !header.mask) { break; }
+            if (!is_client && !header.mask) {
+                break;
+            }
 
             uint64_t length;
             if (header.payload_len == 126) {
                 uint16_t len = 0;
-                if (stream->readFixSize(&len, sizeof(len)) <= 0) { break; }
+                if (stream->readFixSize(&len, sizeof(len)) <= 0) {
+                    break;
+                }
                 length = byteswapOnLittleEndian(len);
             }
             else if (header.payload_len == 127) {
                 uint64_t len = 0;
-                if (stream->readFixSize(&len, sizeof(len)) <= 0) { break; }
+                if (stream->readFixSize(&len, sizeof(len)) <= 0) {
+                    break;
+                }
                 length = byteswapOnLittleEndian(len);
             }
             else {
                 length = header.payload_len;
             }
 
-            if (cur_len + length >= g_websocket_message_max_size) { break; }
+            if (cur_len + length >= g_websocket_message_max_size) {
+                break;
+            }
             char mask[4];
             if (header.mask) {
-                if (stream->readFixSize(mask, sizeof(mask)) <= 0) { break; }
+                if (stream->readFixSize(mask, sizeof(mask)) <= 0) {
+                    break;
+                }
             }
 
             data.resize(cur_len + length);
-            if (stream->readFixSize(&data[cur_len], length) <= 0) { break; }
+            if (stream->readFixSize(&data[cur_len], length) <= 0) {
+                break;
+            }
             if (header.mask) {
                 for (size_t i = 0; i < length; i++) {
                     data[cur_len + i] = data[cur_len + i] ^ mask[i % 4];
                 }
             }
             cur_len += length;
-            if (!opcode && header.opcode != WsFrameHeader::CONTINUATION) { opcode = header.opcode; }
+            if (!opcode && header.opcode != WsFrameHeader::CONTINUATION) {
+                opcode = header.opcode;
+            }
 
-            if (header.fin) { return std::make_shared<WsFrameMessage>(opcode, std::move(data)); }
+            if (header.fin) {
+                return std::make_shared<WsFrameMessage>(opcode, std::move(data));
+            }
         }
         else if (header.opcode == WsFrameHeader::CLOSE) {
             return std::make_shared<WsFrameMessage>(WsFrameHeader::CLOSE, std::move(data));
@@ -166,7 +185,7 @@ int32_t WsSendMessage(SocketStream* stream, const WsFrameMessage::Ptr& message, 
         header.opcode = message->get_opcode();
         header.mask = is_client;
         header.payload_len = message->get_data().size();
-        if (header.payload_len < 126) { header.payload_len = header.payload_len; }
+        if (header.payload_len < 126) {}
         else if (header.payload_len < 0xFFFF) {
             header.payload_len = 126;
         }
@@ -198,9 +217,13 @@ int32_t WsSendMessage(SocketStream* stream, const WsFrameMessage::Ptr& message, 
             uint32_t rand_value = rand();
             memcpy(mask, &rand_value, sizeof(mask));
             std::string& data = message->get_data();
-            for (size_t i = 0; i < data.size(); ++i) { data[i] ^= mask[i % 4]; }
+            for (size_t i = 0; i < data.size(); ++i) {
+                data[i] ^= mask[i % 4];
+            }
 
-            if (stream->writeFixSize(mask, sizeof(mask)) <= 0) { break; }
+            if (stream->writeFixSize(mask, sizeof(mask)) <= 0) {
+                break;
+            }
         }
 
         if (message->get_data().size() > 0) {
@@ -226,7 +249,9 @@ int32_t WsPing(SocketStream* stream) {
     header.mask = false;
     header.payload_len = 0;
     int32_t ret = stream->writeFixSize(&header, sizeof(header));
-    if (ret <= 0) { stream->close(); }
+    if (ret <= 0) {
+        stream->close();
+    }
     return ret;
 }
 int32_t WsPong(SocketStream* stream) {
@@ -239,7 +264,9 @@ int32_t WsPong(SocketStream* stream) {
     header.mask = false;
     header.payload_len = 0;
     int32_t ret = stream->writeFixSize(&header, sizeof(header));
-    if (ret <= 0) { stream->close(); }
+    if (ret <= 0) {
+        stream->close();
+    }
     return ret;
 }
 

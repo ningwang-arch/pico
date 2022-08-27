@@ -41,7 +41,7 @@ class FileAppender : public LogAppender
 {
 public:
     typedef std::shared_ptr<FileAppender> Ptr;
-    FileAppender(const std::string& fileName);
+    explicit FileAppender(const std::string& fileName);
     virtual ~FileAppender() {}
     virtual void log(std::shared_ptr<Logger> logger, LogEvent::Ptr event) override;
 

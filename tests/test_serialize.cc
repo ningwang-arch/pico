@@ -1,6 +1,6 @@
-#include "../pico/serialize.hpp"
 #include "../pico/util.h"
 
+#include "../pico/serialize.hpp"
 struct A
 {
     int a;
@@ -39,44 +39,54 @@ struct B
         for (auto& i : b.map) {
             os << i.first << ": " << i.second << ", ";
         }
-        os << "}}";
+        os << "})";
 
         return os;
     }
 };
 
-int main(int argc, char const* argv[]) {
-    A a;
-    a.a = 1;
-    a.b = 2;
-    std::string ret = a.encode();
 
+void test_01() {
+    A a;
+    a.a = 101;
+    a.b = 23;
+
+    std::cout << a.encode() << std::endl;
+
+    auto ret = pico::serialize(a);
     std::cout << ret << std::endl;
 
-    A a2;
-    bool r = a2.decode(ret);
+    A a2 = pico::deserialize<A>(ret);
 
-    if (r) {
-        std::cout << a2 << std::endl;
+    std::cout << a2 << std::endl;
+
+    std::map<std::string, int> map;
+    map["a"] = 1;
+    map["b"] = 2;
+    ret = pico::serialize(map);
+    std::cout << ret << std::endl;
+    std::map<std::string, int> map2;
+
+    auto map1 = pico::deserialize<std::map<std::string, int>>(ret);
+    for (auto& i : map1) {
+        std::cout << i.first << ": " << i.second << std::endl;
     }
 
+    std::vector<B> vec;
     B b;
     b.str = "hello";
     b.a = a;
     b.vec.push_back(a);
     b.map["a"] = a;
-    b.map["b"] = a;
-    ret = b.encode();
 
-    std::cout << ret << std::endl;
+    auto ret2 = pico::serialize(b);
+    std::cout << ret2 << std::endl;
 
+    B b2 = pico::deserialize<B>(ret2);
+    std::cout << b2 << std::endl;
+}
 
-    B b1;
-    r = b1.decode(ret);
-    if (r) {
-        std::cout << b1 << std::endl;
-    }
-
-
+int main(int argc, char const* argv[]) {
+    test_01();
     return 0;
 }

@@ -31,18 +31,20 @@ public:
     void verifyAlgorithm(JWTDecoder::Ptr decoder, Algorithm::Ptr expectedAlgorithm);
     void verifyClaims(JWTDecoder::Ptr decoder, Json::Value value);
 
-    void verifyClaimValues(JWTDecoder::Ptr decoder, std::string name, Json::Value expectedClaim);
+    void verifyClaimValues(JWTDecoder::Ptr decoder, const std::string& name,
+                           Json::Value expectedClaim);
 
 
-    void assertValidStringClaim(std::string name, std::string value, std::string expected);
+    void assertValidStringClaim(const std::string& name, const std::string& claim,
+                                const std::string& expectedClaim);
 
-    void assertValidDateClaim(Date date, long leeway, bool shouldBeFuture);
+    void assertValidDateClaim(const Date& date, long leeway, bool shouldBeFuture);
 
     void assertDateIsFuture(Date date, long leeway, Date today);
 
     void assertDateIsPast(Date date, long leeway, Date today);
 
-    void assertValidClaim(Json::Value claim, std::string name, Json::Value value);
+    void assertValidClaim(Json::Value claim, const std::string& name, Json::Value value);
 
     void assertValidAudience(std::vector<std::string> value, std::vector<std::string> expected,
                              bool shouldContainAll);
@@ -58,7 +60,7 @@ public:
     public:
         typedef std::shared_ptr<Verification> Ptr;
 
-        Verification(Algorithm::Ptr algorithm) {
+        explicit Verification(Algorithm::Ptr algorithm) {
             if (!algorithm) throw std::runtime_error("algorithm is null");
             m_algorithm = algorithm;
             m_defaultLeeway = 0L;
@@ -87,7 +89,9 @@ public:
         Verification::Ptr withArrayClaim(const std::string& name, const std::vector<T>& value) {
             assert(!name.empty());
             Json::Value array = Json::arrayValue;
-            for (auto& i : value) { array.append(i); }
+            for (auto& i : value) {
+                array.append(i);
+            }
             this->requireClaim(name, array);
             return shared_from_this();
         }
@@ -107,7 +111,7 @@ public:
         Algorithm::Ptr m_algorithm;
         Json::Value m_claims;
         long m_defaultLeeway;
-        bool m_ignoreIssuedAt;
+        bool m_ignoreIssuedAt = false;
     };
 
 private:

@@ -14,7 +14,7 @@ namespace pico {
 class ResultBinder
 {
 public:
-    ResultBinder(int size) {
+    explicit ResultBinder(int size) {
         _bind_list.resize(size);
         _result_list.resize(size);
     }

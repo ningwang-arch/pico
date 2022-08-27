@@ -18,7 +18,7 @@ LoggerManager::LoggerManager()
     m_loggers[m_root->getName()] = m_root;
 }
 
-void LoggerManager::addLogger(std::string& name, Logger::Ptr logger) {
+void LoggerManager::addLogger(const std::string& name, Logger::Ptr logger) {
     MutexType::Lock lock(m_mutex);
     m_loggers[name] = logger;
 }

@@ -9,7 +9,7 @@ class TTCCLayout : public Layout
 public:
     TTCCLayout();
     virtual ~TTCCLayout() {}
-    virtual std::string format(LogEvent::Ptr event);
+    virtual std::string format(LogEvent::Ptr event) override;
 };
 }   // namespace pico
 

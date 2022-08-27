@@ -14,7 +14,7 @@ class FdCtx : public std::enable_shared_from_this<FdCtx>
 {
 public:
     typedef std::shared_ptr<FdCtx> Ptr;
-    FdCtx(int fd);
+    explicit FdCtx(int fd);
     virtual ~FdCtx();
     bool init();
     bool isInit() const { return m_isInit; }

@@ -32,3 +32,9 @@
 
 - [x] enable object serialize to json, json to object
   <br>
+
+- [x] add support for redis
+  <br>
+
+- [ ] enable save session to redis
+  <br>

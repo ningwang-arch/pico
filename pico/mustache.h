@@ -46,7 +46,7 @@ struct Action
 class InvalidTemplateException : public std::exception
 {
 public:
-    InvalidTemplateException(const std::string& msg)
+    explicit InvalidTemplateException(const std::string& msg)
         : msg_(msg) {}
     virtual ~InvalidTemplateException() throw() {}
     virtual const char* what() const throw() { return msg_.c_str(); }
@@ -60,7 +60,7 @@ class RenderedTemplate
 public:
     RenderedTemplate()
         : content_type_("text/html") {}
-    RenderedTemplate(const std::string& content)
+    explicit RenderedTemplate(const std::string& content)
         : content_(std::move(content))
         , content_type_("text/html") {}
 
@@ -81,7 +81,7 @@ private:
 class template_t
 {
 public:
-    template_t(std::string body)
+    explicit template_t(std::string body)
         : m_template(std::move(body)) {
         // parse template
         // {{  {{#  {{^  {{>  {{=  {{!

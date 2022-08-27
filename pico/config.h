@@ -75,7 +75,9 @@ class LexicalCast<std::vector<T>, std::string>
 public:
     std::string operator()(const std::vector<T>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
-        for (auto& i : v) { node.push_back(YAML::Load(LexicalCast<T, std::string>()(i))); }
+        for (auto& i : v) {
+            node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+        }
         std::stringstream ss;
         ss << node;
         return ss.str();
@@ -104,7 +106,9 @@ class LexicalCast<std::list<T>, std::string>
 public:
     std::string operator()(const std::list<T>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
-        for (auto& i : v) { node.push_back(YAML::Load(LexicalCast<T, std::string>()(i))); }
+        std::transform(v.begin(), v.end(), std::back_inserter(node), [](const T& i) {
+            return YAML::Load(LexicalCast<T, std::string>()(i));
+        });
         std::stringstream ss;
         ss << node;
         return ss.str();
@@ -133,7 +137,9 @@ class LexicalCast<std::set<T>, std::string>
 public:
     std::string operator()(const std::set<T>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
-        for (auto& i : v) { node.push_back(YAML::Load(LexicalCast<T, std::string>()(i))); }
+        for (auto& i : v) {
+            node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+        }
         std::stringstream ss;
         ss << node;
         return ss.str();
@@ -163,7 +169,9 @@ class LexicalCast<std::unordered_set<T>, std::string>
 public:
     std::string operator()(const std::set<T>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
-        for (auto& i : v) { node.push_back(YAML::Load(LexicalCast<T, std::string>()(i))); }
+        for (auto& i : v) {
+            node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+        }
         std::stringstream ss;
         ss << node;
         return ss.str();
@@ -193,7 +201,9 @@ class LexicalCast<std::map<std::string, T>, std::string>
 public:
     std::string operator()(const std::map<std::string, T>& v) {
         YAML::Node node(YAML::NodeType::Map);
-        for (auto& i : v) { node[i.first] = YAML::Load(LexicalCast<T, std::string>()(i.second)); }
+        for (auto& i : v) {
+            node[i.first] = YAML::Load(LexicalCast<T, std::string>()(i.second));
+        }
         std::stringstream ss;
         ss << node;
         return ss.str();
@@ -223,7 +233,9 @@ class LexicalCast<std::unordered_map<std::string, T>, std::string>
 public:
     std::string operator()(const std::unordered_map<std::string, T>& v) {
         YAML::Node node(YAML::NodeType::Map);
-        for (auto& i : v) { node[i.first] = YAML::Load(LexicalCast<T, std::string>()(i.second)); }
+        for (auto& i : v) {
+            node[i.first] = YAML::Load(LexicalCast<T, std::string>()(i.second));
+        }
         std::stringstream ss;
         ss << node;
         return ss.str();
@@ -320,7 +332,9 @@ public:
     template<class T>
     static typename ConfigVar<T>::Ptr Lookup(const std::string& name) {
         auto it = getDatas().find(name);
-        if (it == getDatas().end()) { return nullptr; }
+        if (it == getDatas().end()) {
+            return nullptr;
+        }
 
         return std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
     }
@@ -336,7 +350,9 @@ public:
     static void Visit(std::function<void(ConfigVarBase::Ptr)> cb) {
         RWMutexType::ReadLock lock(getMutex());
         ConfigVarMap& m = getDatas();
-        for (auto it = m.begin(); it != m.end(); ++it) { cb(it->second); }
+        for (auto it = m.begin(); it != m.end(); ++it) {
+            cb(it->second);
+        }
     }
 
 private:

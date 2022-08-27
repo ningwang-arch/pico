@@ -16,7 +16,7 @@ class Request : public SocketStream
 public:
     typedef std::shared_ptr<Request> Ptr;
 
-    Request(Socket::Ptr sock, bool owner = true)
+    explicit Request(Socket::Ptr sock, bool owner = true)
         : SocketStream(sock, owner) {}
 
     int sendRequest(HttpRequest::Ptr req);

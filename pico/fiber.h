@@ -39,7 +39,7 @@ private:
     Fiber();
 
 public:
-    Fiber(std::function<void()> cb, size_t stacksize = 0, bool use_caller = false);
+    explicit Fiber(std::function<void()> cb, size_t stacksize = 0, bool use_caller = false);
     ~Fiber();
 
     void reset(std::function<void()> cb);

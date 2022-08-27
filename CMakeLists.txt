@@ -12,10 +12,10 @@ set(SOURCE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pico)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS
-  "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
+  "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -Wno-maybe-uninitialized"
 )
 set(CMAKE_C_FLAGS
-  "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations"
+  "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -Wno-maybe-uninitialized"
 )
 
 option(BUILD_TEST "ON for complile test" OFF)
@@ -46,7 +46,9 @@ link_directories(${YAML_LIBRARY_DIR})
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
+pkg_check_modules(HIREDIS hiredis)
 include_directories(${JSONCPP_INCLUDE_DIR})
+include_directories(${HIREDIS_INCLUDE_DIR})
 
 # find source files
 include_sub_directories_recursively(${SOURCE_FILES_DIR})
@@ -65,6 +67,7 @@ set(LIBS
   ${YAML_CPP_LIBRARIES}
   ${OPENSSL_LIBRARIES}
   ${MYSQL_LIBRARIES}
+  ${HIREDIS_LIBRARIES}
   sqlite3
   crypto
 )
@@ -97,6 +100,7 @@ if(BUILD_TEST)
   build_test_target(test_sqlite3 "tests/test_sqlite3.cc" pico "${LIBS}")
   build_test_target(test_fuzzy_match "tests/test_fuzzy_match.cc" pico "${LIBS}")
   build_test_target(test_serialize "tests/test_serialize.cc" pico "${LIBS}")
+  build_test_target(test_redis "tests/test_redis.cc" pico "${LIBS}")
 endif()
 
 add_executable(main pico/main.cc)

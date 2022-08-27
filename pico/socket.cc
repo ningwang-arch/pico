@@ -54,7 +54,9 @@ Socket::Socket(int family, int type, int protocol)
 }
 
 Socket::~Socket() {
-    if (m_sockfd != -1) { close(); }
+    if (m_sockfd != -1) {
+        close();
+    }
 }
 
 bool Socket::init(int sock) {
@@ -71,7 +73,9 @@ bool Socket::init(int sock) {
 }
 
 void Socket::initSock() {
-    if (m_sockfd == -1) { return; }
+    if (m_sockfd == -1) {
+        return;
+    }
     int optval = 1;
     setopt(SOL_SOCKET, SO_REUSEADDR, optval);
     setopt(SOL_SOCKET, SO_REUSEPORT, optval);
@@ -81,7 +85,9 @@ void Socket::initSock() {
 }
 
 void Socket::newSock() {
-    if (m_sockfd != -1) { return; }
+    if (m_sockfd != -1) {
+        return;
+    }
     m_sockfd = socket(m_family, m_type, m_protocol);
     if (m_sockfd == -1) {
         LOG_ERROR("socket error: %s", strerror(errno));
@@ -92,7 +98,9 @@ void Socket::newSock() {
 
 uint64_t Socket::getSendTimeout() const {
     FdCtx::Ptr ctx = FdMgr::getInstance()->getFdCtx(m_sockfd);
-    if (ctx) { return ctx->getTimeout(SO_SNDTIMEO); }
+    if (ctx) {
+        return ctx->getTimeout(SO_SNDTIMEO);
+    }
     return -1;
 }
 
@@ -106,7 +114,9 @@ void Socket::setSendTimeout(uint64_t timeout) {
 
 uint64_t Socket::getRecvTimeout() const {
     FdCtx::Ptr ctx = FdMgr::getInstance()->getFdCtx(m_sockfd);
-    if (ctx) { return ctx->getTimeout(SO_RCVTIMEO); }
+    if (ctx) {
+        return ctx->getTimeout(SO_RCVTIMEO);
+    }
     return -1;
 }
 
@@ -127,10 +137,14 @@ int Socket::setopt(int level, int optname, const void* optval, socklen_t optlen)
 }
 
 bool Socket::connect(const Address::Ptr& addr, uint64_t timeout) {
-    if (m_is_connected) { return true; }
+    if (m_is_connected) {
+        return true;
+    }
     if (m_sockfd == -1) {
         newSock();
-        if (m_sockfd == -1) { return false; }
+        if (m_sockfd == -1) {
+            return false;
+        }
     }
 
     if (addr->getFamily() != m_family) {
@@ -171,7 +185,9 @@ bool Socket::reconnect(uint64_t timeout) {
 bool Socket::bind(const Address::Ptr& addr) {
     if (m_sockfd == -1) {
         newSock();
-        if (m_sockfd == -1) { return false; }
+        if (m_sockfd == -1) {
+            return false;
+        }
     }
     if (addr->getFamily() != m_family) {
         LOG_ERROR("socket family is not match");
@@ -210,7 +226,9 @@ Socket::Ptr Socket::accept() {
         return nullptr;
     }
     Socket::Ptr sock_ptr(new Socket(m_family, m_type, m_protocol));
-    if (sock_ptr->init(sock)) { return sock_ptr; }
+    if (sock_ptr->init(sock)) {
+        return sock_ptr;
+    }
     return nullptr;
 }
 
@@ -357,7 +375,9 @@ int Socket::recvfrom(iovec* iov, int iovcnt, Address::Ptr& addr, int flags) {
 }
 
 bool Socket::close() {
-    if (!m_is_connected && m_sockfd == -1) { return true; }
+    if (!m_is_connected && m_sockfd == -1) {
+        return true;
+    }
     if (::close(m_sockfd)) {
         LOG_ERROR("close failed");
         return false;
@@ -395,7 +415,9 @@ bool Socket::cancelAll() {
 }
 
 Address::Ptr Socket::getLocalAddress() {
-    if (m_local_addr) { return m_local_addr; }
+    if (m_local_addr) {
+        return m_local_addr;
+    }
     Address::Ptr addr;
     switch (m_family) {
     case AF_INET: addr.reset(new IPv4Address()); break;
@@ -412,7 +434,9 @@ Address::Ptr Socket::getLocalAddress() {
 }
 
 Address::Ptr Socket::getPeerAddress() {
-    if (m_peer_addr) { return m_peer_addr; }
+    if (m_peer_addr) {
+        return m_peer_addr;
+    }
     Address::Ptr addr;
     switch (m_family) {
     case AF_INET: addr.reset(new IPv4Address()); break;
@@ -458,10 +482,9 @@ SSLSocket::Ptr SSLSocket::CreateTcpScoketv6() {
 }
 
 SSLSocket::SSLSocket(int family, int type, int protocol)
-    : Socket(family, type, protocol) {
-    m_ctx = NULL;
-    m_ssl = NULL;
-}
+    : Socket(family, type, protocol)
+    , m_ctx(NULL)
+    , m_ssl(NULL) {}
 
 
 bool SSLSocket::connect(const Address::Ptr& addr, uint64_t timeout) {
@@ -491,7 +514,9 @@ Socket::Ptr SSLSocket::accept() {
         return nullptr;
     }
     sock->m_ctx = m_ctx;
-    if (sock->init(newsock)) { return sock; }
+    if (sock->init(newsock)) {
+        return sock;
+    }
     return nullptr;
 }
 int SSLSocket::send(const void* buf, size_t len, int flags) {
@@ -503,13 +528,19 @@ int SSLSocket::send(const void* buf, size_t len, int flags) {
 }
 
 int SSLSocket::send(const iovec* iov, int iovcnt, int flags) {
-    if (!m_ssl) { return -1; }
+    if (!m_ssl) {
+        return -1;
+    }
     int total = 0;
     for (int i = 0; i < iovcnt; ++i) {
         int tmp = SSL_write(m_ssl.get(), iov[i].iov_base, iov[i].iov_len);
-        if (tmp <= 0) { return tmp; }
+        if (tmp <= 0) {
+            return tmp;
+        }
         total += tmp;
-        if (tmp != (int)iov[i].iov_len) { break; }
+        if (tmp != (int)iov[i].iov_len) {
+            break;
+        }
     }
     return total;
 }
@@ -523,19 +554,27 @@ int SSLSocket::recv(void* buf, size_t len, int flags) {
 }
 
 int SSLSocket::recv(iovec* iov, int iovcnt, int flags) {
-    if (!m_ssl) { return -1; }
+    if (!m_ssl) {
+        return -1;
+    }
     int total = 0;
     for (int i = 0; i < iovcnt; ++i) {
         int tmp = SSL_read(m_ssl.get(), iov[i].iov_base, iov[i].iov_len);
-        if (tmp <= 0) { return tmp; }
+        if (tmp <= 0) {
+            return tmp;
+        }
         total += tmp;
-        if (tmp != (int)iov[i].iov_len) { break; }
+        if (tmp != (int)iov[i].iov_len) {
+            break;
+        }
     }
     return total;
 }
 
 int SSLSocket::shutdown(int how) {
-    if (!m_ssl) { return false; }
+    if (!m_ssl) {
+        return false;
+    }
     return SSL_shutdown(m_ssl.get());
 }
 
@@ -575,7 +614,9 @@ bool SSLSocket::init(int sock) {
         m_ssl.reset(SSL_new(m_ctx.get()), SSL_free);
         SSL_set_fd(m_ssl.get(), m_sockfd);
         v = (SSL_accept(m_ssl.get()) == 1);
-        if (!v) { ERR_print_errors_fp(stderr); }
+        if (!v) {
+            ERR_print_errors_fp(stderr);
+        }
     }
     return v;
 }

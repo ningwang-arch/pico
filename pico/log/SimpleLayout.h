@@ -10,7 +10,7 @@ class SimpleLayout : public Layout
 public:
     SimpleLayout();
     virtual ~SimpleLayout() {}
-    virtual std::string format(LogEvent::Ptr event);
+    virtual std::string format(LogEvent::Ptr event) override;
 };
 }   // namespace pico
 

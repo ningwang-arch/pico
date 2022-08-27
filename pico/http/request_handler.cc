@@ -54,8 +54,6 @@ void RequestHandler::addExcludePath(const std::string& path) {
 }
 
 void RequestHandler::addExcludePath(const std::vector<std::string>& paths) {
-    std::mutex m;
-    std::lock_guard<std::mutex> lock(m);
     for (auto& path : paths) {
         addExcludePath(path);
     }
@@ -72,7 +70,6 @@ void RequestHandler::delExcludePath(const std::string& path) {
 }
 
 void RequestHandler::delExcludePath(const std::vector<std::string>& paths) {
-    std::lock_guard<std::mutex> lock(m_mutex);
     for (auto& path : paths) {
         delExcludePath(path);
     }

@@ -12,7 +12,7 @@ class SocketStream
 {
 public:
     typedef std::shared_ptr<SocketStream> Ptr;
-    SocketStream(Socket::Ptr sock, bool owner = true);
+    explicit SocketStream(Socket::Ptr sock, bool owner = true);
     virtual ~SocketStream();
 
     virtual int read(void* buf, size_t len);

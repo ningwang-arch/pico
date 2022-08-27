@@ -11,7 +11,7 @@ class PatternLayout : public Layout
 public:
     PatternLayout();
     virtual ~PatternLayout() {}
-    virtual std::string format(LogEvent::Ptr event);
+    virtual std::string format(LogEvent::Ptr event) override;
 
     void setPattern(const std::string& pattern) override;
     std::string getPattern() const override { return pattern_; }

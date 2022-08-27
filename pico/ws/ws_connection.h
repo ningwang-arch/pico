@@ -69,7 +69,7 @@ class WsFrameMessage
 public:
     typedef std::shared_ptr<WsFrameMessage> Ptr;
 
-    WsFrameMessage(const uint8_t opcode, std::string data = "")
+    explicit WsFrameMessage(const uint8_t& opcode, const std::string& data = "")
         : _opcode(opcode)
         , _data(data) {}
 
@@ -89,7 +89,7 @@ class WsConnection : public HttpConnection
 {
 public:
     typedef std::shared_ptr<WsConnection> Ptr;
-    WsConnection(Socket::Ptr sock, bool owner = true)
+    explicit WsConnection(Socket::Ptr sock, bool owner = true)
         : HttpConnection(sock, owner) {}
 
     HttpRequest::Ptr handleShake();

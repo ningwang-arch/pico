@@ -76,7 +76,7 @@ class IPv4Address : public IPAddress
 public:
     typedef std::shared_ptr<IPv4Address> Ptr;
 
-    IPv4Address(const sockaddr_in& addr);
+    explicit IPv4Address(const sockaddr_in& addr);
     IPv4Address(const uint32_t addr = INADDR_ANY, uint16_t port = 0);
     static IPv4Address::Ptr Create(const char* addr, uint16_t port = 0);
 
@@ -104,8 +104,8 @@ public:
     typedef std::shared_ptr<IPv6Address> Ptr;
 
     IPv6Address();
-    IPv6Address(const sockaddr_in6& addr);
-    IPv6Address(const uint8_t* addr, uint16_t port = 0);
+    explicit IPv6Address(const sockaddr_in6& addr);
+    explicit IPv6Address(const uint8_t* addr, uint16_t port = 0);
     static IPv6Address::Ptr Create(const char* addr, uint16_t port = 0);
 
     virtual ~IPv6Address() = default;
@@ -132,7 +132,7 @@ public:
     typedef std::shared_ptr<UnixAddress> Ptr;
 
     UnixAddress();
-    UnixAddress(const std::string& path);
+    explicit UnixAddress(const std::string& path);
 
     virtual ~UnixAddress() = default;
 
@@ -154,9 +154,9 @@ class UnknownAddress : public Address
 public:
     typedef std::shared_ptr<UnknownAddress> Ptr;
 
-    UnknownAddress(int family);
+    explicit UnknownAddress(int family);
 
-    UnknownAddress(const sockaddr& addr);
+    explicit UnknownAddress(const sockaddr& addr);
 
     virtual ~UnknownAddress() = default;
 

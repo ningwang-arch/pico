@@ -20,12 +20,11 @@ class Date
 public:
     Date();
     Date(Date&& other) = default;
-    Date(const Date& other) {
-        m_tm = other.m_tm;
-        m_format = other.m_format;
-    }
-    Date(const std::string& date, std::string format = "%Y-%m-%d %H:%M:%S");
-    Date(time_t timestamp);
+    Date(const Date& other)
+        : m_tm(other.m_tm)
+        , m_format(other.m_format) {}
+    explicit Date(const std::string& date, std::string format = "%Y-%m-%d %H:%M:%S");
+    explicit Date(time_t timestamp);
 
     Date& operator=(const Date& other) {
         this->m_tm = other.m_tm;

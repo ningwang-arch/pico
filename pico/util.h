@@ -4,6 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/variant.hpp>
 #include <byteswap.h>
+#include <cstdint>
 #include <dirent.h>
 #include <json/json.h>
 #include <list>
@@ -89,7 +90,7 @@ std::string Json2Str(const Json::Value& json);
 
 bool Str2Json(const std::string& str, Json::Value& json);
 
-void split(const std::string& str, std::vector<std::string>& tokens, const std::string delim);
+void split(const std::string& str, std::vector<std::string>& tokens, const std::string& delim);
 
 
 std::string extract_pubkey_from_cert(const std::string& certstr, const std::string& pw = "");
@@ -147,7 +148,10 @@ static bool isContainer(const T& t) {
 class RowBounds
 {
 public:
-    RowBounds() { limit_ = INT32_MAX; }
+    RowBounds() {
+        limit_ = INT32_MAX;
+        offset_ = INT32_MIN;
+    }
     RowBounds(int offset, int limit)
         : offset_(offset)
         , limit_(limit) {}
@@ -311,6 +315,42 @@ struct function_traits<std::function<R(Args...)>>
     template<size_t i>
     using arg = typename std::tuple_element<i, std::tuple<Args...>>::type;
 };
+
+
+template<typename T>
+struct TypeTraits
+{ constexpr static bool value = false; };
+
+// std::string
+template<>
+struct TypeTraits<std::string>
+{ constexpr static bool value = true; };
+
+// char*
+template<>
+struct TypeTraits<char*>
+{ constexpr static bool value = true; };
+
+// const char*
+template<>
+struct TypeTraits<const char*>
+{ constexpr static bool value = true; };
+
+// const char[]
+template<size_t N>
+struct TypeTraits<const char[N]>
+{ constexpr static bool value = true; };
+
+// char[]
+template<size_t N>
+struct TypeTraits<char[N]>
+{ constexpr static bool value = true; };
+
+// vector<char>
+template<>
+struct TypeTraits<std::vector<char>>
+{ constexpr static bool value = true; };
+
 
 }   // namespace pico
 

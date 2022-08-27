@@ -50,7 +50,9 @@ std::string template_t::tag_name(const Action& action) const {
 auto template_t::find_context(const std::string& name, const std::vector<context*>& stack,
                               bool shouldUseOnlyFirstStackValue) const
     -> std::pair<bool, context&> {
-    if (name == ".") { return {true, *stack.back()}; }
+    if (name == ".") {
+        return {true, *stack.back()};
+    }
 
     static Json::Value empty_value = Json::stringValue;
 
@@ -83,17 +85,21 @@ auto template_t::find_context(const std::string& name, const std::vector<context
         for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
             context* current_ctx = *it;
             bool found = true;
-            for (auto& name : names) {
-                if (current_ctx->type() == Json::objectValue && current_ctx->isMember(name)) {
-                    current_ctx = &(*current_ctx)[name];
+            for (auto& item : names) {
+                if (current_ctx->type() == Json::objectValue && current_ctx->isMember(item)) {
+                    current_ctx = &(*current_ctx)[item];
                 }
                 else {
-                    if (shouldUseOnlyFirstStackValue) { return {false, empty_value}; }
+                    if (shouldUseOnlyFirstStackValue) {
+                        return {false, empty_value};
+                    }
                     found = false;
                     break;
                 }
             }
-            if (found) { return {true, *current_ctx}; }
+            if (found) {
+                return {true, *current_ctx};
+            }
         }
     }
     return {false, empty_value};
@@ -124,7 +130,9 @@ bool template_t::isTagInsideObjectBlock(const int& current,
         auto& action = m_actions[i - 1];
 
         if (action.type == ActionType::OpenBlock) {
-            if (openedBlock == 0 && (*stack.rbegin())->type() == Json::objectValue) { return true; }
+            if (openedBlock == 0 && (*stack.rbegin())->type() == Json::objectValue) {
+                return true;
+            }
             --openedBlock;
         }
         else if (action.type == ActionType::CloseBlock) {
@@ -152,7 +160,9 @@ void template_t::render_internal(int action_start, int action_end, std::vector<c
                                  std::string& out, int indent) const {
     int current = action_start;
 
-    if (indent) { out.insert(out.size(), indent, ' '); }
+    if (indent) {
+        out.insert(out.size(), indent, ' ');
+    }
 
     while (current < action_end) {
         auto& fragment = m_fragments[current];
@@ -175,7 +185,9 @@ void template_t::render_internal(int action_start, int action_end, std::vector<c
         case ActionType::Tag:
         {
             bool shouldUseOnlyFirstStackValue = false;
-            if (isTagInsideObjectBlock(current, stack)) { shouldUseOnlyFirstStackValue = true; }
+            if (isTagInsideObjectBlock(current, stack)) {
+                shouldUseOnlyFirstStackValue = true;
+            }
             auto optional_ctx = find_context(tag_name(action), stack, shouldUseOnlyFirstStackValue);
             auto& ctx = optional_ctx.second;
             switch (ctx.type()) {
@@ -211,14 +223,18 @@ void template_t::render_internal(int action_start, int action_end, std::vector<c
             auto& ctx = optional_ctx.second;
             switch (ctx.type()) {
             case Json::arrayValue:
-                if (ctx.size()) { current = action.pos; }
+                if (ctx.size()) {
+                    current = action.pos;
+                }
                 else {
                     stack.emplace_back(&null_ctx);
                 }
                 break;
             case Json::nullValue: stack.emplace_back(&null_ctx); break;
             case Json::booleanValue:
-                if (!ctx.asBool()) { stack.emplace_back(&null_ctx); }
+                if (!ctx.asBool()) {
+                    stack.emplace_back(&null_ctx);
+                }
                 else {
                     current = action.pos;
                 }
@@ -252,7 +268,9 @@ void template_t::render_internal(int action_start, int action_end, std::vector<c
             case Json::realValue: stack.push_back(&ctx); break;
             case Json::nullValue: current = action.pos; break;
             case Json::booleanValue:
-                if (ctx.asBool()) { stack.push_back(&ctx); }
+                if (ctx.asBool()) {
+                    stack.push_back(&ctx);
+                }
                 else {
                     current = action.pos;
                 }
@@ -272,7 +290,7 @@ void template_t::render_internal(int action_start, int action_end, std::vector<c
         }
         ++current;
     }
-    auto& fragment = m_fragments[action_end];
+    const auto& fragment = m_fragments[action_end];
     render_fragment(fragment, indent, out);
 }
 
@@ -294,7 +312,9 @@ void template_t::parse() {
         m_fragments.emplace_back(current, index_open);
         index_open += tag_open.size();
         size_t index_close = m_template.find(tag_close, index_open);
-        if (index_close == index_open) { throw InvalidTemplateException("Invalid template: {{}}"); }
+        if (index_close == index_open) {
+            throw InvalidTemplateException("Invalid template: {{}}");
+        }
         if (index_close == std::string::npos) {
             throw InvalidTemplateException("not found close tag");
         }
@@ -304,16 +324,24 @@ void template_t::parse() {
         case '#':
         {
             index_open++;
-            while (m_template[index_open] == ' ') { index_open++; }
-            while (m_template[index_close - 1] == ' ') { index_close--; }
+            while (m_template[index_open] == ' ') {
+                index_open++;
+            }
+            while (m_template[index_close - 1] == ' ') {
+                index_close--;
+            }
             block_positions.emplace_back(m_actions.size());
             m_actions.emplace_back(ActionType::OpenBlock, index_open, index_close);
         } break;
         case '/':
         {
             index_open++;
-            while (m_template[index_open] == ' ') { index_open++; }
-            while (m_template[index_close - 1] == ' ') { index_close--; }
+            while (m_template[index_open] == ' ') {
+                index_open++;
+            }
+            while (m_template[index_close - 1] == ' ') {
+                index_close--;
+            }
             {
                 auto& matched = m_actions[block_positions.back()];
                 if (m_template.compare(index_open,
@@ -335,8 +363,12 @@ void template_t::parse() {
         case '^':
         {
             index_open++;
-            while (m_template[index_open] == ' ') { index_open++; }
-            while (m_template[index_close - 1] == ' ') { index_close--; }
+            while (m_template[index_open] == ' ') {
+                index_open++;
+            }
+            while (m_template[index_close - 1] == ' ') {
+                index_close--;
+            }
             block_positions.emplace_back(m_actions.size());
             m_actions.emplace_back(ActionType::ElseBlock, index_open, index_close);
         } break;
@@ -347,8 +379,12 @@ void template_t::parse() {
         case '>':
         {
             index_open++;
-            while (m_template[index_open] == ' ') { index_open++; }
-            while (m_template[index_close - 1] == ' ') { index_close--; }
+            while (m_template[index_open] == ' ') {
+                index_open++;
+            }
+            while (m_template[index_close - 1] == ' ') {
+                index_close--;
+            }
             m_actions.emplace_back(ActionType::Partial, index_open, index_close);
         } break;
         case '{':
@@ -360,16 +396,24 @@ void template_t::parse() {
             if (m_template[index_close + 2] != '}') {
                 throw InvalidTemplateException("{{{: }}} not matched");
             }
-            while (m_template[index_open] == ' ') { index_open++; }
-            while (m_template[index_close - 1] == ' ') { index_close--; }
+            while (m_template[index_open] == ' ') {
+                index_open++;
+            }
+            while (m_template[index_close - 1] == ' ') {
+                index_close--;
+            }
             m_actions.emplace_back(ActionType::UnescapeTag, index_open, index_close);
             current++;
         } break;
         case '&':
         {
             index_open++;
-            while (m_template[index_open] == ' ') { index_open++; }
-            while (m_template[index_close - 1] == ' ') { index_close--; }
+            while (m_template[index_open] == ' ') {
+                index_open++;
+            }
+            while (m_template[index_close - 1] == ' ') {
+                index_close--;
+            }
             m_actions.emplace_back(ActionType::UnescapeTag, index_open, index_close);
         } break;
         case '=':
@@ -383,15 +427,21 @@ void template_t::parse() {
                     m_template.substr(index_open, index_close - index_open));
             }
             index_close--;
-            while (m_template[index_open] == ' ') { index_open++; }
-            while (m_template[index_close] == ' ') { index_close--; }
+            while (m_template[index_open] == ' ') {
+                index_open++;
+            }
+            while (m_template[index_close] == ' ') {
+                index_close--;
+            }
             index_close++;
             {
                 bool success = false;
                 for (size_t i = index_open; i < index_close; i++) {
                     if (m_template[i] == ' ') {
                         tag_open = m_template.substr(index_open, i - index_open);
-                        while (m_template[i] == ' ') { i++; }
+                        while (m_template[i] == ' ') {
+                            i++;
+                        }
                         tag_close = m_template.substr(i, index_close - i);
                         if (tag_open.empty()) {
                             throw InvalidTemplateException("{{=: tag open is empty");
@@ -416,8 +466,12 @@ void template_t::parse() {
         } break;
         default:
         {
-            while (m_template[index_open] == ' ') { index_open++; }
-            while (m_template[index_close - 1] == ' ') { index_close--; }
+            while (m_template[index_open] == ' ') {
+                index_open++;
+            }
+            while (m_template[index_close - 1] == ' ') {
+                index_close--;
+            }
             m_actions.emplace_back(ActionType::Tag, index_open, index_close);
         } break;
         }
@@ -439,8 +493,12 @@ void template_t::parse() {
                 break;
             }
         }
-        if (all_space_before && i > 0) { continue; }
-        if (!all_space_before && m_template[j] != '\n') { continue; }
+        if (all_space_before && i > 0) {
+            continue;
+        }
+        if (!all_space_before && m_template[j] != '\n') {
+            continue;
+        }
 
         bool all_space_after = true;
         for (; k < fragment_after.second && k < (int)m_template.size(); k++) {
@@ -449,7 +507,9 @@ void template_t::parse() {
                 break;
             }
         }
-        if (all_space_after && !is_last_action) { continue; }
+        if (all_space_after && !is_last_action) {
+            continue;
+        }
         if (!all_space_after &&
             !(m_template[k] == '\n' ||
               (m_template[k] == '\r' && k + 1 < static_cast<int>(m_template.size()) &&
@@ -475,7 +535,9 @@ pico::ConfigVar<std::string>::Ptr mustache_template_dir = pico::Config::Lookup<s
 
 std::string default_loader(const std::string& filename) {
     std::string path = mustache_template_dir->getValue();
-    if (!path.empty() && path[path.size() - 1] != '/') { path += '/'; }
+    if (!path.empty() && path[path.size() - 1] != '/') {
+        path += '/';
+    }
     path += filename;
     std::ifstream file(path);
     if (!file.is_open()) {

@@ -7,12 +7,14 @@
 namespace pico {
 void ResultBinder::bindValue(int index, enum_field_types type) {
     auto it = _bind_map.find(type);
-    if (it == _bind_map.end()) { throw SQLException("unsupported type"); }
+    if (it == _bind_map.end()) {
+        throw SQLException("unsupported type");
+    }
     it->second(index);
 }
 
 void ResultBinder::bindInt(int index) {
-    _result_list[index] = std::type_index(typeid(int));
+    _result_list[index] = Object(std::type_index(typeid(int)));
 
     _bind_list[index].buffer_type = MYSQL_TYPE_LONG;
     _bind_list[index].buffer = _result_list[index].getValuePtr();
@@ -20,7 +22,7 @@ void ResultBinder::bindInt(int index) {
 }
 
 void ResultBinder::bindTime(int index) {
-    _result_list[index] = std::type_index(typeid(std::time_t));
+    _result_list[index] = Object(std::type_index(typeid(std::time_t)));
 
     _bind_list[index].buffer_type = MYSQL_TYPE_TIMESTAMP;
     _bind_list[index].buffer = _result_list[index].getValuePtr();
@@ -28,7 +30,7 @@ void ResultBinder::bindTime(int index) {
 }
 
 void ResultBinder::bindString(int index) {
-    _result_list[index] = std::type_index(typeid(std::string));
+    _result_list[index] = Object(std::type_index(typeid(std::string)));
     _result_list[index].resize(MAX_STRING_LENGTH);
 
     _bind_list[index].buffer_type = MYSQL_TYPE_STRING;

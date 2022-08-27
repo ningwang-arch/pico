@@ -246,7 +246,7 @@ void Application::run_in_fiber() {
                 continue;
             }
             std::vector<Address::Ptr> addrs;
-            if (Address::getInterfaceAddresses(addrs, host.c_str())) {
+            if (Address::getInterfaceAddresses(addrs, host)) {
                 for (auto item : addrs) {
                     auto ipaddr = std::dynamic_pointer_cast<IPAddress>(item);
                     if (ipaddr) {
@@ -320,7 +320,6 @@ void Application::run_in_fiber() {
             for (auto filter_chain : filter_chains) {
                 addFilterChain(filter_chain.first, filter_chain.second);
             }
-
             m_servers[server_conf.type].push_back(server);
             server_manager->addServer(server->getName(), server);
         }
@@ -366,7 +365,6 @@ void Application::run_in_fiber() {
             server_manager->addServer(server->getName(), server);
         }
     };
-
     server_manager->startAll();
 };
 

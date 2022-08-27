@@ -28,7 +28,7 @@ public:
 
 private:
     Timer(uint64_t timeout, Callback callback, bool repeat, TimerManager* manager);
-    Timer(uint64_t next);
+    explicit Timer(uint64_t next);
 
 private:
     bool m_repeat;

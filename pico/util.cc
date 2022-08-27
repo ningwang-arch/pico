@@ -283,27 +283,35 @@ std::string Json2Str(const Json::Value& json) {
     builder.settings_["indentation"] = "";
     // change accuracy of double to 6 digits
     builder.settings_["precision"] = 6;
+    builder.settings_["emitUTF8"] = true;
     std::string str = Json::writeString(builder, json);
     return str;
 }
 
 bool Str2Json(const std::string& str, Json::Value& json) {
-    Json::CharReaderBuilder builder;
-    Json::CharReader* reader = builder.newCharReader();
+    // Json::CharReaderBuilder builder;
+    // Json::CharReader* reader = builder.newCharReader();
 
-    std::string errors;
+    // std::string errors;
 
-    bool parsingSuccessful = reader->parse(str.c_str(), str.c_str() + str.size(), &json, &errors);
-    delete reader;
+    // bool parsingSuccessful = reader->parse(str.c_str(), str.c_str() + str.size(), &json,
+    // &errors); delete reader;
 
+    // if (!parsingSuccessful) {
+    //     LOG_ERROR("Failed to parse json: %s", errors.c_str());
+    //     return false;
+    // }
+    // return true;
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse(str, json);
     if (!parsingSuccessful) {
-        LOG_ERROR("Failed to parse json: %s", errors.c_str());
+        LOG_ERROR("Failed to parse json: %s", reader.getFormattedErrorMessages().c_str());
         return false;
     }
     return true;
 }
 
-void split(const std::string& str, std::vector<std::string>& tokens, const std::string delim) {
+void split(const std::string& str, std::vector<std::string>& tokens, const std::string& delim) {
     tokens.clear();
 
     char* dup = strdup(str.c_str());
