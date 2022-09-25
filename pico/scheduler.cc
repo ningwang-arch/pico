@@ -34,7 +34,9 @@ Scheduler::Scheduler(size_t threads, bool use_caller, const std::string& name)
 
 Scheduler::~Scheduler() {
     assert(m_stopping);
-    if (GetThis() == this) { t_scheduler = nullptr; }
+    if (GetThis() == this) {
+        t_scheduler = nullptr;
+    }
 }
 
 Scheduler* Scheduler::GetThis() {
@@ -47,7 +49,9 @@ Fiber* Scheduler::GetMainFiber() {
 
 void Scheduler::start() {
     MutexType::Lock lock(m_mutex);
-    if (!m_stopping) { return; }
+    if (!m_stopping) {
+        return;
+    }
     m_stopping = false;
     assert(m_threads.empty());
 
@@ -66,22 +70,32 @@ void Scheduler::stop() {
         (m_rootFiber->getState() == Fiber::TERM || m_rootFiber->getState() == Fiber::INIT)) {
         m_stopping = true;
 
-        if (stopping()) { return; }
+        if (stopping()) {
+            return;
+        }
     }
 
     // bool exit_on_this_fiber = false;
-    if (m_rootThread != -1) { assert(GetThis() == this); }
+    if (m_rootThread != -1) {
+        assert(GetThis() == this);
+    }
     else {
         assert(GetThis() != this);
     }
 
     m_stopping = true;
-    for (size_t i = 0; i < m_threadCount; ++i) { tickle(); }
-
-    if (m_rootFiber) { tickle(); }
+    for (size_t i = 0; i < m_threadCount; ++i) {
+        tickle();
+    }
 
     if (m_rootFiber) {
-        if (!stopping()) { m_rootFiber->call(); }
+        tickle();
+    }
+
+    if (m_rootFiber) {
+        if (!stopping()) {
+            m_rootFiber->call();
+        }
     }
 
     std::vector<Thread::Ptr> thrs;
@@ -90,7 +104,9 @@ void Scheduler::stop() {
         thrs.swap(m_threads);
     }
 
-    for (auto& i : thrs) { i->join(); }
+    for (auto& i : thrs) {
+        i->join();
+    }
     // if(exit_on_this_fiber) {
     // }
 }
@@ -102,7 +118,9 @@ void Scheduler::setThis() {
 void Scheduler::run() {
     set_hook_enable(true);
     setThis();
-    if (pico::getThreadId() != m_rootThread) { t_scheduler_fiber = Fiber::GetThis().get(); }
+    if (pico::getThreadId() != m_rootThread) {
+        t_scheduler_fiber = Fiber::GetThis().get();
+    }
 
     Fiber::Ptr idle_fiber(new Fiber(std::bind(&Scheduler::idle, this)));
     Fiber::Ptr cb_fiber;
@@ -137,21 +155,27 @@ void Scheduler::run() {
             tickle_me |= it != m_fibers.end();
         }
 
-        if (tickle_me) { tickle(); }
+        if (tickle_me) {
+            tickle();
+        }
 
         if (ft.fiber &&
             (ft.fiber->getState() != Fiber::TERM && ft.fiber->getState() != Fiber::EXCEPT)) {
             ft.fiber->swapIn();
             --m_activeThreadCount;
 
-            if (ft.fiber->getState() == Fiber::READY) { schedule(ft.fiber); }
+            if (ft.fiber->getState() == Fiber::READY) {
+                schedule(ft.fiber);
+            }
             else if (ft.fiber->getState() != Fiber::TERM && ft.fiber->getState() != Fiber::EXCEPT) {
                 ft.fiber->m_state = Fiber::HOLD;
             }
             ft.reset();
         }
         else if (ft.cb) {
-            if (cb_fiber) { cb_fiber->reset(ft.cb); }
+            if (cb_fiber) {
+                cb_fiber->reset(ft.cb);
+            }
             else {
                 cb_fiber.reset(new Fiber(ft.cb));
             }
@@ -175,7 +199,9 @@ void Scheduler::run() {
                 --m_activeThreadCount;
                 continue;
             }
-            if (idle_fiber->getState() == Fiber::TERM) { break; }
+            if (idle_fiber->getState() == Fiber::TERM) {
+                break;
+            }
 
             ++m_idleThreadCount;
             idle_fiber->swapIn();
@@ -198,13 +224,17 @@ bool Scheduler::stopping() {
 
 void Scheduler::idle() {
     LOG_INFO("idle");
-    while (!stopping()) { pico::Fiber::yieldToHold(); }
+    while (!stopping()) {
+        pico::Fiber::yieldToHold();
+    }
 }
 
 void Scheduler::switchTo(int thread) {
     assert(Scheduler::GetThis() != nullptr);
     if (Scheduler::GetThis() == this) {
-        if (thread == -1 || thread == pico::getThreadId()) { return; }
+        if (thread == -1 || thread == pico::getThreadId()) {
+            return;
+        }
     }
     schedule(Fiber::GetThis(), thread);
     Fiber::yieldToHold();

@@ -30,7 +30,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <mysql/mysql.h>
 
 
 #include "fiber.h"
@@ -93,37 +92,11 @@ bool Str2Json(const std::string& str, Json::Value& json);
 void split(const std::string& str, std::vector<std::string>& tokens, const std::string& delim);
 
 
-std::string extract_pubkey_from_cert(const std::string& certstr, const std::string& pw = "");
-
-
-std::shared_ptr<EVP_PKEY> load_public_key_from_string(const std::string& key,
-                                                      const std::string& password = "");
-
-
-std::shared_ptr<EVP_PKEY> load_private_key_from_string(const std::string& key,
-                                                       const std::string& password = "");
-
-std::shared_ptr<EVP_PKEY> load_public_ec_key_from_string(const std::string& key,
-                                                         const std::string& password = "");
-
-std::shared_ptr<EVP_PKEY> load_private_ec_key_from_string(const std::string& key,
-                                                          const std::string& password = "");
-
-
-std::string bn2raw(const BIGNUM* bn);
-
-std::unique_ptr<BIGNUM, decltype(&BN_free)> raw2bn(const std::string& raw);
-
-MYSQL_TIME time_t2mysql_time(std::time_t ts);
-
-std::time_t mysql_time2time_t(const MYSQL_TIME& time);
-
 int genRandom(int min, int max);
 
 std::string genRandomString(
     int len, std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
-std::string camel2underline(const std::string& camel);
 
 template<typename T>
 static bool isContainer(const std::vector<T>& value) {
@@ -145,23 +118,6 @@ static bool isContainer(const T& t) {
     return false;
 }
 
-class RowBounds
-{
-public:
-    RowBounds() {
-        limit_ = INT32_MAX;
-        offset_ = INT32_MIN;
-    }
-    RowBounds(int offset, int limit)
-        : offset_(offset)
-        , limit_(limit) {}
-    int offset() const { return offset_; }
-    int limit() const { return limit_; }
-
-private:
-    int offset_;
-    int limit_;
-};
 
 std::string sha1sum(const std::string& str);
 
@@ -214,142 +170,6 @@ T byteswapOnBigEndian(T t) {
 
 std::size_t find(const std::string& str, const std::string& substr, bool is_case_sensitive = false);
 
-
-/**
- * @brief fuzzy_match
- * @param str ---> /user/123/abc
- * @param pattern ---> /user/<int>/<string>
- * @return true if match
- */
-
-bool fuzzy_match(const std::string& str, const std::string& pattern);
-
-
-unsigned find_closing_tag_runtime(const char* s, unsigned p);
-
-uint64_t get_parameter_tag_runtime(const char* s, unsigned p = 0);
-
-bool is_parameter_tag_compatible(uint64_t a, uint64_t b);
-
-template<typename T>
-struct parameter_tag
-{ static const int value = 0; };
-#define PICO_INTERNAL_PARAMETER_TAG(t, i) \
-    template<>                            \
-    struct parameter_tag<t>               \
-    { static const int value = i; }
-PICO_INTERNAL_PARAMETER_TAG(int, 1);
-PICO_INTERNAL_PARAMETER_TAG(char, 1);
-PICO_INTERNAL_PARAMETER_TAG(short, 1);
-PICO_INTERNAL_PARAMETER_TAG(long, 1);
-PICO_INTERNAL_PARAMETER_TAG(long long, 1);
-PICO_INTERNAL_PARAMETER_TAG(unsigned int, 2);
-PICO_INTERNAL_PARAMETER_TAG(unsigned char, 2);
-PICO_INTERNAL_PARAMETER_TAG(unsigned short, 2);
-PICO_INTERNAL_PARAMETER_TAG(unsigned long, 2);
-PICO_INTERNAL_PARAMETER_TAG(unsigned long long, 2);
-PICO_INTERNAL_PARAMETER_TAG(double, 3);
-PICO_INTERNAL_PARAMETER_TAG(std::string, 4);
-#undef PICO_INTERNAL_PARAMETER_TAG
-template<typename... Args>
-struct compute_parameter_tag_from_args_list;
-
-template<>
-struct compute_parameter_tag_from_args_list<>
-{ static const int value = 0; };
-
-template<typename Arg, typename... Args>
-struct compute_parameter_tag_from_args_list<Arg, Args...>
-{
-
-    static const int sub_value = compute_parameter_tag_from_args_list<Args...>::value;
-    static const int value =
-        parameter_tag<typename std::decay<Arg>::type>::value
-            ? sub_value * 6 + parameter_tag<typename std::decay<Arg>::type>::value
-            : sub_value;
-};
-
-
-template<typename T>
-struct function_traits;
-
-template<typename T>
-struct function_traits : public function_traits<decltype(&T::operator())>
-{
-    using parent_t = function_traits<decltype(&T::operator())>;
-    static const size_t arity = parent_t::arity;
-    using result_type = typename parent_t::result_type;
-    template<size_t i>
-    using arg = typename parent_t::template arg<i>;
-};
-
-template<typename ClassType, typename R, typename... Args>
-struct function_traits<R (ClassType::*)(Args...) const>
-{
-    static const size_t arity = sizeof...(Args);
-
-    typedef R result_type;
-
-    template<size_t i>
-    using arg = typename std::tuple_element<i, std::tuple<Args...>>::type;
-};
-
-template<typename ClassType, typename R, typename... Args>
-struct function_traits<R (ClassType::*)(Args...)>
-{
-    static const size_t arity = sizeof...(Args);
-
-    typedef R result_type;
-
-    template<size_t i>
-    using arg = typename std::tuple_element<i, std::tuple<Args...>>::type;
-};
-
-template<typename R, typename... Args>
-struct function_traits<std::function<R(Args...)>>
-{
-    static const size_t arity = sizeof...(Args);
-
-    typedef R result_type;
-
-    template<size_t i>
-    using arg = typename std::tuple_element<i, std::tuple<Args...>>::type;
-};
-
-
-template<typename T>
-struct TypeTraits
-{ constexpr static bool value = false; };
-
-// std::string
-template<>
-struct TypeTraits<std::string>
-{ constexpr static bool value = true; };
-
-// char*
-template<>
-struct TypeTraits<char*>
-{ constexpr static bool value = true; };
-
-// const char*
-template<>
-struct TypeTraits<const char*>
-{ constexpr static bool value = true; };
-
-// const char[]
-template<size_t N>
-struct TypeTraits<const char[N]>
-{ constexpr static bool value = true; };
-
-// char[]
-template<size_t N>
-struct TypeTraits<char[N]>
-{ constexpr static bool value = true; };
-
-// vector<char>
-template<>
-struct TypeTraits<std::vector<char>>
-{ constexpr static bool value = true; };
 
 
 }   // namespace pico
