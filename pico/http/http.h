@@ -13,6 +13,8 @@
 
 // #include "pico/mustache.h"
 
+#include "pico/session.h"
+
 namespace pico {
 
 namespace mustache {
@@ -211,6 +213,12 @@ public:
 
     bool is_close() const { return m_is_close; }
     void set_close(bool is_close) { m_is_close = is_close; }
+
+
+    // Key: PSESSIONID
+    std::string get_request_session_id();
+
+    pico::tools::HttpSession::Ptr get_session();
 
     bool is_websocket() const { return m_websocket; }
     void set_websocket(bool is_websocket) { m_websocket = is_websocket; }

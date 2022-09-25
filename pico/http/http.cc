@@ -31,10 +31,12 @@ const char* http_method_to_string(HttpMethod method) {
 const char* http_status_to_string(HttpStatus status) {
     switch (status) {
 #define XX(code, name, msg) \
-    case HttpStatus::name: return #msg;
+    case HttpStatus::name:  \
+        return #msg;
         HTTP_STATUS_MAP(XX);
 #undef XX
-    default: return "INVALID_STATUS";
+    default:
+        return "INVALID_STATUS";
     }
 }
 
@@ -174,6 +176,22 @@ void HttpRequest::set_token(const std::string& token) {
         return;
     }
     set_header("Authorization", "Bearer " + token);
+}
+
+std::string HttpRequest::get_request_session_id() {
+    std::string session_id = get_cookie("PSESSIONID");
+    if (session_id.empty()) {
+        session_id = get_param("PSESSIONID");
+    }
+    return session_id;
+}
+
+tools::HttpSession::Ptr HttpRequest::get_session() {
+    std::string session_id = get_request_session_id();
+    if (session_id.empty()) {
+        return nullptr;
+    }
+    return tools::SessionManager::getInstance()->get(session_id);
 }
 
 void HttpRequest::del_header(const std::string& key) {

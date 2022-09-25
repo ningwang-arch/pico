@@ -293,6 +293,7 @@ void Application::run_in_fiber() {
                 }
                 exit(-1);
             }
+            server->setType(server_conf.type);
             if (server_conf.ssl) {
                 if (!server->loadCertificate(server_conf.cert_file, server_conf.key_file)) {
                     LOG_ERROR("load certficate failed");
@@ -325,7 +326,7 @@ void Application::run_in_fiber() {
         }
         else if (server_conf.type == "ws") {
             WsServer::Ptr server(new WsServer(worker, acceptor));
-            server->setIsHttp(false);
+            server->setType(server_conf.type);
             if (!server_conf.name.empty()) {
                 server->setName(server_conf.name);
             }

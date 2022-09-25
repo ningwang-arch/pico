@@ -36,5 +36,5 @@
 - [x] add support for redis
   <br>
 
-- [ ] enable save session to redis
+- [ ] ~~enable save session to redis~~
   <br>

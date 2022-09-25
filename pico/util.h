@@ -50,6 +50,8 @@ uint64_t getCurrentTime();
 std::string Time2Str(time_t ts = time(0), const std::string& format = "%Y-%m-%d %H:%M:%S");
 time_t Str2Time(const char* str, const char* format = "%Y-%m-%d %H:%M:%S");
 
+bool startWith(const std::string& str, const std::string& prefix);
+
 class StringUtil
 {
 public:

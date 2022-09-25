@@ -81,12 +81,9 @@ bool TcpServer::start() {
     }
     m_is_stop = false;
     for (auto& sock : m_sockets) {
-        LOG_INFO(
-            "server [%s] is listening on %s",
-            m_name.c_str(),
-            ((m_is_http ? (m_is_ssl ? "https://" : "http://") : (m_is_ssl ? "wss://" : "ws://")) +
-             sock->getLocalAddress()->to_string())
-                .c_str());
+        LOG_INFO("server [%s] is listening on %s",
+                 m_name.c_str(),
+                 sock->getLocalAddress()->to_string().c_str());
     }
     for (auto&& sock : m_sockets) {
         m_acceptor->schedule(std::bind(&TcpServer::startAccept, shared_from_this(), sock));

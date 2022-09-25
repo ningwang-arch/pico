@@ -21,7 +21,7 @@ public:
         res->set_status(HttpStatus::OK);
         res->set_header("Content-Type", "text/plain");
 
-        auto session = SessionManager::getInstance()->getRequestSession(req, res);
+        auto session = req->get_session();
 
         session->set("abc", 1);
 
@@ -37,7 +37,7 @@ public:
         res->set_status(HttpStatus::OK);
         res->set_header("Content-Type", "text/plain");
 
-        auto session = SessionManager::getInstance()->getRequestSession(req, res);
+        auto session = req->get_session();
 
         auto value = session->get<int>("abc");
 

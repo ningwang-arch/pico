@@ -119,6 +119,13 @@ void test_03() {
 
     ret = conn->hdel("hash", "key");
     std::cout << "hdel: " << ret << std::endl;
+    ret2 = conn->hget<std::string>("hash", "key");
+    if (ret2.status == pico::RedisStatus::REDIS_STATUS_OK) {
+        std::cout << "hget: " << ret2.data << std::endl;
+    }
+    else {
+        std::cout << "hget: " << ret2.status << std::endl;
+    }
 }
 
 
@@ -127,7 +134,7 @@ int main(int argc, char* argv[]) {
     pico::Config::LoadFromConfDir(pico::EnvManager::getInstance()->getConfigPath());
     // test();
     // test_01();
-    test_02();
-    // test_03();
+    // test_02();
+    test_03();
     return 0;
 }

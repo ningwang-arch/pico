@@ -35,6 +35,10 @@ uint64_t getCurrentTime() {
         .count();
 }
 
+bool startWith(const std::string& str, const std::string& prefix) {
+    return str.find(prefix) == 0;
+}
+
 std::string Time2Str(time_t ts, const std::string& format) {
     std::stringstream ss;
     struct tm* tm = localtime(&ts);

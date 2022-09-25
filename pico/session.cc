@@ -5,68 +5,72 @@
 
 namespace pico {
 
-ConfigVar<uint64_t>::Ptr session_timeout =
+static ConfigVar<uint64_t>::Ptr session_timeout =
     Config::Lookup<uint64_t>("other.session.timeout", 3600, "session timeout");
 
 namespace tools {
 
-typedef SessionData Value;
+typedef HttpSession Value;
 
 
-SessionData& SessionData::remove(const Key& key) {
+HttpSession& HttpSession::remove(const Key& key) {
     Lock::WriteLock lock(m_mutex);
-    m_data.removeMember(key);
+    m_data.erase(key);
     return *this;
 }
 
-bool SessionData::has(const Key& key) {
+bool HttpSession::has(const Key& key) {
     Lock::ReadLock lock(m_mutex);
-    return m_data.isMember(key);
+    return m_data.find(key) != m_data.end();
 }
 
-Value::Ptr SessionDataManager::get(const Key& key) {
+Value::Ptr SessionManager::get(const Key& key) {
     clearExpired();
     Lock::ReadLock lock(m_mutex);
-    auto it = m_datas.find(key);
-    if (it == m_datas.end()) { return nullptr; }
+    auto it = get_data().find(key);
+    if (it == get_data().end()) {
+        return nullptr;
+    }
     return it->second;
 }
 
-void SessionDataManager::set(const Key& key, const Value::Ptr& value) {
+void SessionManager::set(const Key& key, const Value::Ptr& value) {
     Lock::WriteLock lock(m_mutex);
-    m_datas[key] = value;
+    get_data()[key] = value;
 }
 
-Value::Ptr SessionDataManager::create(const Key& key) {
+Value::Ptr SessionManager::create(const Key& key) {
     Lock::WriteLock lock(m_mutex);
-    auto it = m_datas.find(key);
-    if (it != m_datas.end()) { return it->second; }
+    auto it = get_data().find(key);
+    if (it != get_data().end()) {
+        return it->second;
+    }
     auto value = std::make_shared<Value>();
-    m_datas[key] = value;
+    get_data()[key] = value;
     return value;
 }
 
-void SessionDataManager::remove(const Key& key) {
+void SessionManager::remove(const Key& key) {
     Lock::WriteLock lock(m_mutex);
-    m_datas.erase(key);
+    get_data().erase(key);
 }
 
-bool SessionDataManager::has(const Key& key) {
+bool SessionManager::has(const Key& key) {
     Lock::ReadLock lock(m_mutex);
-    return m_datas.find(key) != m_datas.end();
+    return get_data().find(key) != get_data().end();
 }
 
-void SessionDataManager::clear() {
+void SessionManager::clear() {
     Lock::WriteLock lock(m_mutex);
-    m_datas.clear();
+    get_data().clear();
 }
 
-void SessionDataManager::clearExpired() {
+void SessionManager::clearExpired() {
     Lock::WriteLock lock(m_mutex);
-    for (auto it = m_datas.begin(); it != m_datas.end();) {
+    for (auto it = get_data().begin(); it != get_data().end();) {
         if (it->second->getLastAccessTime() + session_timeout->getValue() <
             (uint64_t)time(nullptr)) {
-            it = m_datas.erase(it);
+            it = get_data().erase(it);
         }
         else {
             ++it;
@@ -76,92 +80,4 @@ void SessionDataManager::clearExpired() {
 
 }   // namespace tools
 
-bool Session::hasSession(const request& req) {
-    return req->get_cookie(COOKIE_KEY, "") != "";
-}
-
-
-std::string Session::randomStr(unsigned int length) {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-
-    std::string source;
-
-    for (unsigned i = 0, amount = length / RND_ALPHABET.size() + 1; i < amount; ++i) {
-        source += RND_ALPHABET;
-    }
-
-    std::shuffle(source.begin(), source.end(), gen);
-    return source.substr(0, length);
-}
-
-std::string Session::stripCookie(const std::string& cookie) {
-    std::istringstream ss{cookie};
-    std::string ret;
-    std::getline(ss, ret, ';');
-    return ret;
-}
-
-
-std::string Session::getCookie(const request& req) {
-    return req->get_cookie(COOKIE_KEY, "");
-}
-
-std::string Session::craftExpiresTimestamp() {
-    return pico::Time2Str(time(nullptr) + session_timeout->getValue());
-}
-
-std::string Session::craftSecureCookieString(const std::string& sid) {
-    static const char* fmt = "%s; expires=%s; path=/; HttpOnly";
-    return boost::str(boost::format(fmt) % sid % craftExpiresTimestamp());
-}
-
-std::string Session::makeNewSession() {
-    std::string sid;
-    {
-        Lock::Lock lock(m_mutex);
-        do { } while (Manager.has(sid = randomStr(SID_LENGTH))); }
-
-    Lock::Lock lock(m_mutex);
-    Manager.create(sid);
-
-    return craftSecureCookieString(sid);
-}
-
-bool Session::isValidSession(const std::string& sid) {
-    Lock::Lock lock(m_mutex);
-    return Manager.has(stripCookie(sid));
-}
-
-
-
-tools::SessionData::Ptr Session::getRequestSession(const request& req, response& resp,
-                                                   const bool& create) {
-    auto createCoookie = [&] {
-        if (!create) { return std::string(); }
-        auto cookie = this->makeNewSession();
-        resp->set_cookie(COOKIE_KEY, cookie);
-        return cookie;
-    };
-
-    auto sessionCookie = stripCookie([&] {
-        if (!this->hasSession(req)) { return createCoookie(); }
-
-        return [&] {
-            auto cookie = this->getCookie(req);
-            if (!this->isValidSession(cookie)) { return createCoookie(); }
-            return cookie;
-        }();
-    }());
-
-    auto session = Manager.get(sessionCookie);
-    if (session == nullptr) {
-        if (create) { session = Manager.create(sessionCookie); }
-        else {
-            return nullptr;
-        }
-    }
-    session->setLastAccessTime(time(nullptr));
-    return session;
-}
 }   // namespace pico

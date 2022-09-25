@@ -48,6 +48,20 @@ void HttpServer::handleClient(Socket::Ptr& sock) {
 
         HttpResponse::Ptr resp(
             new HttpResponse(req->get_version(), req->is_close() || !m_is_KeepAlive));
+
+
+        {
+            if (req->get_request_session_id().empty()) {
+                std::string session_id = genRandomString(128);
+
+                req->set_cookie("PSESSIONID", session_id);
+                resp->set_cookie("PSESSIONID", session_id);
+
+                tools::SessionManager::getInstance()->create(session_id);
+            }
+        }
+
+
         resp->set_header("Server", getName());
         m_request_handler->handle(req, resp);
 

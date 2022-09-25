@@ -136,7 +136,7 @@ public:
 
     virtual std::string to_string();
 
-    virtual void setIsHttp(bool is_http) { m_is_http = is_http; }
+    virtual void setType(const std::string& type) { m_type = type; }
 
     virtual bool loadCertificate(const std::string& cert_file, const std::string& key_file);
 
@@ -157,9 +157,9 @@ private:
 
     bool m_is_stop;
 
-    bool m_is_ssl = false;
+    std::string m_type;
 
-    bool m_is_http = false;
+    bool m_is_ssl = false;
 };
 
 }   // namespace pico
