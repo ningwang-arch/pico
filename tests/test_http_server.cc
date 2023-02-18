@@ -1,6 +1,7 @@
 
-#include "pico/pico.h"
+#include "../pico/pico.h"
 
+#include <chrono>
 #include <fstream>
 
 namespace pico {
@@ -154,6 +155,25 @@ public:
     }
 };
 
+class HelloMiddleware : public Middleware
+{
+public:
+    void before_request(request& req, response& res) override {
+        m_start_time = std::chrono::system_clock::now();
+    }
+
+    void after_response(request& req, response& res) override {
+        auto end_time = std::chrono::system_clock::now();
+        auto duration =
+            std::chrono::duration_cast<std::chrono::microseconds>(end_time - m_start_time);
+        LOG_INFO("request url: %s, duration: %dus", req->get_path().c_str(), duration.count());
+    }
+
+
+private:
+    std::chrono::time_point<std::chrono::system_clock> m_start_time;
+};
+
 REGISTER_CLASS(HelloServlet);
 REGISTER_CLASS(SessionSetServlet);
 REGISTER_CLASS(SessionGetServlet);
@@ -162,6 +182,7 @@ REGISTER_CLASS(HelloFilter);
 REGISTER_CLASS(TestFilter);
 REGISTER_CLASS(WsHelloServlet);
 REGISTER_CLASS(FuzzyMatchServlet);
+REGISTER_CLASS(HelloMiddleware);
 
 }   // namespace pico
 
@@ -170,11 +191,10 @@ int main(int argc, char* argv[]) {
     pico::Application app;
 
     pico::compression::set_compression_enabled(true);
-    pico::set_log_enabled(false);
+    // pico::set_log_enabled(false);
     if (app.init(argc, argv)) {
         app.run();
     }
-
 
     return 0;
 }

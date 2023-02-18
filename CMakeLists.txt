@@ -12,10 +12,10 @@ set(SOURCE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pico)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS
-  "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -Wno-maybe-uninitialized"
+    "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -Wno-maybe-uninitialized"
 )
 set(CMAKE_C_FLAGS
-  "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -Wno-maybe-uninitialized"
+    "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -Wno-maybe-uninitialized"
 )
 
 option(BUILD_TEST "ON for complile test" OFF)
@@ -50,27 +50,28 @@ pkg_check_modules(HIREDIS hiredis)
 include_directories(${JSONCPP_INCLUDE_DIR})
 include_directories(${HIREDIS_INCLUDE_DIR})
 
+
 # find source files
 include_sub_directories_recursively(${SOURCE_FILES_DIR})
 
-file(GLOB_RECURSE LIB_SRC ${SOURCE_FILES_DIR}/*.cpp ${SOURCE_FILES_DIR}/*.cc ${SOURCE_FILES_DIR}/*.hpp ${SOURCE_FILES_DIR}/*.h)
+file(GLOB_RECURSE LIB_SRC ${SOURCE_FILES_DIR}/*.cpp ${SOURCE_FILES_DIR}/*.cc
+     ${SOURCE_FILES_DIR}/*.hpp ${SOURCE_FILES_DIR}/*.h)
 
 add_library(pico SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(pico)
 
 set(LIBS
-  pico
-  dl
-  pthread
-  ${ZLIB_LIBRARIES}
-  ${JSONCPP_LIBRARIES}
-  ${YAML_CPP_LIBRARIES}
-  ${OPENSSL_LIBRARIES}
-  ${MYSQL_LIBRARIES}
-  ${HIREDIS_LIBRARIES}
-  sqlite3
-  crypto
-)
+    pico
+    dl
+    pthread
+    ${ZLIB_LIBRARIES}
+    ${JSONCPP_LIBRARIES}
+    ${YAML_CPP_LIBRARIES}
+    ${OPENSSL_LIBRARIES}
+    ${MYSQL_LIBRARIES}
+    ${HIREDIS_LIBRARIES}
+    sqlite3
+    crypto)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
@@ -87,7 +88,8 @@ if(BUILD_TEST)
   build_test_target(test_tcp_server "tests/test_tcp_server.cc" pico "${LIBS}")
   build_test_target(test_http "tests/test_http.cc" pico "${LIBS}")
   build_test_target(test_http_parser "tests/test_http_parser.cc" pico "${LIBS}")
-  build_test_target(test_http_connection "tests/test_http_connection.cc" pico "${LIBS}")
+  build_test_target(test_http_connection "tests/test_http_connection.cc" pico
+                    "${LIBS}")
   build_test_target(test_http_server "tests/test_http_server.cc" pico "${LIBS}")
   build_test_target(test_config "tests/test_config.cc" pico "${LIBS}")
   build_test_target(test_register "tests/test_register.cc" pico "${LIBS}")

@@ -13,6 +13,7 @@ Pico is a C++ framework for creating web applications. It is designed to be easy
 - JWT authentication
 - Mapper support similar to Java
 - Serialization support
+- Middleware support
 
 ### Still to do
 
@@ -329,6 +330,34 @@ More usage about mustache module you can see the files in the `templates/` direc
 Similar to java, you can use the mapper to map the data to the object.
 Simple usage can find in the `tests/test_mapper.cc`.
 More usage about mapper module just same as java.
+
+### Middleware
+The middleware is used to handle the request before the servlet handle the request.
+A example of middleware is as follows, it wil print the request url and the duration of the request:
+```c++
+class HelloMiddleware : public Middleware
+{
+public:
+    void before_request(request& req, response& res) override {
+        m_start_time = std::chrono::system_clock::now();
+    }
+
+    void after_response(request& req, response& res) override {
+        auto end_time = std::chrono::system_clock::now();
+        auto duration =
+            std::chrono::duration_cast<std::chrono::microseconds>(end_time - m_start_time);
+        LOG_INFO("request url: %s, duration: %dus", req->get_path().c_str(), duration.count());
+    }
+
+
+private:
+    std::chrono::time_point<std::chrono::system_clock> m_start_time;
+};
+REGISTER_CLASS(HelloMiddleware)
+```
+#### warning
+Middleware cannot terminate the request, if you want to terminate the request, you can use the filter.
+
 
 ### Compress
 If you want to enable the compress feature, you can use the following code to enable the compress feature.

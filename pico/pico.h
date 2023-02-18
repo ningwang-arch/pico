@@ -39,6 +39,7 @@
 #include "http/http_parser.h"
 #include "http/http_server.h"
 #include "http/httpclient_parser.h"
+#include "http/middleware.h"
 #include "http/request.h"
 #include "http/request_handler.h"
 #include "http/servlet.h"

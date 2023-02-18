@@ -1,13 +1,17 @@
 #ifndef __PICO_TCP_SERVER_H__
 #define __PICO_TCP_SERVER_H__
 
-#include "address.h"
-#include "config.h"
-#include "iomanager.h"
-#include "socket.h"
+
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "address.h"
+#include "class_factory.h"
+#include "config.h"
+#include "http/middleware.h"
+#include "iomanager.h"
+#include "socket.h"
 
 namespace pico {
 
@@ -28,6 +32,7 @@ struct TcpServerOptions
     std::string key_file = "";
     bool keep_alive = false;
     std::vector<std::string> servlets;
+    std::vector<Middleware::Ptr> middlewares;
     std::vector<std::string> exclude_paths;
 
     bool isValid() const { return !addresses.empty(); }
@@ -68,6 +73,13 @@ public:
                 options.servlets.push_back(servlet.as<std::string>());
             }
         }
+        if (node["middlewares"].IsDefined()) {
+            for (auto middleware : node["middlewares"]) {
+                options.middlewares.emplace_back(std::static_pointer_cast<Middleware>(
+                    ClassFactory::Instance().Create(middleware.as<std::string>())));
+            }
+        }
+
         if (node["exclude_paths"].IsDefined()) {
             for (auto path : node["exclude_paths"]) {
                 options.exclude_paths.push_back(path.as<std::string>());

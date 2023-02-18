@@ -132,6 +132,7 @@ static ConfigVar<std::vector<FilterConfs>>::Ptr g_filters_conf =
     Config::Lookup<std::vector<FilterConfs>>("filters", std::vector<FilterConfs>(),
                                              "http filters config");
 
+
 Application* Application::s_instance = nullptr;
 
 Application::Application() {
@@ -318,6 +319,7 @@ void Application::run_in_fiber() {
                 }
             }
             req_handler->addExcludePath(server_conf.exclude_paths);
+            req_handler->addMiddlewares(server_conf.middlewares);
             for (auto filter_chain : filter_chains) {
                 addFilterChain(filter_chain.first, filter_chain.second);
             }

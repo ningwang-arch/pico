@@ -6,7 +6,9 @@ namespace pico {
 void LogAppender::setLayout(std::shared_ptr<Layout> layout) {
     MutexType::Lock lock(m_mutex);
     this->layout_ = layout;
-    if (m_hasLayout) { m_hasLayout = true; }
+    if (m_hasLayout) {
+        m_hasLayout = true;
+    }
     else {
         m_hasLayout = false;
     }
@@ -40,9 +42,13 @@ void FileAppender::log(std::shared_ptr<Logger> logger, LogEvent::Ptr event) {
 
 bool FileAppender::reopen() {
     MutexType::Lock lock(m_mutex);
-    if (m_ofs) { m_ofs.close(); }
+    if (m_ofs) {
+        m_ofs.close();
+    }
     m_ofs.open(m_fileName, std::ios::app);
-    if (!m_ofs.is_open()) { return false; }
+    if (!m_ofs.is_open()) {
+        return false;
+    }
     return true;
 }
 

@@ -115,12 +115,29 @@ void RequestHandler::listAllGlobalRoutes(std::map<std::string, Servlet::Ptr>& ro
     }
 }
 
-void RequestHandler::handle(const HttpRequest::Ptr& req, HttpResponse::Ptr& resp) {
+void RequestHandler::addMiddleware(Middleware::Ptr middleware) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_middlewares.emplace_back(middleware);
+}
+
+void RequestHandler::addMiddlewares(const std::vector<Middleware::Ptr>& middlewares) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for (auto& middleware : middlewares) {
+        m_middlewares.emplace_back(middleware);
+    }
+}
+
+void RequestHandler::handle(HttpRequest::Ptr& req, HttpResponse::Ptr& resp) {
     auto path = req->get_path();
     auto servlet = findHandler(path);
     if (servlet == nullptr) {
         servlet = Servlet::Ptr(new NotFoundServlet());
     }
+
+    for (auto& middleware : m_middlewares) {
+        middleware->before_request(req, resp);
+    }
+
     if (isExcludePath(path)) {
         servlet->service(req, resp);
     }
@@ -132,6 +149,10 @@ void RequestHandler::handle(const HttpRequest::Ptr& req, HttpResponse::Ptr& resp
         filter_chain->reuse();
         filter_chain->setServlet(servlet);
         filter_chain->doFilter(req, resp);
+    }
+
+    for (auto& middleware : m_middlewares) {
+        middleware->after_response(req, resp);
     }
 }
 }   // namespace pico

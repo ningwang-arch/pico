@@ -10,7 +10,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "pico/filter.h"
+#include "../filter.h"
+#include "middleware.h"
 #include "servlet.h"
 
 namespace pico {
@@ -41,7 +42,7 @@ public:
     void delGlobalRoute(const std::string& path);
 
 
-    void handle(const HttpRequest::Ptr& req, HttpResponse::Ptr& resp);
+    void handle(HttpRequest::Ptr& req, HttpResponse::Ptr& resp);
 
     void addExcludePath(const std::string& path);
     void addExcludePath(const std::vector<std::string>& paths);
@@ -51,6 +52,10 @@ public:
 
     void listAllRoutes(std::map<std::string, Servlet::Ptr>& routes);
     void listAllGlobalRoutes(std::map<std::string, Servlet::Ptr>& routes);
+
+    void addMiddleware(Middleware::Ptr middleware);
+    void addMiddlewares(const std::vector<Middleware::Ptr>& middlewares);
+
 
 private:
     /**
@@ -65,6 +70,8 @@ private:
 private:
     std::vector<Route> m_glob_routes;
     std::vector<Route> m_routes;
+
+    std::vector<Middleware::Ptr> m_middlewares;
 
     std::vector<std::string> exclude_paths;
 

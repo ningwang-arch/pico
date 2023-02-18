@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../../logging.h"
 #include "../entity/base.hpp"
 #include "../entity/entity_column.hpp"
 #include "../entity/iterable.hpp"
@@ -16,7 +17,6 @@
 #include "../sql/connection_pool.h"
 #include "../sql/sql_option.h"
 #include "entity_helper.hpp"
-#include "pico/logging.h"
 
 
 namespace pico {
@@ -35,7 +35,9 @@ public:
             LOG_ERROR("getConnection failed");
             return;
         }
-        if (!prepare(conn, sql, args)) { return; }
+        if (!prepare(conn, sql, args)) {
+            return;
+        }
 
         std::unordered_map<int, int> id_index_map;
         Base<Entity> tmp;
@@ -133,7 +135,9 @@ private:
             std::cout << "prepare failed" << std::endl;
             return false;
         }
-        for (size_t i = 0; i < args.size(); i++) { conn->bindValue((int)i, args[i]); }
+        for (size_t i = 0; i < args.size(); i++) {
+            conn->bindValue((int)i, args[i]);
+        }
         return conn->execute();
     }
 };

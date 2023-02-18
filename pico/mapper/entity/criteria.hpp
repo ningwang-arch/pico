@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "../helper/entity_helper.hpp"
+#include "constants.h"
 #include "criterion.h"
 #include "entity_column.hpp"
 #include "iterable.hpp"
-#include "pico/mapper/entity/constants.h"
 
 namespace pico {
 class Criteria

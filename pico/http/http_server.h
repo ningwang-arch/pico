@@ -1,18 +1,20 @@
 #ifndef __PICO_HTTP_HTTP_SERVER_H__
 #define __PICO_HTTP_HTTP_SERVER_H__
 
-#include "../logging.h"
-#include "../tcp_server.h"
-#include "../util.h"
-#include "http.h"
-#include "http_connection.h"
-#include "request_handler.h"
+
 #include <functional>
 #include <memory>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+
+#include "../logging.h"
+#include "../tcp_server.h"
+#include "../util.h"
+#include "http.h"
+#include "http_connection.h"
+#include "request_handler.h"
 
 namespace pico {
 

@@ -1,5 +1,6 @@
 #include "SimpleLayout.h"
 
+#include <iostream>
 #include <sstream>
 
 namespace pico {
@@ -10,7 +11,6 @@ SimpleLayout::SimpleLayout()
 std::string SimpleLayout::format(LogEvent::Ptr event) {
     std::stringstream ss;
     ss << LogLevel::toString(event->getLevel()) << " - " << event->getMessage() << std::endl;
-    ;
     return ss.str();
 }
 }   // namespace pico
