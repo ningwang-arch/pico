@@ -1,6 +1,5 @@
 #include <chrono>
 
-
 #include "pico/env.h"
 #include "pico/iomanager.h"
 #include "pico/mapper/common/mapper.hpp"
@@ -8,8 +7,7 @@
 
 
 using std::chrono::system_clock;
-struct School
-{
+struct School {
     int id = 0;
     std::string name;
     std::time_t createTime = {};
@@ -17,13 +15,10 @@ struct School
     School() = default;
 
     School(const std::string& name, time_t createTime)
-        : name(name)
-        , createTime(createTime) {}
+        : name(name), createTime(createTime) {}
 
     School(int id, const std::string& name, time_t createTime)
-        : id(id)
-        , name(name)
-        , createTime(createTime) {}
+        : id(id), name(name), createTime(createTime) {}
 
     friend std::ostream& operator<<(std::ostream& os, const School& school) {
         os << "id: " << school.id << " name: " << school.name
@@ -35,8 +30,7 @@ struct School
 ResultMap(EntityMap(::School, "t_school"), PropertyMap(id, ColumnType::Id), PropertyMap(name),
           PropertyMap(createTime));
 
-struct Class
-{
+struct Class {
     int classId = 0;
     std::string className;
     int schoolId = 0;
@@ -51,8 +45,7 @@ struct Class
 ResultMap(EntityMap(Class), PropertyMap(classId, ColumnType::Id), PropertyMap(className),
           PropertyMap(schoolId));
 
-struct Student
-{
+struct Student {
     int id = 0;
     std::string name;
     Class clazz;
@@ -69,8 +62,7 @@ ResultMap(EntityMap(Student), PropertyMap(id, ColumnType::Id), PropertyMap(name)
           PropertyMap(clazz, "class_id", JoinType::OneToOne, &Class::classId),
           PropertyMap(createTime));
 
-struct SchoolForMany
-{
+struct SchoolForMany {
     int id = 0;
     std::string name;
     std::time_t createTime = {};
@@ -92,7 +84,7 @@ struct SchoolForMany
 
 ResultMap(EntityMap(SchoolForMany, "t_school"), PropertyMap(id, ColumnType::Id), PropertyMap(name),
           PropertyMap(createTime),
-          //特别注意,“id”为School表的连接字段id,&Class::schoolId为class表的连接字段
+          // 特别注意,“id”为School表的连接字段id,&Class::schoolId为class表的连接字段
           PropertyMap(clazzs, "id", JoinType::OneToMany, &Class::schoolId));
 
 
@@ -113,7 +105,9 @@ void test_select() {
     pico::Mapper<School> sc_mapper;
     sc_mapper.use("sql_1");
     auto results = sc_mapper.selectAll();
-    for (auto school : results) { std::cout << school << std::endl; }
+    for (auto school : results) {
+        std::cout << school << std::endl;
+    }
 }
 
 void test_update() {
@@ -137,7 +131,9 @@ void test_select_with_cond() {
     auto criteria = base.createCriteria();
     criteria->andLike(&School::name, "%My%");
     auto results = sc_mapper.select(base);
-    for (auto& result : results) { std::cout << result << std::endl; }
+    for (auto& result : results) {
+        std::cout << result << std::endl;
+    }
 }
 
 void test_one2one() {
@@ -147,13 +143,17 @@ void test_one2one() {
     criteria->andGreaterThan(&Student::id, 1);
     criteria->andEqualTo(&Class::className, "classA");
     auto results = stu_mapper.select(base);
-    for (auto& result : results) { std::cout << result << std::endl; }
+    for (auto& result : results) {
+        std::cout << result << std::endl;
+    }
 }
 
 void test_one2many() {
     pico::Mapper<SchoolForMany> sc_mapper;
     auto results = sc_mapper.selectAll();
-    for (auto& ret : results) { std::cout << ret << std::endl; }
+    for (auto& ret : results) {
+        std::cout << ret << std::endl;
+    }
 }
 
 void test_iommanager() {
@@ -163,12 +163,14 @@ void test_iommanager() {
 
 int main(int argc, char* argv[]) {
     pico::EnvManager::getInstance()->init(argc, argv);
-    pico::Config::LoadFromConfDir(pico::EnvManager::getInstance()->getConfigPath());
-    // test_insert();
+    // Only load SQL config for mapper tests to avoid unrelated class factory errors.
+    pico::Config::LoadFromFile(
+        pico::EnvManager::getInstance()->getConfigPath() + "/sql.yml");
+    test_insert();
     test_select();
-    // test_update();
+    test_update();
     // test_delete();
-    // test_select_with_cond();
+    test_select_with_cond();
     // test_one2one();
     // test_one2many();
     // test_iommanager();

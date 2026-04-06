@@ -9,7 +9,7 @@ CREATE TABLE `t_school` (
     `name` varchar(255) DEFAULT NULL,
     `create_time` datetime DEFAULT NULL,
     PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT DEFAULT CHARSET = utf8;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
 
 -- 班级表
 
@@ -18,7 +18,7 @@ CREATE TABLE `class` (
     `class_name` varchar(255) DEFAULT NULL,
     `school_id` int DEFAULT NULL,
     PRIMARY KEY (`class_id`)
-) ENGINE = InnoDB AUTO_INCREMENT DEFAULT CHARSET = utf8;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8;
 
 -- 学生表
 

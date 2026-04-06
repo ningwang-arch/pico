@@ -10,10 +10,12 @@ namespace pico {
 using request = pico::HttpRequest::Ptr;
 using response = pico::HttpResponse::Ptr;
 
-class Servlet
-{
+class Servlet {
 public:
     typedef std::shared_ptr<Servlet> Ptr;
+
+    Servlet() = default;
+    virtual ~Servlet() = default;
 
     virtual void service(const request& req, response& res);
 
@@ -35,6 +37,6 @@ public:
 private:
     void sendMethodNotAllowed(const request& req, response& res);
 };
-}   // namespace pico
+} // namespace pico
 
 #endif

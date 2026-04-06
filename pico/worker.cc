@@ -1,6 +1,5 @@
 #include "worker.h"
 
-#include <boost/lexical_cast.hpp>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -22,7 +21,9 @@ void WorkerManager::add(IOManager::Ptr s) {
 
 IOManager::Ptr WorkerManager::get(const std::string& name) {
     auto it = m_datas.find(name);
-    if (it == m_datas.end()) { return nullptr; }
+    if (it == m_datas.end()) {
+        return nullptr;
+    }
     auto collect = it->second;
 
     return collect[rand() % collect.size()];
@@ -38,12 +39,8 @@ bool WorkerManager::init(std::map<std::string, std::map<std::string, std::string
         auto name = it.first;
         auto conf = it.second;
 
-        uint32_t thread_num = conf.find("thread_num") != conf.end()
-                                  ? boost::lexical_cast<uint32_t>(conf.find("thread_num")->second)
-                                  : 1;
-        uint32_t worker_num = conf.find("worker_num") != conf.end()
-                                  ? boost::lexical_cast<uint32_t>(conf.find("worker_num")->second)
-                                  : 1;
+        uint32_t thread_num = conf.find("thread_num") != conf.end() ? (uint32_t)std::stoull(conf.find("thread_num")->second) : 1;
+        uint32_t worker_num = conf.find("worker_num") != conf.end() ? (uint32_t)std::stoull(conf.find("worker_num")->second) : 1;
 
         for (uint32_t i = 0; i < worker_num; i++) {
             IOManager::Ptr s(
@@ -57,7 +54,9 @@ bool WorkerManager::init(std::map<std::string, std::map<std::string, std::string
 }
 
 void WorkerManager::stop() {
-    if (m_stop) { return; }
+    if (m_stop) {
+        return;
+    }
 
     for (auto& i : m_datas) {
         for (auto& item : i.second) {
@@ -73,4 +72,4 @@ int WorkerManager::getWorkerNum() {
     return m_datas.size();
 }
 
-}   // namespace pico
+} // namespace pico

@@ -3,7 +3,6 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <boost/lexical_cast.hpp>
 #include <functional>
 #include <iostream>
 #include <list>
@@ -21,14 +20,12 @@
 
 namespace pico {
 
-class ConfigVarBase
-{
+class ConfigVarBase {
 private:
 public:
     typedef std::shared_ptr<ConfigVarBase> Ptr;
     ConfigVarBase(const std::string& name, const std::string& description = "")
-        : m_name(name)
-        , m_description(description) {}
+        : m_name(name), m_description(description) {}
     virtual ~ConfigVarBase() {}
 
     const std::string& getName() const { return m_name; }
@@ -45,16 +42,20 @@ protected:
     std::string m_description;
 };
 
-template<class F, class T>
-class LexicalCast
-{
+template <class F, class T>
+class LexicalCast {
 public:
-    T operator()(const F& val) { return boost::lexical_cast<T>(val); }
+    T operator()(const F& val) {
+        std::stringstream ss;
+        ss << val;
+        T result;
+        ss >> result;
+        return result;
+    }
 };
 
-template<class T>
-class LexicalCast<std::string, std::vector<T>>
-{
+template <class T>
+class LexicalCast<std::string, std::vector<T>> {
 public:
     std::vector<T> operator()(const std::string& v) {
         YAML::Node node = YAML::Load(v);
@@ -69,9 +70,8 @@ public:
     }
 };
 
-template<class T>
-class LexicalCast<std::vector<T>, std::string>
-{
+template <class T>
+class LexicalCast<std::vector<T>, std::string> {
 public:
     std::string operator()(const std::vector<T>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
@@ -83,9 +83,8 @@ public:
         return ss.str();
     }
 };
-template<class T>
-class LexicalCast<std::string, std::list<T>>
-{
+template <class T>
+class LexicalCast<std::string, std::list<T>> {
 public:
     std::list<T> operator()(const std::string& v) {
         YAML::Node node = YAML::Load(v);
@@ -100,23 +99,21 @@ public:
     }
 };
 
-template<class T>
-class LexicalCast<std::list<T>, std::string>
-{
+template <class T>
+class LexicalCast<std::list<T>, std::string> {
 public:
     std::string operator()(const std::list<T>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
-        std::transform(v.begin(), v.end(), std::back_inserter(node), [](const T& i) {
-            return YAML::Load(LexicalCast<T, std::string>()(i));
-        });
+        for (const auto& i : v) {
+            node.push_back(YAML::Load(LexicalCast<T, std::string>()(i)));
+        }
         std::stringstream ss;
         ss << node;
         return ss.str();
     }
 };
-template<class T>
-class LexicalCast<std::string, std::set<T>>
-{
+template <class T>
+class LexicalCast<std::string, std::set<T>> {
 public:
     std::set<T> operator()(const std::string& v) {
         YAML::Node node = YAML::Load(v);
@@ -131,9 +128,8 @@ public:
     }
 };
 
-template<class T>
-class LexicalCast<std::set<T>, std::string>
-{
+template <class T>
+class LexicalCast<std::set<T>, std::string> {
 public:
     std::string operator()(const std::set<T>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
@@ -146,9 +142,8 @@ public:
     }
 };
 
-template<class T>
-class LexicalCast<std::string, std::unordered_set<T>>
-{
+template <class T>
+class LexicalCast<std::string, std::unordered_set<T>> {
 public:
     std::unordered_set<T> operator()(const std::string& v) {
         YAML::Node node = YAML::Load(v);
@@ -163,9 +158,8 @@ public:
     }
 };
 
-template<class T>
-class LexicalCast<std::unordered_set<T>, std::string>
-{
+template <class T>
+class LexicalCast<std::unordered_set<T>, std::string> {
 public:
     std::string operator()(const std::set<T>& v) {
         YAML::Node node(YAML::NodeType::Sequence);
@@ -178,9 +172,8 @@ public:
     }
 };
 
-template<class T>
-class LexicalCast<std::string, std::map<std::string, T>>
-{
+template <class T>
+class LexicalCast<std::string, std::map<std::string, T>> {
 public:
     std::map<std::string, T> operator()(const std::string& v) {
         YAML::Node node = YAML::Load(v);
@@ -195,9 +188,8 @@ public:
     }
 };
 
-template<class T>
-class LexicalCast<std::map<std::string, T>, std::string>
-{
+template <class T>
+class LexicalCast<std::map<std::string, T>, std::string> {
 public:
     std::string operator()(const std::map<std::string, T>& v) {
         YAML::Node node(YAML::NodeType::Map);
@@ -210,9 +202,8 @@ public:
     }
 };
 
-template<class T>
-class LexicalCast<std::string, std::unordered_map<std::string, T>>
-{
+template <class T>
+class LexicalCast<std::string, std::unordered_map<std::string, T>> {
 public:
     std::unordered_map<std::string, T> operator()(const std::string& v) {
         YAML::Node node = YAML::Load(v);
@@ -227,9 +218,8 @@ public:
     }
 };
 
-template<class T>
-class LexicalCast<std::unordered_map<std::string, T>, std::string>
-{
+template <class T>
+class LexicalCast<std::unordered_map<std::string, T>, std::string> {
 public:
     std::string operator()(const std::unordered_map<std::string, T>& v) {
         YAML::Node node(YAML::NodeType::Map);
@@ -242,25 +232,22 @@ public:
     }
 };
 
-template<class T, class FromStr = LexicalCast<std::string, T>,
-         class ToStr = LexicalCast<T, std::string>>
-class ConfigVar : public ConfigVarBase
-{
+template <class T, class FromStr = LexicalCast<std::string, T>,
+          class ToStr = LexicalCast<T, std::string>>
+class ConfigVar : public ConfigVarBase {
 public:
     typedef RWMutex RWMutexType;
     typedef std::shared_ptr<ConfigVar> Ptr;
 
     ConfigVar(const std::string& name, const T& default_value, const std::string& description = "")
-        : ConfigVarBase(name, description)
-        , m_val(default_value) {}
+        : ConfigVarBase(name, description), m_val(default_value) {}
 
     std::string toString() override {
         try {
             // return boost::lexical_cast<std::string>(m_val);
             RWMutexType::ReadLock lock(m_mutex);
             return ToStr()(m_val);
-        }
-        catch (std::exception& e) {
+        } catch (std::exception& e) {
             LOG_ERROR("ConfigVar::toString() exception: %s", e.what());
         }
         return "";
@@ -270,8 +257,7 @@ public:
         try {
             // m_val = boost::lexical_cast<T>(val);
             setValue(FromStr()(val));
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e) {
             LOG_ERROR("ConfigVar::parse() exception: %s", e.what());
             return false;
         }
@@ -293,14 +279,13 @@ private:
     RWMutexType m_mutex;
 };
 
-class Config
-{
+class Config {
 public:
     typedef std::unordered_map<std::string, ConfigVarBase::Ptr> ConfigVarMap;
 
     typedef RWMutex RWMutexType;
 
-    template<class T>
+    template <class T>
     static typename ConfigVar<T>::Ptr Lookup(const std::string& name, const T& default_value,
                                              const std::string& description = "") {
         RWMutexType::ReadLock lock(getMutex());
@@ -310,8 +295,7 @@ public:
             if (tmp) {
                 // LOG_INFO("Config::Lookup() %s found", name.c_str());
                 return tmp;
-            }
-            else {
+            } else {
                 LOG_ERROR("Config::Lookup() %s found, but type is not match", name.c_str());
                 return nullptr;
             }
@@ -329,7 +313,7 @@ public:
 
         return v;
     }
-    template<class T>
+    template <class T>
     static typename ConfigVar<T>::Ptr Lookup(const std::string& name) {
         auto it = getDatas().find(name);
         if (it == getDatas().end()) {
@@ -369,6 +353,6 @@ private:
     }
 };
 
-}   // namespace pico
+} // namespace pico
 
 #endif

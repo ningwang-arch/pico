@@ -5,8 +5,10 @@
 #include "pico/ws/ws_request.h"
 
 void run() {
-    auto conn = pico::WsRequest::create("https://127.0.0.1:8000/", 2000);
-    if (!conn) { return; }
+    auto conn = pico::WsRequest::create("http://127.0.0.1:8080/", 2000);
+    if (!conn) {
+        return;
+    }
 
     while (true) {
         for (int i = 0; i < 1; i++) {
@@ -14,7 +16,9 @@ void run() {
         }
         conn->sendMessage(pico::genRandomString(65), pico::WsFrameHeader::TEXT, true);
         auto msg = conn->recvMessage();
-        if (!msg) { std::cout << errno << " " << strerror(errno) << std::endl; }
+        if (!msg) {
+            std::cout << errno << " " << strerror(errno) << std::endl;
+        }
         std::cout << msg->get_data() << std::endl;
         sleep(1);
     }

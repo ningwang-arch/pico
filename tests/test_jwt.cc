@@ -1,8 +1,10 @@
+#include <unistd.h>
+
 #include <iostream>
+#include <memory>
 
 #include "pico/date.h"
 #include "pico/jwt/jwt.h"
-#include <memory>
 
 std::string token_gen() {
     const std::string TOKEN_SECRET = "privateKey";
@@ -17,7 +19,7 @@ std::string token_gen() {
         ->withIssuer("issuer")
         ->withSubject("subject")
         ->withAudience(std::vector<std::string>{"audience1", "audience2"})
-        ->withExpiresAt(pico::Date() + 3)   // 3 seconds
+        ->withExpiresAt(pico::Date() + 3) // 3 seconds
         ->withNotBefore(pico::Date() /* + 30*/)
         ->withIssuedAt(pico::Date())
         ->withJWTId("jwtId")
@@ -50,8 +52,7 @@ void verify(std::string token) {
         //
         std::cout << verifier->build()->verify(token)->getJwtId();
         // std::cout << decoder->getExpiration().to_string() << std::endl;
-    }
-    catch (std::exception& e) {
+    } catch (std::exception& e) {
         std::cout << e.what() << std::endl;
     }
 }

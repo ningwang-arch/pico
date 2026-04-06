@@ -1,7 +1,8 @@
 #include "http_parser.h"
-#include "../logging.h"
-#include <boost/lexical_cast.hpp>
+
 #include <iostream>
+
+#include "../logging.h"
 
 
 namespace pico {
@@ -116,7 +117,7 @@ void HttpRequestParser::reset() {
 
 uint64_t HttpRequestParser::getContentLength() {
     std::string ret = m_request->get_header("Content-Length", "0");
-    return boost::lexical_cast<uint64_t>(ret);
+    return std::stoull(ret);
 }
 
 /*
@@ -174,7 +175,9 @@ HttpResponseParser::HttpResponseParser() {
 }
 
 int HttpResponseParser::parse(char* data, size_t len, bool chunk) {
-    if (chunk) { httpclient_parser_init(&m_parser); }
+    if (chunk) {
+        httpclient_parser_init(&m_parser);
+    }
     int offset = httpclient_parser_execute(&m_parser, data, len, 0);
     if (httpclient_parser_has_error(&m_parser)) {
         LOG_ERROR("http_parser_execute error");
@@ -198,7 +201,7 @@ void HttpResponseParser::reset() {
 
 uint64_t HttpResponseParser::getContentLength() {
     std::string ret = m_response->get_header("Content-Length", "0");
-    return boost::lexical_cast<uint64_t>(ret);
+    return std::stoull(ret);
 }
 
-}   // namespace pico
+} // namespace pico

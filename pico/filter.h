@@ -14,18 +14,17 @@ namespace pico {
 class FilterConfig;
 class FilterChain;
 
-struct InsertByLength
-{
+struct InsertByLength {
     bool operator()(const std::string& a, const std::string& b) const {
         return a.size() >= b.size();
     }
 };
 
-class Filter
-{
+class Filter {
 public:
     typedef std::shared_ptr<Filter> Ptr;
     Filter() {}
+    virtual ~Filter() = default;
 
     virtual void init(const std::shared_ptr<FilterConfig>& config) {}
 
@@ -35,8 +34,7 @@ public:
     virtual void destroy() {}
 };
 
-class FilterConfig
-{
+class FilterConfig {
 public:
     typedef std::shared_ptr<FilterConfig> Ptr;
     FilterConfig()
@@ -86,8 +84,7 @@ private:
 };
 
 
-class FilterChain : public std::enable_shared_from_this<FilterChain>
-{
+class FilterChain : public std::enable_shared_from_this<FilterChain> {
 public:
     typedef std::shared_ptr<FilterChain> Ptr;
 
@@ -132,8 +129,7 @@ private:
     int m_size = 0;
 };
 
-struct FilterConfs
-{
+struct FilterConfs {
     std::string name;
     std::string cls_name;
     std::string description;
@@ -142,15 +138,14 @@ struct FilterConfs
 
     bool operator==(const FilterConfs& other) const {
         return name == other.name && cls_name == other.cls_name &&
-               description == other.description && url_patterns == other.url_patterns &&
-               init_params == other.init_params;
+            description == other.description && url_patterns == other.url_patterns &&
+            init_params == other.init_params;
     }
 };
 
 
-template<>
-class LexicalCast<std::string, FilterConfs>
-{
+template <>
+class LexicalCast<std::string, FilterConfs> {
 public:
     FilterConfs operator()(const std::string& str) {
         FilterConfs conf;
@@ -173,9 +168,8 @@ public:
     }
 };
 
-template<>
-class LexicalCast<FilterConfs, std::string>
-{
+template <>
+class LexicalCast<FilterConfs, std::string> {
 public:
     std::string operator()(const FilterConfs& conf) {
         YAML::Node node;
@@ -198,6 +192,6 @@ public:
 FilterChain::Ptr findFilterChain(const std::string& path);
 void addFilterChain(const std::string& url_pattern, FilterChain::Ptr filter_chain);
 
-}   // namespace pico
+} // namespace pico
 
 #endif

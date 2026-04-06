@@ -1,7 +1,6 @@
 #ifndef __PICO_JWT_ALGORITHM_H__
 #define __PICO_JWT_ALGORITHM_H__
 
-#include <memory>
 #include <openssl/ec.h>
 #include <openssl/ecdsa.h>
 #include <openssl/err.h>
@@ -10,8 +9,9 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #include <openssl/ssl.h>
-#include <string>
 
+#include <memory>
+#include <string>
 
 #include "../util.h"
 #include "jwt_decoder.h"
@@ -23,14 +23,14 @@ class HMACAlgorithm;
 class RSAAlgorithm;
 class ECDSAAlgorithm;
 
-class Algorithm
-{
+class Algorithm {
 public:
     typedef std::shared_ptr<Algorithm> Ptr;
 
     Algorithm(const std::string& name, const std::string& description)
-        : m_name(name)
-        , m_description(description) {}
+        : m_name(name), m_description(description) {}
+
+    virtual ~Algorithm() = default;
 
     static Algorithm::Ptr HMAC256(std::string secret) {
         return std::static_pointer_cast<Algorithm>(
@@ -147,16 +147,13 @@ public:
     virtual std::string sign(const std::string& str) = 0;
 
 
-
 private:
     std::string m_name;
     std::string m_description;
 };
 
 
-
-class NoneAlgorithm : public Algorithm
-{
+class NoneAlgorithm : public Algorithm {
 public:
     typedef std::shared_ptr<NoneAlgorithm> Ptr;
     NoneAlgorithm()
@@ -165,16 +162,13 @@ public:
     std::string sign(const std::string& str) override { return std::string(); }
 };
 
-class HMACAlgorithm : public Algorithm
-{
+class HMACAlgorithm : public Algorithm {
 public:
     typedef std::shared_ptr<HMACAlgorithm> Ptr;
 
     HMACAlgorithm(const EVP_MD* (*md)(), const std::string& key, const std::string& name,
                   const std::string& description)
-        : Algorithm(name, description)
-        , m_key(key)
-        , m_md(md) {}
+        : Algorithm(name, description), m_key(key), m_md(md) {}
 
 
     std::string sign(const std::string& str) override {
@@ -194,23 +188,19 @@ private:
     const EVP_MD* (*m_md)();
 };
 
-class RSAAlgorithm : public Algorithm
-{
+class RSAAlgorithm : public Algorithm {
 public:
     typedef std::shared_ptr<RSAAlgorithm> Ptr;
 
     RSAAlgorithm(const std::string& public_key, const std::string& private_key,
                  const std::string& public_key_password, const std::string& private_key_password,
                  const EVP_MD* (*md)(), const std::string& name, const std::string& description)
-        : Algorithm(name, description)
-        , m_md(md) {
+        : Algorithm(name, description), m_md(md) {
         if (!private_key.empty()) {
             m_key = load_private_key_from_string(private_key, private_key_password);
-        }
-        else if (!public_key.empty()) {
+        } else if (!public_key.empty()) {
             m_key = load_public_key_from_string(public_key, public_key_password);
-        }
-        else {
+        } else {
             throw std::runtime_error("No key provided");
         }
     }
@@ -245,8 +235,7 @@ private:
     std::shared_ptr<EVP_PKEY> m_key;
 };
 
-class ECDSAAlgorithm : public Algorithm
-{
+class ECDSAAlgorithm : public Algorithm {
 public:
     typedef std::shared_ptr<ECDSAAlgorithm> Ptr;
 
@@ -254,22 +243,18 @@ public:
                    const std::string& public_key_password, const std::string& private_key_password,
                    const EVP_MD* (*md)(), const std::string& name, const std::string& description,
                    size_t siglen)
-        : Algorithm(name, description)
-        , m_md(md)
-        , m_signature_length(siglen) {
+        : Algorithm(name, description), m_md(md), m_signature_length(siglen) {
         if (!private_key.empty()) {
             m_key = load_private_key_from_string(private_key, private_key_password);
             if (!check_key(m_key.get())) {
                 throw std::runtime_error("Invalid private key");
             }
-        }
-        else if (!public_key.empty()) {
+        } else if (!public_key.empty()) {
             m_key = load_public_key_from_string(public_key, public_key_password);
             if (!check_key(m_key.get())) {
                 throw std::runtime_error("Invalid public key");
             }
-        }
-        else {
+        } else {
             throw std::runtime_error("No key provided");
         }
     }
@@ -362,7 +347,6 @@ private:
     }
 
 
-
 private:
     std::shared_ptr<EVP_PKEY> m_key;
     const EVP_MD* (*m_md)();
@@ -370,6 +354,6 @@ private:
 };
 
 
-}   // namespace pico
+} // namespace pico
 
 #endif

@@ -8,7 +8,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <memory>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <openssl/ssl.h>
@@ -20,12 +19,13 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#include <memory>
+
 #include "address.h"
 #include "noncopyable.h"
 
 namespace pico {
-class Socket : Noncopyable
-{
+class Socket : Noncopyable {
 public:
     typedef std::shared_ptr<Socket> Ptr;
 
@@ -39,13 +39,11 @@ public:
     static Socket::Ptr CreateUdpSocketv6();
 
 
-    enum Type
-    {
+    enum Type {
         TCP = SOCK_STREAM,
         UDP = SOCK_DGRAM
     };
-    enum Family
-    {
+    enum Family {
         IPv4 = AF_INET,
         IPv6 = AF_INET6,
         UNIX = AF_UNIX,
@@ -53,7 +51,7 @@ public:
 
 
     Socket(int family, int type, int protocol = 0);
-    ~Socket();
+    virtual ~Socket();
 
     /**
      * 获取发送超时时间
@@ -81,12 +79,12 @@ public:
 
     int setopt(int level, int optname, const void* optval, socklen_t optlen);
 
-    template<typename T>
+    template <typename T>
     int setopt(int level, int optname, const T& optval) {
         return setopt(level, optname, &optval, sizeof(T));
     }
 
-    template<typename T>
+    template <typename T>
     int getopt(int level, int optname, T& optval) {
         return getopt(level, optname, &optval, sizeof(T));
     }
@@ -143,8 +141,7 @@ protected:
     Address::Ptr m_peer_addr;
 };
 
-class SSLSocket : public Socket
-{
+class SSLSocket : public Socket {
 public:
     typedef std::shared_ptr<SSLSocket> Ptr;
     static SSLSocket::Ptr CreateTcp(Address::Ptr addr);
@@ -152,6 +149,7 @@ public:
     static SSLSocket::Ptr CreateTcpScoketv6();
 
     SSLSocket(int family, int type, int protocol = 0);
+    virtual ~SSLSocket() = default;
 
     virtual bool connect(const Address::Ptr& addr, uint64_t timeout = -1) override;
 
@@ -185,7 +183,7 @@ private:
     std::shared_ptr<SSL> m_ssl;
 };
 
-}   // namespace pico
+} // namespace pico
 
 
 #endif

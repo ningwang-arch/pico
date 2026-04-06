@@ -1,17 +1,15 @@
 #ifndef __PICO_HTTP_404_SERVLET_H__
 #define __PICO_HTTP_404_SERVLET_H__
 
-#include "../servlet.h"
-
 #include "../../class_factory.h"
+#include "../servlet.h"
 
 namespace pico {
 
-class NotFoundServlet : public Servlet
-{
+class NotFoundServlet : public Servlet {
 public:
     NotFoundServlet() = default;
-    ~NotFoundServlet() = default;
+    virtual ~NotFoundServlet() = default;
 
     void service(const HttpRequest::Ptr& req, HttpResponse::Ptr& res) override {
         res->set_status(HttpStatus::NOT_FOUND);
@@ -32,5 +30,5 @@ public:
 
 REGISTER_CLASS(NotFoundServlet);
 
-}   // namespace pico
+} // namespace pico
 #endif

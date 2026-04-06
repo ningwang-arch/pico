@@ -1,16 +1,16 @@
 #ifndef __PICO_HTTP_HTTP_PARSER_H__
 #define __PICO_HTTP_HTTP_PARSER_H__
 
+#include <string>
+#include <vector>
+
 #include "http.h"
 #include "http11_common.h"
 #include "http11_parser.h"
 #include "httpclient_parser.h"
-#include <string>
-#include <vector>
 
 namespace pico {
-class HttpRequestParser
-{
+class HttpRequestParser {
 public:
     typedef std::shared_ptr<HttpRequestParser> Ptr;
     HttpRequestParser();
@@ -38,11 +38,11 @@ private:
     HttpRequest::Ptr m_request;
 };
 
-class HttpResponseParser
-{
+class HttpResponseParser {
 public:
     typedef std::shared_ptr<HttpResponseParser> Ptr;
     HttpResponseParser();
+    virtual ~HttpResponseParser() = default;
 
     virtual int parse(char* data, size_t len, bool chunk);
 
@@ -65,6 +65,6 @@ private:
     HttpResponse::Ptr m_response;
 };
 
-}   // namespace pico
+} // namespace pico
 
 #endif

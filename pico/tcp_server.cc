@@ -1,17 +1,16 @@
 #include "tcp_server.h"
+
+#include <cerrno>
+#include <sstream>
+
 #include "config.h"
 #include "logging.h"
-#include <sstream>
 
 namespace pico {
 static pico::ConfigVar<uint64_t>::Ptr g_recvTimeout =
     pico::Config::Lookup<uint64_t>("other.recv.timeout", uint64_t(60 * 1000), "recv timeout");
 TcpServer::TcpServer(IOManager* worker, IOManager* acceptor)
-    : m_name("pico/1.0.0")
-    , m_worker(worker)
-    , m_acceptor(acceptor)
-    , m_recvTimeout(g_recvTimeout->getValue())
-    , m_is_stop(true) {}
+    : m_name("pico/1.0.0"), m_worker(worker), m_acceptor(acceptor), m_recvTimeout(g_recvTimeout->getValue()), m_is_stop(true) {}
 
 TcpServer::~TcpServer() {
     for (auto& sock : m_sockets) {
@@ -63,6 +62,9 @@ void TcpServer::startAccept(Socket::Ptr& sock) {
     while (!m_is_stop) {
         Socket::Ptr client = sock->accept();
         if (!client) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR || errno == 0) {
+                continue;
+            }
             LOG_ERROR("accept failed, errno=%d, %s", errno, strerror(errno));
             continue;
         }
@@ -126,4 +128,4 @@ bool TcpServer::loadCertificate(const std::string& cert_file, const std::string&
     return true;
 }
 
-}   // namespace pico
+} // namespace pico

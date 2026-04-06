@@ -1,6 +1,7 @@
 #ifndef __PICO_LOG_LOGEVENT_H__
 #define __PICO_LOG_LOGEVENT_H__
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -8,8 +9,7 @@
 
 namespace pico {
 class Logger;
-class LogEvent
-{
+class LogEvent {
 public:
     typedef std::shared_ptr<LogEvent> Ptr;
     LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level, const char* file, int line,
@@ -43,6 +43,6 @@ private:
     std::string m_threadName;
     std::string m_message;
 };
-}   // namespace pico
+} // namespace pico
 
 #endif

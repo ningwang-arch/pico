@@ -1,9 +1,11 @@
 #ifndef __PI_FIBER_H__
 #define __PI_FIBER_H__
 
+#include <ucontext.h>
+
+#include <cstdint>
 #include <functional>
 #include <memory>
-#include <ucontext.h>
 
 namespace pico {
 class Scheduler;
@@ -12,15 +14,13 @@ class Scheduler;
 /**
  * @brief 协程类
  */
-class Fiber : public std::enable_shared_from_this<Fiber>
-{
+class Fiber : public std::enable_shared_from_this<Fiber> {
     friend class Scheduler;
 
 public:
     typedef std::shared_ptr<Fiber> Ptr;
 
-    enum State
-    {
+    enum State {
         /// 初始化状态
         INIT,
         /// 暂停状态
@@ -70,6 +70,6 @@ private:
     void* m_stack = nullptr;
     std::function<void()> m_cb;
 };
-};   // namespace pico
+}; // namespace pico
 
 #endif

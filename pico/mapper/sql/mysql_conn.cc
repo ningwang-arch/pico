@@ -1,20 +1,22 @@
 #include "mysql_conn.h"
 
 
-
 namespace pico {
 namespace {
-struct MySQLThreadIniter
-{
-    MySQLThreadIniter() { ::mysql_thread_init(); }
-    ~MySQLThreadIniter() { ::mysql_thread_end(); }
-};
-}   // namespace
+    struct MySQLThreadIniter {
+        MySQLThreadIniter() { ::mysql_thread_init(); }
+        ~MySQLThreadIniter() { ::mysql_thread_end(); }
+    };
+} // namespace
 
 
 void MySQLConnection::clear() {
-    if (_result) { ::mysql_free_result(_result); }
-    if (_stmt) { ::mysql_stmt_free_result(_stmt); }
+    if (_result) {
+        ::mysql_free_result(_result);
+    }
+    if (_stmt) {
+        ::mysql_stmt_free_result(_stmt);
+    }
 
     _records.clear();
 
@@ -23,7 +25,9 @@ void MySQLConnection::clear() {
 }
 
 void MySQLConnection::close() {
-    if (_conn) { ::mysql_close(_conn); }
+    if (_conn) {
+        ::mysql_close(_conn);
+    }
     _conn = nullptr;
 }
 
@@ -74,13 +78,18 @@ bool MySQLConnection::connect() {
 }
 
 bool MySQLConnection::next() {
-    if (mysql_stmt_fetch(_stmt) != 0) {
-        // print error message
-        LOG_ERROR("mysql_stmt_fetch failed: %s", mysql_stmt_error(_stmt));
+    int ret = mysql_stmt_fetch(_stmt);
+    if (ret == 0 || ret == MYSQL_DATA_TRUNCATED) {
+        return true;
+    }
+    if (ret == MYSQL_NO_DATA) {
         clear();
         return false;
     }
-    return true;
+
+    LOG_ERROR("mysql_stmt_fetch failed: %s", mysql_stmt_error(_stmt));
+    clear();
+    return false;
 }
 
 bool MySQLConnection::begin() {
@@ -151,12 +160,18 @@ bool MySQLConnection::prepare(const std::string& sql) {
 }
 
 MySQLConnection::~MySQLConnection() {
-    if (_stmt) { mysql_stmt_close(_stmt); }
-    if (_conn) { mysql_close(_conn); }
-    if (_result) { mysql_free_result(_result); }
+    if (_stmt) {
+        mysql_stmt_close(_stmt);
+    }
+    if (_conn) {
+        mysql_close(_conn);
+    }
+    if (_result) {
+        mysql_free_result(_result);
+    }
     _stmt = nullptr;
     _conn = nullptr;
     _result = nullptr;
 }
 
-}   // namespace pico
+} // namespace pico

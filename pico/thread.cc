@@ -1,7 +1,8 @@
 #include "thread.h"
-#include "logging.h"
+
 #include <string.h>
 
+#include "logging.h"
 #include "util.h"
 
 namespace pico {
@@ -23,13 +24,14 @@ void Thread::SetName(const std::string& name) {
 }
 
 Thread::Thread(const ThreadFunc& func, const std::string& name)
-    : m_func(func)
-    , m_name(name) {
-    if (m_name.empty()) { m_name = "pico::Thread"; }
+    : m_func(func), m_name(name) {
+    if (m_name.empty()) {
+        m_name = "pico::Thread";
+    }
 
     int rt = pthread_create(&m_pthreadId, nullptr, &Thread::run, this);
     if (rt) {
-        LOG_FATAL("pthread_create error: %s, name= %s", strerror(rt), m_name);
+        LOG_FATAL("pthread_create error: %s, name= %s", strerror(rt), m_name.c_str());
         throw std::logic_error("pthread_create error");
     }
 
@@ -66,7 +68,7 @@ void Thread::join() {
     if (m_pthreadId) {
         int rt = pthread_join(m_pthreadId, nullptr);
         if (rt) {
-            LOG_FATAL("pthread_join error: %s, name= %s", strerror(rt), m_name);
+            LOG_FATAL("pthread_join error: %s, name= %s", strerror(rt), m_name.c_str());
             throw std::logic_error("pthread_join error");
         }
 
@@ -74,4 +76,4 @@ void Thread::join() {
     }
 }
 
-}   // namespace pico
+} // namespace pico

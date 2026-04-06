@@ -1,6 +1,7 @@
 .cache/*
 .cmake/*
 .vscode/*
+.local/*
 build/*
 lib/*
 bin/*

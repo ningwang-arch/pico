@@ -1,8 +1,6 @@
 #ifndef __PICO_UTIL_H__
 #define __PICO_UTIL_H__
 
-#include <boost/lexical_cast.hpp>
-#include <boost/variant.hpp>
 #include <byteswap.h>
 #include <cstdint>
 #include <dirent.h>
@@ -76,7 +74,10 @@ T getValueFromMap(const std::map<std::string, std::string>& map, const std::stri
                   const T& default_value = T()) {
     auto it = map.find(key);
     if (it != map.end()) {
-        return boost::lexical_cast<T>(it->second);
+        std::stringstream ss(it->second);
+        T result;
+        ss >> result;
+        return result;
     }
     return default_value;
 }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10..3.27)
 project(pico)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -11,14 +11,27 @@ set(SOURCE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pico)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Add -rdynamic only for GCC, as clang doesn't support it
+set(RDYNAMIC_FLAG "")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(RDYNAMIC_FLAG "-rdynamic")
+endif()
+
+# Use different flags for uninitialized warnings depending on compiler
+set(UNINIT_FLAG "-Wno-maybe-uninitialized")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  set(UNINIT_FLAG "-Wno-uninitialized")
+endif()
+
 set(CMAKE_CXX_FLAGS
-    "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -Wno-maybe-uninitialized"
+    "$ENV{CXXFLAGS} ${RDYNAMIC_FLAG} -O2 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations ${UNINIT_FLAG}"
 )
 set(CMAKE_C_FLAGS
-    "$ENV{CXXFLAGS} -rdynamic -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations -Wno-maybe-uninitialized"
+    "$ENV{CXXFLAGS} ${RDYNAMIC_FLAG} -O2 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined -Wno-deprecated-declarations ${UNINIT_FLAG}"
 )
 
-option(BUILD_TEST "ON for complile test" OFF)
+option(BUILD_TEST "ON for complile test" ON)
 
 # find dependencies
 find_package(MySQL REQUIRED)

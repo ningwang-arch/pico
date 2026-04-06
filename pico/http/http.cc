@@ -15,7 +15,7 @@ HttpMethod http_method_from_string(const std::string& method) {
     HTTP_METHOD_MAP(XX);
 #undef XX
     return HttpMethod::INVALID_METHOD;
-}   // namespace pico
+} // namespace pico
 
 const char* http_method_to_string(HttpMethod method) {
 #define XX(num, name, string)         \
@@ -35,26 +35,20 @@ const char* http_status_to_string(HttpStatus status) {
         return #msg;
         HTTP_STATUS_MAP(XX);
 #undef XX
-    default:
-        return "INVALID_STATUS";
+        default:
+            return "INVALID_STATUS";
     }
 }
 
 HttpRequest::HttpRequest(const std::string& version, bool is_close)
-    : m_is_close(is_close)
-    , m_websocket(false)
-    , m_method(HttpMethod::GET)
-    , m_path("/")
-    , m_version(version)
-    , m_parserParamFlag(0) {}
+    : m_is_close(is_close), m_websocket(false), m_method(HttpMethod::GET), m_path("/"), m_version(version), m_parserParamFlag(0) {}
 
 void HttpRequest::init() {
     std::string conn = get_header("connection");
     if (!conn.empty()) {
         if (strcasecmp(conn.c_str(), "keep-alive") == 0) {
             m_is_close = false;
-        }
-        else {
+        } else {
             m_is_close = true;
         }
     }
@@ -257,19 +251,16 @@ std::string HttpRequest::to_string() const {
     }
 
     if (!m_body.empty()) {
-        ss << "content-length: " << m_body.size() << "\r\n\r\n" << m_body;
-    }
-    else {
+        ss << "content-length: " << m_body.size() << "\r\n\r\n"
+           << m_body;
+    } else {
         ss << "\r\n";
     }
     return ss.str();
 }
 
 HttpResponse::HttpResponse(std::string version, bool is_close)
-    : m_version(std::move(version))
-    , m_status(HttpStatus::OK)
-    , m_is_close(is_close)
-    , m_websocket(false) {}
+    : m_version(std::move(version)), m_status(HttpStatus::OK), m_is_close(is_close), m_websocket(false) {}
 
 std::string HttpResponse::get_header(const std::string& key, const std::string& def) {
     auto it = m_headers.find(key);
@@ -366,15 +357,18 @@ std::string HttpResponse::to_string() const {
         ss << "connection: " << (m_is_close ? "close" : "keep-alive") << "\r\n";
     }
     if (!m_body.empty()) {
-        ss << "content-length: " << m_body.size() << "\r\n\r\n" << m_body;
-    }
-    else {
+        if (m_headers.find("content-length") == m_headers.end()) {
+            ss << "content-length: " << m_body.size() << "\r\n";
+        }
+        ss << "\r\n"
+           << m_body;
+    } else {
         ss << "\r\n";
     }
     return ss.str();
 }
 
-}   // namespace pico
+} // namespace pico
 
 std::ostream& operator<<(std::ostream& os, const pico::HttpRequest& req) {
     os << req.to_string();

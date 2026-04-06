@@ -2,6 +2,8 @@
 #define __PICO_JWT_VERIFIER_H__
 
 #include <json/json.h>
+
+#include <cassert>
 #include <memory>
 #include <string>
 
@@ -10,9 +12,7 @@
 #include "jwt_decoder.h"
 
 namespace pico {
-class JWTVerifier
-{
-
+class JWTVerifier {
 public:
     class Verification;
     typedef std::shared_ptr<JWTVerifier> Ptr;
@@ -52,11 +52,8 @@ public:
     void assertValidIssuer(std::string issuer, std::vector<std::string> value);
 
 
-
-
 public:
-    class Verification : public std::enable_shared_from_this<Verification>
-    {
+    class Verification : public std::enable_shared_from_this<Verification> {
     public:
         typedef std::shared_ptr<Verification> Ptr;
 
@@ -78,14 +75,14 @@ public:
         Verification::Ptr withJwtId(const std::string& jwt_id);
         Verification::Ptr withClaimPresence(const std::string& name);
 
-        template<typename T>
+        template <typename T>
         Verification::Ptr withClaim(const std::string& name, const T& value) {
             assert(!name.empty());
             this->requireClaim(name, value);
             return shared_from_this();
         }
 
-        template<typename T>
+        template <typename T>
         Verification::Ptr withArrayClaim(const std::string& name, const std::vector<T>& value) {
             assert(!name.empty());
             Json::Value array = Json::arrayValue;
@@ -101,7 +98,6 @@ public:
         JWTVerifier::Ptr build();
 
         JWTVerifier::Ptr build(const Date& date);
-
 
 
         void requireClaim(const std::string& name, Json::Value value);
@@ -127,6 +123,6 @@ private:
     const std::string AUDIENCE_CONTAINS = "AUDIENCE_CONTAINS";
 };
 
-}   // namespace pico
+} // namespace pico
 
 #endif

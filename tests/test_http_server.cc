@@ -1,12 +1,11 @@
 
-#include "../pico/pico.h"
-
 #include <chrono>
 #include <fstream>
 
+#include "../pico/pico.h"
+
 namespace pico {
-class HelloServlet : public Servlet
-{
+class HelloServlet : public Servlet {
 public:
     void doGet(const request& req, response& res) override {
         res->set_status(HttpStatus::OK);
@@ -15,8 +14,7 @@ public:
     }
 };
 
-class SessionSetServlet : public Servlet
-{
+class SessionSetServlet : public Servlet {
 public:
     void doGet(const request& req, response& res) override {
         res->set_status(HttpStatus::OK);
@@ -31,8 +29,7 @@ public:
 };
 
 
-class SessionGetServlet : public Servlet
-{
+class SessionGetServlet : public Servlet {
 public:
     void doGet(const request& req, response& res) override {
         res->set_status(HttpStatus::OK);
@@ -47,9 +44,7 @@ public:
 };
 
 
-
-class FuzzyMatchServlet : public Servlet
-{
+class FuzzyMatchServlet : public Servlet {
 public:
     void doGet(const request& req, response& res) override {
         res->set_status(HttpStatus::OK);
@@ -90,12 +85,29 @@ public:
     }
 };
 
-class MustacheServlet : public Servlet
-{
+class MustacheServlet : public Servlet {
 public:
     void doGet(const request& req, response& res) override {
-        int a = std::stoi(req->get_param("a"));
-        int b = std::stoi(req->get_param("b"));
+        auto a_str = req->get_param("a");
+        auto b_str = req->get_param("b");
+        if (a_str.empty() || b_str.empty()) {
+            res->set_status(HttpStatus::BAD_REQUEST);
+            res->set_header("Content-Type", "text/plain");
+            res->set_body("missing query params: a and b, e.g. /mustache?a=1&b=2");
+            return;
+        }
+
+        int a = 0;
+        int b = 0;
+        try {
+            a = std::stoi(a_str);
+            b = std::stoi(b_str);
+        } catch (...) {
+            res->set_status(HttpStatus::BAD_REQUEST);
+            res->set_header("Content-Type", "text/plain");
+            res->set_body("invalid query params: a and b must be integers");
+            return;
+        }
 
         Json::Value json;
         json["name"] = "pico";
@@ -107,8 +119,7 @@ public:
     }
 };
 
-class HelloFilter : public Filter
-{
+class HelloFilter : public Filter {
 public:
     void doFilter(const HttpRequest::Ptr& request, HttpResponse::Ptr& response,
                   FilterChain::Ptr chain) override {
@@ -117,8 +128,7 @@ public:
     }
 };
 
-class TestFilter : public Filter
-{
+class TestFilter : public Filter {
 public:
     void init(const FilterConfig::Ptr& config) override {
         std::cout << "TestFilter::init" << std::endl;
@@ -139,8 +149,7 @@ private:
     std::map<std::string, std::string> m_init_params;
 };
 
-class WsHelloServlet : public WsServlet
-{
+class WsHelloServlet : public WsServlet {
 public:
     bool onConnect(const HttpRequest::Ptr& req) override {
         std::cout << req->to_string() << std::endl;
@@ -155,8 +164,7 @@ public:
     }
 };
 
-class HelloMiddleware : public Middleware
-{
+class HelloMiddleware : public Middleware {
 public:
     void before_request(request& req, response& res) override {
         m_start_time = std::chrono::system_clock::now();
@@ -184,7 +192,7 @@ REGISTER_CLASS(WsHelloServlet);
 REGISTER_CLASS(FuzzyMatchServlet);
 REGISTER_CLASS(HelloMiddleware);
 
-}   // namespace pico
+} // namespace pico
 
 
 int main(int argc, char* argv[]) {

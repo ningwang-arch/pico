@@ -1,12 +1,15 @@
 #include "socket.h"
+
+#include <openssl/err.h>
+#include <openssl/ssl.h>
+
+#include <iostream>
+#include <sstream>
+
 #include "fdmanager.h"
 #include "hook.h"
 #include "iomanager.h"
 #include "logging.h"
-#include <iostream>
-#include <openssl/err.h>
-#include <openssl/ssl.h>
-#include <sstream>
 
 namespace pico {
 Socket::Ptr Socket::CreateTcp(Address::Ptr addr) {
@@ -46,9 +49,7 @@ Socket::Ptr Socket::CreateUdpSocketv6() {
 }
 
 Socket::Socket(int family, int type, int protocol)
-    : m_family(family)
-    , m_type(type)
-    , m_protocol(protocol) {
+    : m_family(family), m_type(type), m_protocol(protocol) {
     m_sockfd = -1;
     m_is_connected = false;
 }
@@ -158,8 +159,7 @@ bool Socket::connect(const Address::Ptr& addr, uint64_t timeout) {
             close();
             return false;
         }
-    }
-    else {
+    } else {
         if (::connect_with_timeout(m_sockfd, addr->getAddr(), addr->getAddrLen(), timeout) &&
             errno != EINPROGRESS) {
             LOG_ERROR("connect failed");
@@ -420,9 +420,15 @@ Address::Ptr Socket::getLocalAddress() {
     }
     Address::Ptr addr;
     switch (m_family) {
-    case AF_INET: addr.reset(new IPv4Address()); break;
-    case AF_INET6: addr.reset(new IPv6Address()); break;
-    default: addr.reset(new UnknownAddress(m_family)); break;
+        case AF_INET:
+            addr.reset(new IPv4Address());
+            break;
+        case AF_INET6:
+            addr.reset(new IPv6Address());
+            break;
+        default:
+            addr.reset(new UnknownAddress(m_family));
+            break;
     }
     socklen_t len = addr->getAddrLen();
     if (::getsockname(m_sockfd, addr->getAddr(), &len) == -1) {
@@ -439,9 +445,15 @@ Address::Ptr Socket::getPeerAddress() {
     }
     Address::Ptr addr;
     switch (m_family) {
-    case AF_INET: addr.reset(new IPv4Address()); break;
-    case AF_INET6: addr.reset(new IPv6Address()); break;
-    default: addr.reset(new UnknownAddress(m_family)); break;
+        case AF_INET:
+            addr.reset(new IPv4Address());
+            break;
+        case AF_INET6:
+            addr.reset(new IPv6Address());
+            break;
+        default:
+            addr.reset(new UnknownAddress(m_family));
+            break;
     }
     socklen_t len = addr->getAddrLen();
     if (::getpeername(m_sockfd, addr->getAddr(), &len) == -1) {
@@ -454,18 +466,17 @@ Address::Ptr Socket::getPeerAddress() {
 
 namespace {
 
-struct _SSLInit
-{
-    _SSLInit() {
-        SSL_library_init();
-        SSL_load_error_strings();
-        OpenSSL_add_all_algorithms();
-    }
-};
+    struct _SSLInit {
+        _SSLInit() {
+            SSL_library_init();
+            SSL_load_error_strings();
+            OpenSSL_add_all_algorithms();
+        }
+    };
 
-static _SSLInit s_init;
+    static _SSLInit s_init;
 
-}   // namespace
+} // namespace
 SSLSocket::Ptr SSLSocket::CreateTcp(Address::Ptr addr) {
     SSLSocket::Ptr sock(new SSLSocket(addr->getFamily(), Socket::TCP));
     return sock;
@@ -482,9 +493,7 @@ SSLSocket::Ptr SSLSocket::CreateTcpScoketv6() {
 }
 
 SSLSocket::SSLSocket(int family, int type, int protocol)
-    : Socket(family, type, protocol)
-    , m_ctx(NULL)
-    , m_ssl(NULL) {}
+    : Socket(family, type, protocol), m_ctx(NULL), m_ssl(NULL) {}
 
 
 bool SSLSocket::connect(const Address::Ptr& addr, uint64_t timeout) {
@@ -510,7 +519,6 @@ Socket::Ptr SSLSocket::accept() {
     SSLSocket::Ptr sock(new SSLSocket(m_family, m_type, m_protocol));
     int newsock = ::accept(m_sockfd, nullptr, nullptr);
     if (newsock == -1) {
-        LOG_ERROR("accept failed");
         return nullptr;
     }
     sock->m_ctx = m_ctx;
@@ -613,12 +621,19 @@ bool SSLSocket::init(int sock) {
     if (v) {
         m_ssl.reset(SSL_new(m_ctx.get()), SSL_free);
         SSL_set_fd(m_ssl.get(), m_sockfd);
-        v = (SSL_accept(m_ssl.get()) == 1);
+        int ret = SSL_accept(m_ssl.get());
+        v = (ret == 1);
         if (!v) {
-            ERR_print_errors_fp(stderr);
+            int ssl_err = SSL_get_error(m_ssl.get(), ret);
+            if (ssl_err == SSL_ERROR_WANT_READ || ssl_err == SSL_ERROR_WANT_WRITE) {
+                errno = EAGAIN;
+            } else {
+                LOG_DEBUG("SSL_accept failed, ssl_err=%d", ssl_err);
+                errno = 0;
+            }
         }
     }
     return v;
 }
 
-}   // namespace pico
+} // namespace pico

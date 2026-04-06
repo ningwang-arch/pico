@@ -4,20 +4,19 @@
 #include "reflection.hpp"
 
 namespace pico {
-template<typename T>
+template <typename T>
 std::string serialize(
-    const T& t, typename std::enable_if<std::is_arithmetic<T>::value && !pico::TypeTraits<T>::value,
-                                        int>::type = 0) {
+    const T& t, typename std::enable_if<std::is_arithmetic<T>::value && !pico::TypeTraits<T>::value, int>::type = 0) {
     return std::to_string(t);
 }
 
-template<typename T>
+template <typename T>
 std::string serialize(const T& t,
                       typename std::enable_if<pico::TypeTraits<T>::value, int>::type = 0) {
     return t;
 }
 
-template<typename T>
+template <typename T>
 std::string
 serialize(const T& t,
           typename std::enable_if<!std::is_arithmetic<T>::value && !pico::TypeTraits<T>::value,
@@ -25,7 +24,7 @@ serialize(const T& t,
     return t.encode();
 }
 
-template<typename T>
+template <typename T>
 std::string serialize(const std::vector<T>& t) {
     Json::Value root = Json::Value(Json::arrayValue);
     for (auto& i : t) {
@@ -35,7 +34,7 @@ std::string serialize(const std::vector<T>& t) {
 }
 
 // list
-template<typename T>
+template <typename T>
 std::string serialize(const std::list<T>& t) {
     Json::Value root = Json::Value(Json::arrayValue);
     for (auto& i : t) {
@@ -45,7 +44,7 @@ std::string serialize(const std::list<T>& t) {
 }
 
 // map
-template<typename K, typename V>
+template <typename K, typename V>
 std::string serialize(const std::map<K, V>& t) {
     Json::Value root = Json::Value(Json::objectValue);
     for (auto& i : t) {
@@ -54,7 +53,7 @@ std::string serialize(const std::map<K, V>& t) {
     return pico::Json2Str(root);
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 std::string serialize(const std::unordered_map<K, V>& t) {
     Json::Value root = Json::Value(Json::objectValue);
     for (auto& i : t) {
@@ -64,7 +63,7 @@ std::string serialize(const std::unordered_map<K, V>& t) {
 }
 
 // set
-template<typename T>
+template <typename T>
 std::string serialize(const std::set<T>& t) {
     Json::Value root = Json::Value(Json::arrayValue);
     for (auto& i : t) {
@@ -73,7 +72,7 @@ std::string serialize(const std::set<T>& t) {
     return pico::Json2Str(root);
 }
 
-template<typename T>
+template <typename T>
 std::string serialize(const std::unordered_set<T>& t) {
     Json::Value root = Json::Value(Json::arrayValue);
     for (auto& i : t) {
@@ -83,22 +82,22 @@ std::string serialize(const std::unordered_set<T>& t) {
 }
 
 
-
-template<typename T>
+template <typename T>
 void deserialize(const std::string& s, T& t,
                  typename std::enable_if<std::is_arithmetic<T>::value || pico::TypeTraits<T>::value,
                                          int>::type = 0) {
-    t = boost::lexical_cast<T>(s);
+    std::stringstream ss(s);
+    ss >> t;
 }
 
-template<typename T>
+template <typename T>
 void deserialize(const std::string& s, T& t,
                  typename std::enable_if<
                      !std::is_arithmetic<T>::value && !pico::TypeTraits<T>::value, int>::type = 0) {
     t.decode(s);
 }
 
-template<typename T>
+template <typename T>
 void deserialize(const std::string& s, std::vector<T>& t) {
     Json::Value root;
     pico::Str2Json(s, root);
@@ -109,7 +108,7 @@ void deserialize(const std::string& s, std::vector<T>& t) {
     }
 }
 
-template<typename T>
+template <typename T>
 void deserialize(const std::string& s, std::list<T>& t) {
     Json::Value root;
     pico::Str2Json(s, root);
@@ -120,7 +119,7 @@ void deserialize(const std::string& s, std::list<T>& t) {
     }
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 void deserialize(const std::string& s, std::map<K, V>& t) {
     Json::Value root;
     pico::Str2Json(s, root);
@@ -133,7 +132,7 @@ void deserialize(const std::string& s, std::map<K, V>& t) {
     }
 }
 
-template<typename K, typename V>
+template <typename K, typename V>
 void deserialize(const std::string& s, std::unordered_map<K, V>& t) {
     Json::Value root;
     pico::Str2Json(s, root);
@@ -146,7 +145,7 @@ void deserialize(const std::string& s, std::unordered_map<K, V>& t) {
     }
 }
 
-template<typename T>
+template <typename T>
 void deserialize(const std::string& s, std::set<T>& t) {
     Json::Value root;
     pico::Str2Json(s, root);
@@ -157,7 +156,7 @@ void deserialize(const std::string& s, std::set<T>& t) {
     }
 }
 
-template<typename T>
+template <typename T>
 void deserialize(const std::string& s, std::unordered_set<T>& t) {
     Json::Value root;
     pico::Str2Json(s, root);
@@ -168,7 +167,7 @@ void deserialize(const std::string& s, std::unordered_set<T>& t) {
     }
 }
 
-template<typename T>
+template <typename T>
 T deserialize(const std::string& s) {
     T t;
     deserialize(s, t);
@@ -243,6 +242,6 @@ T deserialize(const std::string& s) {
 // }
 
 
-}   // namespace pico
+} // namespace pico
 
-#endif   // __PICO_SERIALIZE_H__
+#endif // __PICO_SERIALIZE_H__
